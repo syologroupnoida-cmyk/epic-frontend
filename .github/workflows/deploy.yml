@@ -1,0 +1,80 @@
+# Place this file at .github/workflows/deploy.yml in epic-frontend.
+# Required GitHub Actions secrets: VPS_SSH_KEY and VPS_KNOWN_HOSTS.
+# The VPS must already have Node/npm, PM2, repository access, and production env files.
+# Builds run in the live directory; brief interruption is possible. No automatic rollback.
+name: Deploy Epic Frontend
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: epic-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SSH_KEY" || { echo "Missing VPS_SSH_KEY secret"; exit 1; }
+          test -n "$KNOWN_HOSTS" || { echo "Missing VPS_KNOWN_HOSTS secret"; exit 1; }
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          ssh-keygen -y -P "" -f ~/.ssh/id_ed25519 > /dev/null
+
+      - name: Deploy Epic on VPS
+        env:
+          VPS_HOST: "72.60.202.147"
+          VPS_USER: "root"
+          VPS_PORT: "22"
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -vvv -p "$VPS_PORT" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=15 \
+            "$VPS_USER@$VPS_HOST" 'bash -se' <<'REMOTE'
+          # Load Node.js when installed with NVM.
+          export NVM_DIR="$HOME/.nvm"
+          if [ -s "$NVM_DIR/nvm.sh" ]; then
+            . "$NVM_DIR/nvm.sh"
+          fi
+
+          cd /var/www/apps/frontend/epic-frontend
+          pm2 describe epic-frontend > /dev/null
+
+          if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+            echo "Deployment stopped: tracked files have local changes."
+            exit 1
+          fi
+
+          git checkout main
+          GIT_TERMINAL_PROMPT=0 git pull --ff-only origin main
+          npm ci
+          npm run build
+          pm2 restart epic-frontend --update-env
+          pm2 save
+          REMOTE
+
+      - name: Clean up SSH credentials
+        if: always()
+        shell: bash
+        run: rm -f ~/.ssh/id_ed25519 ~/.ssh/known_hosts
