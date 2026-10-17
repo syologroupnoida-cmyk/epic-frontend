@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import ApiStatusModal from "@/components/common/ApiStatusModal";
 import MainApi from "@/util/MainApi";
 import { getApiErrorMessage } from "@/util/authApi";
-import OfferingKindSelect from "@/components/superadmin/OfferingKindSelect";
+import IsActiveRadio from "@/components/superadmin/IsActiveRadio";
 
 function normalizeCategories(responseData) {
   const rawList =
@@ -30,7 +30,8 @@ export default function AddServices({ embedded = false }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [serviceName, setServiceName] = useState("");
-  const [offeringKind, setOfferingKind] = useState("SERVICE");
+  const [serviceDescription, setServiceDescription] = useState("");
+  const [isActive, setIsActive] = useState(true);
   const [services, setServices] = useState([]);
   const [fieldError, setFieldError] = useState("");
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
@@ -101,19 +102,26 @@ export default function AddServices({ embedded = false }) {
       return;
     }
 
-    const alreadyAdded = services.some((item) => item.toLowerCase() === nextName.toLowerCase());
+    const alreadyAdded = services.some((item) => item.name.toLowerCase() === nextName.toLowerCase());
     if (alreadyAdded) {
       setFieldError("This service is already added.");
       return;
     }
 
-    setServices((current) => [...current, nextName]);
+    const description = serviceDescription.trim();
+    setServices((current) => [...current, {
+      name: nextName,
+      ...(description ? { description } : {}),
+      isActive,
+    }]);
     setServiceName("");
+    setServiceDescription("");
+    setIsActive(true);
     setFieldError("");
   }
 
   function removeService(service) {
-    setServices((current) => current.filter((item) => item !== service));
+    setServices((current) => current.filter((item) => item.name !== service.name));
   }
 
   function changeCategory(categoryId) {
@@ -121,6 +129,7 @@ export default function AddServices({ embedded = false }) {
     setCategoryDropdownOpen(false);
     setServices([]);
     setServiceName("");
+    setServiceDescription("");
     setFieldError("");
   }
 
@@ -137,18 +146,14 @@ export default function AddServices({ embedded = false }) {
     });
 
     try {
-      await Promise.all(
-        services.map((service) =>
-          MainApi.post("/admin/service-subcategories", {
-            name: service,
-            offeringKind,
-            serviceCategoryId: selectedCategoryId,
-          }),
-        ),
-      );
+      await MainApi.post("/admin/service-subcategories", {
+        serviceCategoryId: selectedCategoryId,
+        subcategories: services,
+      });
 
       setServices([]);
       setServiceName("");
+      setServiceDescription("");
       setFeedback({
         status: "success",
         title: "Services created",
@@ -189,9 +194,8 @@ export default function AddServices({ embedded = false }) {
             <div className="mt-3 border-t border-rose-100" />
           </div>
           <form onSubmit={submitServices}>
-            <div className="grid grid-cols-12 gap-4 px-4 pb-0">
-              <OfferingKindSelect value={offeringKind} onChange={setOfferingKind} disabled={isSubmitting || isLoadingCategories} className="md:col-span-3" />
-              <div ref={categoryDropdownRef} className="relative col-span-12 pb-[18px] md:col-span-4">
+            <div className="grid grid-cols-12 gap-4 px-4 pb-0 md:grid-cols-[repeat(3,minmax(0,1fr))_46px]">
+              <div ref={categoryDropdownRef} className="relative col-span-12 pb-[18px] md:col-span-1">
                 <button
                   type="button"
                   onClick={() => setCategoryDropdownOpen((open) => !open)}
@@ -228,7 +232,17 @@ export default function AddServices({ embedded = false }) {
                   </div>
                 ) : null}
               </div>
-              <label className="mui-field col-span-12 md:col-span-4">
+              <label className="mui-field col-span-12 md:col-span-1">
+                <input
+                  value={serviceDescription}
+                  onChange={(event) => setServiceDescription(event.target.value)}
+                  onKeyDown={(event) => { if (event.key === "Enter") addService(event); }}
+                  placeholder=" "
+                  disabled={!selectedCategoryId || isSubmitting}
+                />
+                <span>Description (optional)</span>
+              </label>
+              <label className="mui-field col-span-12 md:col-span-1">
                 <input
                   value={serviceName}
                   onChange={(event) => {
@@ -257,6 +271,8 @@ export default function AddServices({ embedded = false }) {
               </div>
             </div>
 
+            <IsActiveRadio value={isActive} onChange={setIsActive} disabled={isSubmitting || !selectedCategoryId} />
+
             {selectedCategory ? (
               <p className="mx-4 mt-1 text-sm font-medium text-stone-500">
                 Selected category: <span className="text-[#b61f4b]">{selectedCategory.name}</span>
@@ -267,15 +283,16 @@ export default function AddServices({ embedded = false }) {
               <div className="mx-4 mt-4 flex flex-wrap gap-2">
                 {services.map((service) => (
                   <span
-                    key={service}
+                    key={service.name}
+                    title={service.description}
                     className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium leading-none text-[#b61f4b]"
                   >
-                    {service}
+                    {service.name}
                     <button
                       type="button"
                       onClick={() => removeService(service)}
                       className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-[11px] leading-none text-[#b61f4b] hover:bg-[#b61f4b] hover:text-white"
-                      aria-label={`Remove ${service}`}
+                      aria-label={`Remove ${service.name}`}
                     >
                       <span className="-translate-y-px">x</span>
                     </button>
