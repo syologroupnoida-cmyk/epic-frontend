@@ -307,25 +307,6 @@ export default function SaadiMitraPage() {
           </div>
         </section>
 
-        <section className="bg-[#e72f78] py-12 text-white">
-          <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-            <div>
-              <p className="text-sm font-black uppercase tracking-[0.22em] text-white/75">
-                SaadiMitra
-              </p>
-              <h2 className="mt-2 text-xl font-black">
-                Ready to find your wedding vendors?
-              </h2>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsQuoteOpen(true)}
-              className="h-12 rounded bg-white px-7 text-sm font-black text-[#e72f78]"
-            >
-              Start Now
-            </button>
-          </div>
-        </section>
       </main>
       <Footer />
       <QuoteModal isOpen={isQuoteOpen} onClose={() => setIsQuoteOpen(false)} />

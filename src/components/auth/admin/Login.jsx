@@ -1,13 +1,26 @@
 import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/router";
 import { useState } from "react";
-import AuthShell from "@/components/auth/AuthShell";
 import PasswordToggle from "@/components/auth/PasswordToggle";
+import ApiStatusModal from "@/components/common/ApiStatusModal";
+import { getApiErrorMessage, loginAccount } from "@/util/authApi";
+import { getPostLoginAction } from "@/util/authRedirect";
+import {
+  extractAuthPayload,
+  setAuthTokens,
+  setAuthUser,
+} from "@/util/authSession";
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function AdminLogin() {
-  const [form, setForm] = useState({ email: "", password: "", accessCode: "" });
+  const router = useRouter();
+  const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
-  const [status, setStatus] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiFeedback, setApiFeedback] = useState(null);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -17,44 +30,154 @@ export default function AdminLogin() {
 
   function validate() {
     const nextErrors = {};
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) nextErrors.email = "Valid email is required";
-    if (form.password.length < 8) nextErrors.password = "Admin password must be 8 characters";
-    if (form.accessCode.trim().length < 4) nextErrors.accessCode = "Access code is required";
+    if (!emailPattern.test(form.email.trim())) {
+      nextErrors.email = "Enter a valid email address";
+    }
+    if (!form.password) {
+      nextErrors.password = "Password is required";
+    } else if (form.password.length < 6) {
+      nextErrors.password = "Password must be at least 6 characters";
+    }
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   }
 
-  async function dummyAdminLoginApi(payload) {
-    return new Promise((resolve) => setTimeout(() => resolve({ ok: true, payload }), 450));
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
-    setStatus("");
     if (!validate()) return;
-    await dummyAdminLoginApi(form);
-    setStatus("Admin login successful.");
+
+    setIsSubmitting(true);
+    setApiFeedback({
+      status: "loading",
+      title: "Logging...",
+      text: "Please wait while we verify your admin access.",
+    });
+
+    try {
+      const response = await loginAccount({
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      });
+      const authPayload = extractAuthPayload(response.data);
+      const action = getPostLoginAction(authPayload.user);
+
+      setAuthTokens({ ...authPayload, role: action.role });
+      setAuthUser(authPayload.user);
+
+      if (action.type === "pending-approval") {
+        setApiFeedback({
+          status: "success",
+          title: "KYC is submitted",
+          text: "KYC approval is pending from Admin side.",
+          okLabel: "OK",
+          onOk: () => setApiFeedback(null),
+        });
+        return;
+      }
+
+      setApiFeedback({
+        status: "loading",
+        title: "Logging...",
+        text: response?.data?.message || "Admin login successful.",
+      });
+      await router.push(action.route);
+    } catch (error) {
+      setApiFeedback({
+        status: "error",
+        title: "Login Failed",
+        text: getApiErrorMessage(error, "Login failed. Please try again."),
+        okLabel: "OK",
+        onOk: () => setApiFeedback(null),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
-    <AuthShell
-      mode="admin"
-      eyebrow="Admin Access"
-      title="Keep the platform organized"
-      text="Review accounts, manage listings, and keep Epic Wedz running smoothly."
-    >
-        <form onSubmit={handleSubmit} className="auth-panel w-full rounded border border-white/40 p-6 shadow-2xl sm:p-8">
-          <h2 className="font-serif text-3xl font-bold">Admin Login</h2>
-          <div className="mt-6 grid gap-4">
-            <label className="mui-field"><input name="email" value={form.email} onChange={handleChange} placeholder=" " /><span>Email address</span>{errors.email ? <small>{errors.email}</small> : null}</label>
-            <label className="mui-field password-field"><input name="password" type={showPassword ? "text" : "password"} value={form.password} onChange={handleChange} placeholder=" " /><span>Password</span><PasswordToggle isVisible={showPassword} label="Toggle password visibility" onClick={() => setShowPassword((show) => !show)} />{errors.password ? <small>{errors.password}</small> : null}</label>
-            <Link href="/forgot-password" className="auth-forgot-link">Forgot Password?</Link>
-            <label className="mui-field"><input name="accessCode" value={form.accessCode} onChange={handleChange} placeholder=" " /><span>Access code</span>{errors.accessCode ? <small>{errors.accessCode}</small> : null}</label>
-            <button className="h-12 rounded bg-[#b61f4b] text-sm font-bold text-white hover:bg-[#981a3f]">Login</button>
-            {status ? <p className="text-sm font-bold text-[#24784f]">{status}</p> : null}
-            <p className="text-sm text-stone-600">Need admin access? <Link href="/admin/sign-up" className="font-bold text-[#b61f4b]">Request admin account</Link></p>
+    <div className="epic-login-page epic-admin-page">
+      <section className="epic-login-hero" aria-label="Admin workspace">
+        <Image
+          src="/images/auth-admin-login-bg.png"
+          alt=""
+          aria-hidden="true"
+          className="epic-login-hero-image"
+          fill
+          priority
+          sizes="(max-width: 1023px) 100vw, 50vw"
+        />
+        <div className="epic-login-hero-overlay epic-admin-hero-overlay" />
+        <Link href="/" className="epic-login-brand" aria-label="Go to home page">
+          <Image src="/images/epic-logo-new.png" alt="Epic Wed Planner" width={150} height={72} priority />
+        </Link>
+        <div className="epic-login-hero-copy">
+          <h1>
+            Command the
+            <span>platform.</span>
+          </h1>
+          <p>Review users, vendors, services, and approvals from a focused admin desk.</p>
+        </div>
+      </section>
+
+      <section className="epic-login-form-shell epic-admin-form-shell">
+        <form onSubmit={handleSubmit} className="epic-login-form epic-admin-form">
+          <div className="epic-login-heading">
+            <h2>Admin login</h2>
+            <p>Secure access for platform operations.</p>
           </div>
+
+          <div className="epic-login-divider">
+            <span>authorized access only</span>
+          </div>
+
+          <div className="epic-login-fields">
+            <label className="epic-login-field">
+              <span>Email address</span>
+              <span className="epic-login-input-wrap">
+                <input name="email" value={form.email} onChange={handleChange} placeholder="admin@epic.com" autoComplete="email" />
+              </span>
+              {errors.email ? <small>{errors.email}</small> : null}
+            </label>
+            <label className="epic-login-field">
+              <span>Password</span>
+              <span className="epic-login-input-wrap">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                />
+                <PasswordToggle
+                  isVisible={showPassword}
+                  label="Toggle password visibility"
+                  onClick={() => setShowPassword((show) => !show)}
+                />
+              </span>
+              {errors.password ? <small>{errors.password}</small> : null}
+            </label>
+          </div>
+
+          <div className="epic-login-options">
+            <span />
+            <Link href="/forgot-password">Forgot password?</Link>
+          </div>
+
+          <button type="submit" disabled={isSubmitting} className="epic-signin-button">
+            {isSubmitting ? <span className="button-spinner" aria-hidden="true" /> : null}
+            {isSubmitting ? "Please wait..." : "Sign in"}
+            <span className="epic-button-arrow" aria-hidden="true" />
+          </button>
         </form>
-    </AuthShell>
+      </section>
+      <ApiStatusModal
+        status={apiFeedback?.status}
+        title={apiFeedback?.title}
+        text={apiFeedback?.text}
+        okLabel={apiFeedback?.okLabel}
+        onOk={apiFeedback?.onOk}
+      />
+    </div>
   );
 }

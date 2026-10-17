@@ -1,6 +1,12 @@
+import useDismissibleDropdown from "@/util/useDismissibleDropdown";
+import AccountProfileInfo from "@/components/common/AccountProfileInfo";
 import Image from "next/image";
+import useAuthUser from "@/util/useAuthUser";
 import Link from "next/link";
 import { useState } from "react";
+import ApiStatusModal from "@/components/common/ApiStatusModal";
+import ConfirmActionModal from "@/components/common/ConfirmActionModal";
+import useAuthLogout from "@/util/useAuthLogout";
 
 const icons = {
   dashboard: "M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z",
@@ -18,7 +24,7 @@ const icons = {
 };
 
 const menu = [
-  { label: "Overview", icon: "dashboard", sub: ["Planning board", "Summary"] },
+  { label: "Overview", icon: "dashboard", sub: [] },
   { label: "My Wedding", icon: "leads", sub: ["Checklist", "Budget", "Guest list"] },
   { label: "Shortlist", icon: "store", sub: ["Venues", "Vendors", "Favorites"] },
   { label: "Bookings", icon: "calendar", sub: ["Visits", "Confirmed", "Pending"] },
@@ -26,39 +32,171 @@ const menu = [
   { label: "Settings", icon: "settings", sub: ["Notifications", "Privacy", "Support"] },
 ];
 
-const metrics = [
-  { label: "Saved Vendors", value: "42", change: "+9%", icon: "store" },
-  { label: "Upcoming Visits", value: "6", change: "+3%", icon: "calendar" },
-  { label: "Quotes Received", value: "15", change: "+11%", icon: "people" },
-  { label: "Planning Tasks", value: "28", change: "+5%", icon: "chart" },
+const overviewStats = [
+  { label: "Saved Vendors", value: "42", change: "+9%", icon: "store", tone: "rose" },
+  { label: "Upcoming Visits", value: "6", change: "+3%", icon: "calendar", tone: "gold" },
+  { label: "Quotes Received", value: "15", change: "+11%", icon: "people", tone: "rose" },
+  { label: "Planning Tasks", value: "28", change: "+5%", icon: "chart", tone: "gold" },
 ];
 
-const activities = ["Banquet hall quote received for Delhi NCR", "Makeup artist added to shortlist", "Decorator visit scheduled for Friday", "Wedding planner sent a package update"];
+const budgetTrend = [
+  { label: "Venue", value: 72 },
+  { label: "Decor", value: 46 },
+  { label: "Photo", value: 38 },
+  { label: "Cater", value: 58 },
+  { label: "Makeup", value: 24 },
+  { label: "Music", value: 18 },
+  { label: "Invite", value: 14 },
+];
+
+const recentQuotes = [
+  { id: "#QT-2184", vendor: "Royal Orchid", service: "Wedding Venue", city: "Delhi NCR", date: "12 Dec 2026", amount: "Rs. 2.5L", status: "Shortlisted" },
+  { id: "#QT-2183", vendor: "Candid Frames", service: "Photography", city: "Mumbai", date: "28 Nov 2026", amount: "Rs. 1.2L", status: "Quoted" },
+  { id: "#QT-2182", vendor: "Royal Rasoi", service: "Catering", city: "Jaipur", date: "05 Dec 2026", amount: "Rs. 1.8L", status: "Visit" },
+  { id: "#QT-2181", vendor: "Dreamz Decor", service: "Decoration", city: "Bengaluru", date: "20 Nov 2026", amount: "Rs. 3.1L", status: "Pending" },
+];
+
+const upcomingPlans = [
+  { title: "Venue visit", text: "Royal Orchid, Delhi NCR at 11:30 AM" },
+  { title: "Photography call", text: "Review album package and delivery timeline" },
+  { title: "Finalize guest list", text: "28 names still pending confirmation" },
+];
 
 function Icon({ name }) {
   return <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 fill-current" aria-hidden="true"><path d={icons[name] || icons.dashboard} /></svg>;
 }
 
+function UserDashboardOverview() {
+  const maxBudget = Math.max(...budgetTrend.map((item) => item.value));
+  const toneClasses = {
+    rose: "bg-rose-100 text-[#8d1230]",
+    gold: "bg-amber-100 text-[#b8750d]",
+  };
+  const statusClasses = {
+    Shortlisted: "bg-rose-100 text-rose-700",
+    Quoted: "bg-sky-100 text-sky-700",
+    Visit: "bg-amber-100 text-amber-700",
+    Pending: "bg-stone-100 text-stone-600",
+  };
+
+  return (
+    <div className="grid gap-4 text-[13px] text-stone-800">
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {overviewStats.map((stat) => (
+          <article key={stat.label} className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <span className={`grid h-14 w-14 place-items-center rounded-full ${toneClasses[stat.tone]}`}><Icon name={stat.icon} /></span>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-stone-500">{stat.label}</p>
+                <p className="mt-1 font-serif text-[30px] font-bold leading-none text-stone-950">{stat.value}</p>
+              </div>
+              <div className="flex h-8 items-end gap-1 text-[#d9a650]" aria-hidden="true">
+                {[40, 58, 74, 92].map((height) => <span key={height} className="block w-1 rounded-full bg-current opacity-70" style={{ height: `${height}%` }} />)}
+              </div>
+            </div>
+            <p className="mt-4 flex items-center gap-2 text-[11px] font-medium text-stone-500"><span className="text-emerald-600">{stat.change}</span><span>this week</span></p>
+          </article>
+        ))}
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.8fr)_minmax(330px,0.9fr)]">
+        <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="flex gap-3">
+            <span className="mt-1 text-[#8d1230]"><Icon name="chart" /></span>
+            <div>
+              <h3 className="font-serif text-xl font-bold text-stone-950">Budget Overview</h3>
+              <p className="mt-1 text-xs font-medium text-stone-500">Category-wise planning estimate</p>
+            </div>
+          </div>
+          <div className="mt-6 grid h-[255px] grid-cols-7 items-end gap-4 border-b border-l border-stone-200 px-4 pb-4">
+            {budgetTrend.map((item) => (
+              <div key={item.label} className="flex h-full flex-col justify-end gap-2">
+                <div className="rounded-t-lg bg-gradient-to-t from-[#8d1230] to-[#d9a650]" style={{ height: `${Math.max(18, (item.value / maxBudget) * 100)}%` }} />
+                <p className="truncate text-center text-[11px] font-medium text-stone-500">{item.label}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="flex gap-3">
+            <span className="mt-1 text-[#8d1230]"><Icon name="leads" /></span>
+            <div>
+              <h3 className="font-serif text-xl font-bold text-stone-950">Planning Status</h3>
+              <p className="mt-1 text-xs font-medium text-stone-500">Wedding checklist progress</p>
+            </div>
+          </div>
+          <div className="mt-7 grid place-items-center gap-6">
+            <div className="relative h-44 w-44 rounded-full bg-[conic-gradient(#8d1230_0_62%,#d98991_62%_82%,#d5a04f_82%_100%)]">
+              <div className="absolute inset-9 grid place-items-center rounded-full bg-white text-center shadow-inner">
+                <p className="font-serif text-2xl font-bold text-stone-950">62%</p>
+                <p className="text-[11px] font-medium text-stone-500">Completed</p>
+              </div>
+            </div>
+            <div className="grid w-full gap-3 text-xs">
+              {["Completed 28", "In review 9", "Pending 17"].map((item, index) => <p key={item} className="flex justify-between text-stone-600"><span>{item}</span><span>{[62, 20, 18][index]}%</span></p>)}
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.8fr)_minmax(330px,0.9fr)]">
+        <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="flex gap-3"><span className="mt-1 text-[#8d1230]"><Icon name="calendar" /></span><div><h3 className="font-serif text-xl font-bold text-stone-950">Recent Quotes</h3><p className="mt-1 text-xs font-medium text-stone-500">Latest vendor responses for your wedding</p></div></div>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[760px] border-separate border-spacing-0 text-left text-xs">
+              <thead><tr className="bg-stone-50 text-[11px] font-semibold text-stone-700"><th className="rounded-l px-3 py-3">Quote ID</th><th className="px-3 py-3">Vendor</th><th className="px-3 py-3">Service</th><th className="px-3 py-3">Event Date</th><th className="px-3 py-3">Amount</th><th className="rounded-r px-3 py-3">Status</th></tr></thead>
+              <tbody>{recentQuotes.map((quote) => <tr key={quote.id}><td className="border-b border-stone-100 px-3 py-3 font-medium">{quote.id}</td><td className="border-b border-stone-100 px-3 py-3"><p className="font-medium text-stone-950">{quote.vendor}</p><p className="text-[11px] text-stone-500">{quote.city}</p></td><td className="border-b border-stone-100 px-3 py-3">{quote.service}</td><td className="border-b border-stone-100 px-3 py-3">{quote.date}</td><td className="border-b border-stone-100 px-3 py-3 font-medium">{quote.amount}</td><td className="border-b border-stone-100 px-3 py-3"><span className={`rounded-full px-3 py-1 text-[11px] font-medium ${statusClasses[quote.status]}`}>{quote.status}</span></td></tr>)}</tbody>
+            </table>
+          </div>
+        </article>
+
+        <article className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+          <h3 className="font-serif text-xl font-bold text-stone-950">Upcoming Plans</h3>
+          <p className="mt-1 text-xs font-medium text-stone-500">Your next planning actions</p>
+          <div className="mt-5 grid gap-3">{upcomingPlans.map((item) => <div key={item.title} className="rounded border border-stone-100 bg-[#fff9f5] p-4"><p className="font-semibold text-stone-950">{item.title}</p><p className="mt-1 text-xs text-stone-500">{item.text}</p></div>)}</div>
+        </article>
+      </section>
+    </div>
+  );
+}
+
 export default function UserDashboard() {
+  const authUser = useAuthUser();
   const [collapsed, setCollapsed] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const [openMenu, setOpenMenu] = useState("Overview");
+  const [openMenu, setOpenMenu] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
+  const profileMenuRef = useDismissibleDropdown(profileOpen, setProfileOpen);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const { handleLogout, logoutFeedback } = useAuthLogout("/user/login");
   const expanded = !collapsed || hovered;
 
   return (
     <div className="min-h-screen bg-[#f7f2ef] text-stone-900">
       <aside onMouseEnter={() => collapsed && setHovered(true)} onMouseLeave={() => setHovered(false)} className={`fixed inset-y-0 left-0 z-40 border-r border-rose-100 bg-white shadow-sm transition-all duration-200 ${expanded ? "w-72" : "w-20"}`}>
-        <Link href="/" className="flex h-20 items-center justify-center border-b border-rose-100 px-4"><Image src="/images/epic-logo.webp" alt="Epic Wedz" width={142} height={50} priority className={`${expanded ? "h-12" : "h-10"} w-auto object-contain`} /></Link>
-        <nav className="space-y-1 px-3 py-5">{menu.map((item, index) => <div key={item.label}><button type="button" onClick={() => setOpenMenu((current) => current === item.label ? "" : item.label)} className={`flex h-12 w-full items-center rounded px-3 text-sm font-semibold transition hover:bg-rose-50 hover:text-[#b61f4b] ${index === 0 ? "bg-rose-50 text-[#b61f4b]" : "text-stone-700"} ${expanded ? "justify-between gap-3" : "justify-center"}`} title={item.label}><span className="flex items-center gap-3"><Icon name={item.icon} />{expanded ? item.label : null}</span>{expanded ? <span className={`${openMenu === item.label ? "rotate-180" : ""} transition`}><Icon name="arrow" /></span> : null}</button>{expanded && openMenu === item.label ? <div className="dashboard-submenu ml-8 mt-1 grid gap-1 pb-2">{item.sub.map((sub) => <Link key={sub} href="#" className="rounded px-3 py-2 text-xs font-semibold text-stone-500 hover:bg-rose-50 hover:text-[#b61f4b]">{sub}</Link>)}</div> : null}</div>)}</nav>
+        <Link href="/" className="flex h-20 items-center justify-center border-b border-rose-100 px-4"><Image src="/images/epic-logo-new.png" alt="Epic Wedz" width={142} height={50} priority className={`${expanded ? "h-12" : "h-10"} w-auto object-contain`} /></Link>
+        <nav className="space-y-1 px-3 py-5">{menu.map((item, index) => { const hasSubmenu = item.sub.length > 0; return <div key={item.label}><button type="button" onClick={() => hasSubmenu && setOpenMenu((current) => current === item.label ? "" : item.label)} className={`flex h-12 w-full items-center rounded px-3 text-sm font-semibold transition hover:bg-rose-50 hover:text-[#b61f4b] ${index === 0 ? "bg-rose-50 text-[#b61f4b]" : "text-stone-700"} ${expanded ? "justify-between gap-3" : "justify-center"}`} title={item.label}><span className="flex items-center gap-3"><Icon name={item.icon} />{expanded ? item.label : null}</span>{expanded && hasSubmenu ? <span className={`${openMenu === item.label ? "rotate-180" : ""} transition`}><Icon name="arrow" /></span> : null}</button>{expanded && hasSubmenu && openMenu === item.label ? <div className="dashboard-submenu ml-8 mt-1 grid gap-1 pb-2">{item.sub.map((sub) => <Link key={sub} href="#" className="rounded px-3 py-2 text-xs font-semibold text-stone-500 hover:bg-rose-50 hover:text-[#b61f4b]">{sub}</Link>)}</div> : null}</div>; })}</nav>
       </aside>
       <div className={`transition-all duration-200 ${expanded ? "pl-72" : "pl-20"}`}>
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-rose-100 bg-white/95 px-6 shadow-sm backdrop-blur"><div className="flex items-center gap-4"><button type="button" onClick={() => setCollapsed((value) => !value)} className="grid h-10 w-10 place-items-center rounded-full border border-rose-100 text-stone-700 hover:border-[#b61f4b] hover:text-[#b61f4b]" aria-label="Toggle sidebar"><Icon name={collapsed ? "expand" : "collapse"} /></button><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b61f4b]">User</p><h1 className="mt-1 font-serif text-2xl font-bold text-stone-950">Dashboard</h1></div></div><div className="relative"><button type="button" onClick={() => setProfileOpen((open) => !open)} className="grid h-11 w-11 place-items-center rounded-full border border-rose-100 text-[#b61f4b] hover:bg-rose-50" aria-label="Profile"><Icon name="profile" /></button><div className={`absolute right-0 top-full mt-3 w-64 rounded border border-rose-100 bg-white p-3 shadow-xl transition duration-150 ${profileOpen ? "pointer-events-auto visible translate-y-0 opacity-100" : "pointer-events-none invisible translate-y-2 opacity-0"}`}><div className="flex items-center gap-3 border-b border-rose-100 pb-3"><span className="grid h-11 w-11 place-items-center rounded-full bg-rose-50 text-[#b61f4b]"><Icon name="profile" /></span><div><p className="font-bold text-stone-950">Wedding User</p><p className="text-xs font-semibold text-stone-500">user@epicwedz.com</p></div></div><button type="button" className="mt-2 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-bold text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="logout" /> Logout</button></div></div></header>
+        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-rose-100 bg-white/95 px-6 shadow-sm backdrop-blur"><div className="flex items-center gap-4"><button type="button" onClick={() => setCollapsed((value) => !value)} className="grid h-10 w-10 place-items-center rounded-full border border-rose-100 text-stone-700 hover:border-[#b61f4b] hover:text-[#b61f4b]" aria-label="Toggle sidebar"><Icon name={collapsed ? "expand" : "collapse"} /></button><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b61f4b]">User</p><h1 className="mt-1 font-serif text-2xl font-bold text-stone-950">Dashboard</h1></div></div><div ref={profileMenuRef} className="relative"><button type="button" onClick={() => setProfileOpen((open) => !open)} className="grid h-11 w-11 place-items-center rounded-full border border-rose-100 text-[#b61f4b] hover:bg-rose-50" aria-label="Profile" aria-expanded={profileOpen}><Icon name="profile" /></button><div className={`absolute right-0 top-full mt-3 w-64 rounded border border-rose-100 bg-white p-3 shadow-xl transition duration-150 ${profileOpen ? "pointer-events-auto visible translate-y-0 opacity-100" : "pointer-events-none invisible translate-y-2 opacity-0"}`}><div className="flex items-center gap-3 border-b border-rose-100 pb-3"><span className="grid h-11 w-11 place-items-center rounded-full bg-rose-50 text-[#b61f4b]"><Icon name="profile" /></span><AccountProfileInfo user={authUser} /></div><Link href="#profile-settings" className="mt-2 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-bold text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="settings" /> Profile setting</Link><button type="button" onClick={() => { setProfileOpen(false); setLogoutConfirmOpen(true); }} className="mt-1 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-bold text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="logout" /> Logout</button></div></div></header>
         <main className="p-6">
-          <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">{metrics.map((metric) => <div key={metric.label} className="rounded border border-rose-100 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><span className="grid h-11 w-11 place-items-center rounded bg-rose-50 text-[#b61f4b]"><Icon name={metric.icon} /></span><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">{metric.change}</span></div><p className="mt-5 font-serif text-3xl font-bold text-stone-950">{metric.value}</p><p className="mt-1 text-sm font-semibold text-stone-500">{metric.label}</p></div>)}</section>
-          <section className="mt-6 rounded border border-rose-100 bg-white p-5 shadow-sm"><h2 className="font-serif text-2xl font-bold text-stone-950">Recent Activity</h2><div className="mt-5 grid gap-3 lg:grid-cols-2">{activities.map((activity) => <div key={activity} className="flex items-center gap-3 rounded border border-rose-100 bg-[#fff9f5] p-4"><span className="h-2.5 w-2.5 rounded-full bg-[#b61f4b]" /><p className="text-sm font-semibold text-stone-700">{activity}</p></div>)}</div></section>
+          <UserDashboardOverview />
         </main>
       </div>
+      <ConfirmActionModal
+        isOpen={logoutConfirmOpen}
+        title="Logout?"
+        text="Are you sure you want to logout from your account?"
+        confirmLabel="Logout"
+        cancelLabel="Cancel"
+        onCancel={() => setLogoutConfirmOpen(false)}
+        onConfirm={() => {
+          setLogoutConfirmOpen(false);
+          handleLogout();
+        }}
+      />
+      <ApiStatusModal status={logoutFeedback?.status} title={logoutFeedback?.title} text={logoutFeedback?.text} okLabel={logoutFeedback?.okLabel} onOk={logoutFeedback?.onOk} />
     </div>
   );
 }

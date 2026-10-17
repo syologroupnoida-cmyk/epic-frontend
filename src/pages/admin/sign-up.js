@@ -1,5 +1,9 @@
-import AdminSignUp from "@/components/auth/admin/SignUp";
+export async function getStaticProps() {
+  return {
+    notFound: true,
+  };
+}
 
 export default function AdminSignUpPage() {
-  return <AdminSignUp />;
+  return null;
 }

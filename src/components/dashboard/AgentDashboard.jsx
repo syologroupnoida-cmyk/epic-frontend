@@ -1,6 +1,20 @@
+import useDismissibleDropdown from "@/util/useDismissibleDropdown";
+import AccountProfileInfo from "@/components/common/AccountProfileInfo";
+import { accountName } from "@/util/accountProfile.mjs";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { useRouter } from "next/router";
+import ApiStatusModal from "@/components/common/ApiStatusModal";
+import ConfirmActionModal from "@/components/common/ConfirmActionModal";
+import BusinessPasswordUpdate from "@/components/vendor/BusinessPasswordUpdate";
+import BusinessProfileUpdate from "@/components/vendor/BusinessProfileUpdate";
+import VendorDashboardOverview from "@/components/dashboard/VendorDashboardOverview";
+import MainApi from "@/util/MainApi";
+import { getAuthUser } from "@/util/authSession";
+import useAuthLogout from "@/util/useAuthLogout";
+import { agentPanelPath } from "@/util/agentDashboardRoutes.mjs";
+import useAuthUser from "@/util/useAuthUser";
 
 const icons = {
   dashboard: "M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z",
@@ -18,47 +32,141 @@ const icons = {
 };
 
 const menu = [
-  { label: "Overview", icon: "dashboard", sub: ["Today summary", "Targets"] },
-  { label: "Leads", icon: "leads", sub: ["New leads", "Follow ups", "Closed"] },
-  { label: "Clients", icon: "people", sub: ["Families", "Meetings", "Notes"] },
-  { label: "Bookings", icon: "calendar", sub: ["Visits", "Events", "Calendar"] },
-  { label: "Vendors", icon: "store", sub: ["Shortlists", "Quotes", "Partners"] },
-  { label: "Settings", icon: "settings", sub: ["Profile", "Notifications", "Account"] },
+  { label: "Overview", icon: "dashboard", sub: [] },
+  { label: "Business Profile", icon: "profile", sub: ["Update Profile", "Update Password"] },
+  { label: "Services & Packages", icon: "store", sub: ["Manage Services"] },
 ];
 
-const metrics = [
-  { label: "New Leads", value: "126", change: "+10%", icon: "leads" },
-  { label: "Meetings", value: "34", change: "+7%", icon: "calendar" },
-  { label: "Vendor Matches", value: "89", change: "+14%", icon: "store" },
-  { label: "Closed Deals", value: "18", change: "+6%", icon: "chart" },
-];
+const dashboardPanels = {
+  "Update Profile": BusinessProfileUpdate,
+  "Update Password": BusinessPasswordUpdate,
+  "Manage Services": BusinessProfileUpdate,
+};
 
-const activities = ["Bride inquiry assigned for Jaipur palace venue", "Catering shortlist shared with Mumbai client", "Photographer availability confirmed", "Destination wedding follow-up scheduled"];
 
 function Icon({ name }) {
   return <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 fill-current" aria-hidden="true"><path d={icons[name] || icons.dashboard} /></svg>;
 }
 
-export default function AgentDashboard() {
+function VendorAvatar({ src, name }) {
+  const [failedSrc, setFailedSrc] = useState("");
+  return src && src !== failedSrc ? <Image src={src} alt={`${name} profile`} width={36} height={36} unoptimized onError={() => setFailedSrc(src)} className="h-full w-full rounded-full object-cover" /> : <Icon name="profile" />;
+}
+
+
+function normalizeKycStatus(status = "") {
+  return String(status).trim().toUpperCase();
+}
+
+function isApprovedKycStatus(status) {
+  const normalizedStatus = normalizeKycStatus(status);
+  return normalizedStatus === "APPROVED" || normalizedStatus === "APPROVEL";
+}
+
+function getVendorDashboardAccess() {
+  const user = getAuthUser();
+  const isVendor = user?.role === "VENDOR";
+  const kycStatus = normalizeKycStatus(user?.vendorProfile?.kycStatus);
+  const nextStep = user?.vendorProfile?.nextStep;
+
+  if (!isVendor || isApprovedKycStatus(kycStatus)) return "approved";
+  if (kycStatus === "AWAITING") return "awaiting";
+  if (kycStatus === "PENDING" || nextStep === "COMPLETE_KYC") return "pending";
+  return "pending";
+}
+
+function subscribeToAuthSnapshot(callback) {
+  window.addEventListener("epic-auth-change", callback);
+  window.addEventListener("storage", callback);
+  return () => { window.removeEventListener("epic-auth-change", callback); window.removeEventListener("storage", callback); };
+}
+
+
+function getVendorDashboardServerSnapshot() {
+  return "loading";
+}
+
+export default function AgentDashboard({ activePanel = "Overview" }) {
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const [openMenu, setOpenMenu] = useState("Overview");
+  const [openMenu, setOpenMenu] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
+  const profileMenuRef = useDismissibleDropdown(profileOpen, setProfileOpen);
+  const [menuSearch, setMenuSearch] = useState("");
+  const [profile, setProfile] = useState(null);
+  const authUser = useAuthUser();
+  const userSnapshot = JSON.stringify(authUser);
+  const displayName = accountName(authUser, "Vendor");
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const { handleLogout, logoutFeedback } = useAuthLogout("/agent/login");
   const expanded = !collapsed || hovered;
+  const ActivePanel = dashboardPanels[activePanel];
+  const dashboardAccess = useSyncExternalStore(
+    subscribeToAuthSnapshot,
+    getVendorDashboardAccess,
+    getVendorDashboardServerSnapshot,
+  );
+
+  function navigateToPanel(panel) {
+    setMenuSearch("");
+    router.push(agentPanelPath(panel));
+  }
+
+  useEffect(() => {
+    if (dashboardAccess !== "approved") return;
+    const controller = new AbortController();
+    MainApi.get("/vendor/profile", { signal: controller.signal }).then(({ data }) => {
+      if (!controller.signal.aborted) setProfile(data?.data || null);
+    }).catch(() => { /* Keep the account name when the business profile is unavailable. */ });
+    return () => controller.abort();
+  }, [dashboardAccess, userSnapshot]);
+
+  useEffect(() => {
+    if (dashboardAccess === "pending") {
+      router.replace("/kyc");
+    }
+  }, [dashboardAccess, router]);
+
+  if (dashboardAccess === "loading" || dashboardAccess === "pending") return null;
+
+  if (dashboardAccess === "awaiting") {
+    return (
+      <ApiStatusModal
+        status="success"
+        title="KYC is submitted"
+        text="KYC approval is pending from Admin side."
+        okLabel="OK"
+        onOk={() => router.replace("/agent/login")}
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#f7f2ef] text-stone-900">
-      <aside onMouseEnter={() => collapsed && setHovered(true)} onMouseLeave={() => setHovered(false)} className={`fixed inset-y-0 left-0 z-40 border-r border-rose-100 bg-white shadow-sm transition-all duration-200 ${expanded ? "w-72" : "w-20"}`}>
-        <Link href="/" className="flex h-20 items-center justify-center border-b border-rose-100 px-4"><Image src="/images/epic-logo.webp" alt="Epic Wedz" width={142} height={50} priority className={`${expanded ? "h-12" : "h-10"} w-auto object-contain`} /></Link>
-        <nav className="space-y-1 px-3 py-5">{menu.map((item, index) => <div key={item.label}><button type="button" onClick={() => setOpenMenu((current) => current === item.label ? "" : item.label)} className={`flex h-12 w-full items-center rounded px-3 text-sm font-semibold transition hover:bg-rose-50 hover:text-[#b61f4b] ${index === 0 ? "bg-rose-50 text-[#b61f4b]" : "text-stone-700"} ${expanded ? "justify-between gap-3" : "justify-center"}`} title={item.label}><span className="flex items-center gap-3"><Icon name={item.icon} />{expanded ? item.label : null}</span>{expanded ? <span className={`${openMenu === item.label ? "rotate-180" : ""} transition`}><Icon name="arrow" /></span> : null}</button>{expanded && openMenu === item.label ? <div className="dashboard-submenu ml-8 mt-1 grid gap-1 pb-2">{item.sub.map((sub) => <Link key={sub} href="#" className="rounded px-3 py-2 text-xs font-semibold text-stone-500 hover:bg-rose-50 hover:text-[#b61f4b]">{sub}</Link>)}</div> : null}</div>)}</nav>
+    <div className={`wp-dashboard vp-dashboard ${expanded ? "wp-expanded" : "wp-collapsed"} h-screen overflow-hidden bg-[#f7f2ef] text-stone-900`}>
+      <aside onMouseEnter={() => collapsed && setHovered(true)} onMouseLeave={() => setHovered(false)} className={`wp-sidebar fixed inset-y-0 left-0 z-40 border-r border-rose-100 bg-white shadow-sm transition-all duration-200 ${expanded ? "w-72" : "w-20"}`}>
+        <Link href="/" className="wp-brand flex h-16 items-center justify-center border-b border-rose-100 px-4" aria-label="Epic Wedz home"><Image src="/images/epic-logo-new.png" alt="Epic Wedz" width={200} height={76} priority className="wp-site-logo" /></Link>
+        <nav className="h-[calc(100vh-4rem)] space-y-1 overflow-y-auto px-3 py-4">{menu.filter((item) => !menuSearch || `${item.label} ${item.sub.join(" ")}`.toLowerCase().includes(menuSearch.toLowerCase())).map((item) => { const hasSubmenu = item.sub.length > 0; const menuActive = activePanel === item.label || item.sub.includes(activePanel); const submenuOpen = expanded && hasSubmenu && ((openMenu || (menuActive ? item.label : "")) === item.label || Boolean(menuSearch)); return <div key={item.label}><button type="button" onClick={() => hasSubmenu ? setOpenMenu((current) => (current || (menuActive ? item.label : "")) === item.label ? "closed" : item.label) : navigateToPanel(item.label)} className={`flex h-12 w-full items-center rounded px-3 text-sm font-semibold transition hover:bg-rose-50 hover:text-[#b61f4b] ${menuActive ? "bg-rose-50 text-[#b61f4b]" : "text-stone-700"} ${expanded ? "justify-between gap-3" : "justify-center"}`} title={item.label}><span className="flex items-center gap-3"><Icon name={item.icon} />{expanded ? item.label === "Overview" ? "Partner Dashboard" : item.label : null}</span>{expanded && hasSubmenu ? <span className={`${submenuOpen ? "rotate-180" : ""} transition duration-500`}><Icon name="arrow" /></span> : null}</button>{expanded && hasSubmenu ? <div className={`dashboard-submenu ml-8 grid gap-1 ${submenuOpen ? "mt-1 max-h-40 pb-2 opacity-100" : "mt-0 max-h-0 pb-0 opacity-0"}`}>{item.sub.map((sub) => <button key={sub} type="button" onClick={() => navigateToPanel(sub)} className={`flex items-center gap-2 rounded px-3 py-2 text-left text-xs font-semibold hover:bg-rose-50 hover:text-[#b61f4b] ${activePanel === sub ? "bg-rose-50 text-[#b61f4b]" : "text-stone-500"}`}><span className={`h-1.5 w-1.5 rounded-full border border-white ${activePanel === sub ? "bg-white opacity-100" : "opacity-100"}`} aria-hidden="true" />{sub}</button>)}</div> : null}</div>; })}</nav>
       </aside>
-      <div className={`transition-all duration-200 ${expanded ? "pl-72" : "pl-20"}`}>
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-rose-100 bg-white/95 px-6 shadow-sm backdrop-blur"><div className="flex items-center gap-4"><button type="button" onClick={() => setCollapsed((value) => !value)} className="grid h-10 w-10 place-items-center rounded-full border border-rose-100 text-stone-700 hover:border-[#b61f4b] hover:text-[#b61f4b]" aria-label="Toggle sidebar"><Icon name={collapsed ? "expand" : "collapse"} /></button><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b61f4b]">Agent</p><h1 className="mt-1 font-serif text-2xl font-bold text-stone-950">Dashboard</h1></div></div><div className="relative"><button type="button" onClick={() => setProfileOpen((open) => !open)} className="grid h-11 w-11 place-items-center rounded-full border border-rose-100 text-[#b61f4b] hover:bg-rose-50" aria-label="Profile"><Icon name="profile" /></button><div className={`absolute right-0 top-full mt-3 w-64 rounded border border-rose-100 bg-white p-3 shadow-xl transition duration-150 ${profileOpen ? "pointer-events-auto visible translate-y-0 opacity-100" : "pointer-events-none invisible translate-y-2 opacity-0"}`}><div className="flex items-center gap-3 border-b border-rose-100 pb-3"><span className="grid h-11 w-11 place-items-center rounded-full bg-rose-50 text-[#b61f4b]"><Icon name="profile" /></span><div><p className="font-bold text-stone-950">Agent Partner</p><p className="text-xs font-semibold text-stone-500">agent@epicwedz.com</p></div></div><button type="button" className="mt-2 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-bold text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="logout" /> Logout</button></div></div></header>
-        <main className="p-6">
-          <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">{metrics.map((metric) => <div key={metric.label} className="rounded border border-rose-100 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><span className="grid h-11 w-11 place-items-center rounded bg-rose-50 text-[#b61f4b]"><Icon name={metric.icon} /></span><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">{metric.change}</span></div><p className="mt-5 font-serif text-3xl font-bold text-stone-950">{metric.value}</p><p className="mt-1 text-sm font-semibold text-stone-500">{metric.label}</p></div>)}</section>
-          <section className="mt-6 rounded border border-rose-100 bg-white p-5 shadow-sm"><h2 className="font-serif text-2xl font-bold text-stone-950">Recent Activity</h2><div className="mt-5 grid gap-3 lg:grid-cols-2">{activities.map((activity) => <div key={activity} className="flex items-center gap-3 rounded border border-rose-100 bg-[#fff9f5] p-4"><span className="h-2.5 w-2.5 rounded-full bg-[#b61f4b]" /><p className="text-sm font-semibold text-stone-700">{activity}</p></div>)}</div></section>
+      <div className={`vp-workspace h-screen overflow-hidden transition-all duration-200 ${expanded ? "pl-72" : "pl-20"}`}>
+        <header className="wp-topbar relative z-30 flex h-16 items-center justify-between border-b border-rose-100 bg-white/95 px-5 shadow-sm backdrop-blur"><div className="flex items-center gap-4"><button type="button" onClick={() => setCollapsed((value) => !value)} className="grid h-9 w-9 place-items-center rounded-full border border-rose-100 text-stone-700 hover:border-[#b61f4b] hover:text-[#b61f4b]" aria-label="Toggle sidebar"><Icon name={collapsed ? "expand" : "collapse"} /></button><strong className="wp-header-role">Partner</strong><label className="wp-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="m15 15 6 6" /></svg><span className="sr-only">Search vendor dashboard navigation</span><input type="search" value={menuSearch} onChange={(event) => setMenuSearch(event.target.value)} placeholder="Search bookings, enquiries, services…" /></label></div><div ref={profileMenuRef} className="vp-header-account relative"><button type="button" onClick={() => setProfileOpen((open) => !open)} className="wp-account-button" aria-label="Profile" aria-expanded={profileOpen}><span className="wp-account-avatar"><VendorAvatar src={profile?.logoUrl || authUser?.profilePictureUrl} name={displayName} /></span><span><strong>{displayName}</strong><small>{authUser?.email || "Wedding Partner"}</small></span><Icon name="arrow" /></button><div className={`absolute right-0 top-full mt-3 w-64 rounded border border-rose-100 bg-white p-3 shadow-xl transition duration-150 ${profileOpen ? "pointer-events-auto visible translate-y-0 opacity-100" : "pointer-events-none invisible translate-y-2 opacity-0"}`}><div className="flex items-center gap-3 border-b border-rose-100 pb-3"><span className="grid h-11 w-11 place-items-center rounded-full bg-rose-50 text-[#b61f4b]"><Icon name="profile" /></span><AccountProfileInfo user={authUser} fallbackName="Vendor" fallbackType="Vendor" /></div><button type="button" onClick={() => { setProfileOpen(false); setOpenMenu("Business Profile"); navigateToPanel("Update Profile"); }} className="mt-2 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-bold text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="settings" /> Profile setting</button><button type="button" onClick={() => { setProfileOpen(false); setLogoutConfirmOpen(true); }} className="mt-1 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-bold text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="logout" /> Logout</button></div></div></header>
+        <main className="wp-main h-[calc(100vh-4rem)] overflow-y-auto p-2">
+          {ActivePanel ? <ActivePanel /> : <VendorDashboardOverview name={displayName} activePanel={activePanel} onNavigate={navigateToPanel} />}
         </main>
       </div>
+      <ConfirmActionModal
+        isOpen={logoutConfirmOpen}
+        title="Logout?"
+        text="Are you sure you want to logout from your account?"
+        confirmLabel="Logout"
+        cancelLabel="Cancel"
+        onCancel={() => setLogoutConfirmOpen(false)}
+        onConfirm={() => {
+          setLogoutConfirmOpen(false);
+          handleLogout();
+        }}
+      />
+      <ApiStatusModal status={logoutFeedback?.status} title={logoutFeedback?.title} text={logoutFeedback?.text} okLabel={logoutFeedback?.okLabel} onOk={logoutFeedback?.onOk} />
     </div>
   );
 }

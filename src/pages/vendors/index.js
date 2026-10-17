@@ -1,0 +1,10 @@
+import VendorDirectory from "@/components/vendor/VendorDirectory";
+import { getVendorCategory } from "@/data/vendorDirectory";
+
+export default function VendorsPage({ category }) {
+  return <VendorDirectory category={category} />;
+}
+
+export function getStaticProps() {
+  return { props: { category: getVendorCategory("wedding-vendors") } };
+}

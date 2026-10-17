@@ -164,21 +164,38 @@ function CountUpStat({ value, suffix, label }) {
 }
 
 function TypedHeroTitle() {
-  const title = "Grow your wedding business with confidence";
+  const titles = [
+    "Get More Wedding Leads",
+    "Manage Vendor Bookings",
+    "Grow With Epic Wedz",
+  ];
+  const [titleIndex, setTitleIndex] = useState(0);
   const [visibleChars, setVisibleChars] = useState(1);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const title = titles[titleIndex];
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setVisibleChars((current) => (current >= title.length ? 1 : current + 1));
-    }, 95);
+      setVisibleChars((current) => {
+        if (!isDeleting && current < title.length) return current + 1;
+        if (!isDeleting && current === title.length) {
+          setIsDeleting(true);
+          return current;
+        }
+        if (isDeleting && current > 1) return current - 1;
+
+        setTitleIndex((index) => (index + 1) % titles.length);
+        setIsDeleting(false);
+        return 1;
+      });
+    }, isDeleting ? 55 : 95);
 
     return () => window.clearInterval(timer);
-  }, [title.length]);
+  }, [isDeleting, title.length, titles.length]);
 
   return (
     <h1
-      aria-label={title}
-      className="mt-5 min-h-[132px] max-w-2xl font-serif text-4xl font-bold leading-tight sm:min-h-[144px] sm:text-6xl"
+      className="mt-5 whitespace-nowrap font-serif text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl"
     >
       <span className="agent-typing-title">
         {title.slice(0, visibleChars)}
@@ -213,8 +230,7 @@ export default function PartnerHomePage() {
               </p>
               <TypedHeroTitle />
               <p className="mt-5 max-w-xl text-base leading-8 text-white/82">
-                A dedicated partner experience for turning wedding inquiries into
-                qualified conversations, package discussions, and confirmed bookings.
+                Get quality wedding leads and manage bookings with ease.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link

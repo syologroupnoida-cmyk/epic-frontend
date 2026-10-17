@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import CitySearch from "@/components/common/CitySearch";
 import QuoteModal from "@/components/common/QuoteModal";
+import HeaderAccountMenu from "@/components/common/HeaderAccountMenu";
 import {
   destinationOptions,
   stories,
@@ -257,8 +258,68 @@ const vendorMenuGroups = [
   })),
 }));
 
+const featuredVendorTitles = new Set([
+  "Wedding Decoration",
+  "Floral Decoration",
+  "Candid Photography",
+  "Cinematic Photography",
+  "Pre Wedding Shoot",
+  "Bridal Makeup",
+  "HD Makeup",
+  "Hair Styling",
+  "Bridal Mehendi",
+  "Arabic Mehendi",
+  "North Indian Catering",
+  "Live Counters",
+  "DJ",
+  "Live Band",
+  "Printed Invitation",
+  "Digital Invitation",
+  "Bridal Lehenga",
+  "Sherwani",
+  "Bridal Jewellery",
+  "Designer Cakes",
+  "Wedding Return Gifts",
+  "Luxury Cars",
+  "Guest Welcome",
+  "Honeymoon Services",
+]);
+
+const vendorLinks = vendorMenuGroups
+  .flatMap((group) => group.links)
+  .filter((link) => featuredVendorTitles.has(link.title));
+
+const vendorMegaPrimary = [
+  { title: "Wedding Photographers", slug: "wedding-photographers", icon: "camera" },
+  { title: "Wedding Videography", slug: "wedding-videography", icon: "video" },
+  { title: "Wedding Music", slug: "wedding-music", icon: "music" },
+  { title: "Caterers", slug: "caterers", icon: "catering" },
+  { title: "Wedding Transportation", slug: "wedding-transportation", icon: "transport" },
+  { title: "Wedding Invitations", slug: "wedding-invitations", icon: "invitation" },
+  { title: "Wedding Gifts", slug: "wedding-gifts", icon: "gift" },
+  { title: "Florists", slug: "florists", icon: "florist" },
+  { title: "Wedding Planners", slug: "wedding-planners", icon: "planner" },
+];
+
+const vendorMegaSecondary = [
+  { title: "Wedding Choreographers", slug: "wedding-choreographers" },
+  { title: "Photobooth", slug: "photobooth" },
+  { title: "Wedding DJ", slug: "wedding-dj" },
+  { title: "Wedding Cakes", slug: "wedding-cakes" },
+  { title: "Wedding Decorators", slug: "wedding-decorators" },
+  { title: "Party Places", slug: "party-places" },
+  { title: "Honeymoon", slug: "honeymoon" },
+  { title: "Wedding Entertainment", slug: "wedding-entertainment" },
+  { title: "Tent House", slug: "tent-house" },
+  { title: "Promotions", slug: "promotions" },
+];
+
 function getMenuHref(menuTitle, slug) {
-  if (menuTitle === "Wedding Destination") {
+  if (menuTitle === "Wedding Vendors") {
+    return `/vendors/${slug}`;
+  }
+
+  if (menuTitle === "Destination Wedding") {
     return `/destination/${slug}`;
   }
 
@@ -270,39 +331,35 @@ const navItems = [
     title: "Venues",
     icon: "venues",
     links: venueLinks,
-    image: "/images/header-menu-venues.png",
-    imageAlt: "Wedding venue setup",
   },
   {
-    title: "Vendors",
+    title: "Wedding Vendors",
     icon: "vendors",
-    groups: vendorMenuGroups,
-    image: "/images/header-menu-vendors.png",
-    imageAlt: "Wedding vendors",
+    links: [...vendorMegaPrimary, ...vendorMegaSecondary, ...vendorLinks].filter(
+      (link, index, links) => links.findIndex((item) => item.slug === link.slug) === index,
+    ),
+    isVendorMega: true,
   },
   {
     title: "Real Weddings",
     icon: "rings",
     links: stories,
-    image: "/images/header-menu-real-weddings.png",
-    imageAlt: "Real wedding celebration",
   },
   {
-    title: "Wedding Destination",
+    title: "Destination Wedding",
     icon: "destination",
     links: destinationOptions,
-    image: "/images/header-menu-destination.png",
-    imageAlt: "Destination wedding venue",
   },
 ];
 
 export default function Header() {
   const [activeMenu, setActiveMenu] = useState(null);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedCity, setSelectedCity] = useState("Select City");
   const activeNav = navItems.find((item) => item.title === activeMenu);
+  const isCompactMenu = activeNav && !activeNav.isVendorMega && activeNav.links.length <= 6;
+  const megaNav = isCompactMenu ? null : activeNav;
 
   useEffect(() => {
     document.body.classList.toggle("drawer-lock", isDrawerOpen);
@@ -315,15 +372,6 @@ export default function Header() {
       <div className="header-top bg-[#8f1f3f] text-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-1.5 text-xs sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center gap-4 text-white/90">
-            <a href="tel:+919999999999" className="font-medium hover:text-white">
-              +91 99999 99999
-            </a>
-            <a
-              href="mailto:info@wedplanners.in"
-              className="hidden font-medium hover:text-white sm:inline-flex"
-            >
-              info@wedplanners.in
-            </a>
             <button
               type="button"
               onClick={() => setIsQuoteOpen(true)}
@@ -361,7 +409,7 @@ export default function Header() {
       >
         <Link href="/" className="flex items-center gap-3">
           <Image
-            src="/images/epic-logo.webp"
+            src="/images/epic-logo-new.png"
             alt="Epic Wedz"
             width={154}
             height={54}
@@ -377,16 +425,28 @@ export default function Header() {
           {navItems.map((item) => (
             <div
               key={item.title}
-              className="flex items-center"
+              className="relative flex items-center"
               onMouseEnter={() => setActiveMenu(item.title)}
+              onFocus={() => setActiveMenu(item.title)}
+              onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setActiveMenu(null); }}
+              onKeyDown={(event) => { if (event.key === "Escape") setActiveMenu(null); }}
             >
               <Link
-                href="#"
+                href={item.title === "Wedding Vendors" ? "/vendors" : "#"}
                 className="flex items-center gap-2 py-3 hover:text-[#b61f4b]"
               >
                 {item.title}
                 <span className="header-chevron" aria-hidden="true" />
               </Link>
+              {!item.isVendorMega && item.links.length <= 6 && activeMenu === item.title && (
+                <div className="header-compact-dropdown">
+                  {item.links.map((link) => (
+                    <Link key={link.slug} href={getMenuHref(item.title, link.slug)} onClick={() => setActiveMenu(null)}>
+                      {link.title}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
           <Link
@@ -413,65 +473,66 @@ export default function Header() {
         </nav>
 
         <div
-          onMouseEnter={() => activeNav && setActiveMenu(activeNav.title)}
-          className={`absolute left-1/2 top-full z-50 w-[760px] -translate-x-1/2 transition duration-150 ${
-            activeNav
+          onMouseEnter={() => megaNav && setActiveMenu(megaNav.title)}
+          className={`absolute left-1/2 top-full z-50 w-screen -translate-x-1/2 transition duration-150 ${
+            megaNav
               ? "pointer-events-auto visible translate-y-0 opacity-100"
               : "pointer-events-none invisible translate-y-2 opacity-0"
           }`}
         >
-          <div className={`grid gap-4 rounded border border-rose-100 bg-white p-3 shadow-2xl ${
-            activeNav?.groups
-              ? "w-[980px] max-w-[calc(100vw-2rem)] sm:grid-cols-[1fr_230px]"
-              : "sm:grid-cols-[1fr_220px]"
+          <div className={`rounded border border-rose-100 bg-white p-3 shadow-2xl ${
+            megaNav
+              ? "w-screen rounded-none border-x-0 border-t border-b border-rose-100 p-0 shadow-none"
+              : ""
           }`}>
-            <div className={`content-start ${
-              activeNav?.groups
-                ? "header-mega-scroll grid max-h-[62vh] gap-x-5 gap-y-4 overflow-y-auto pr-1 sm:grid-cols-3"
-                : "grid gap-1 sm:grid-cols-2"
-            }`}>
-              {activeNav?.groups
-                ? activeNav.groups.map((group) => (
-                    <div key={group.title}>
-                      <p className="px-3 pb-1 text-[11px] font-black uppercase tracking-[0.08em] text-[#b61f4b]">
-                        {group.title}
-                      </p>
-                      <div className="grid gap-0.5">
-                        {group.links.map((link) => (
-                          <Link
-                            key={link.slug}
-                            href={getMenuHref(activeNav.title, link.slug)}
-                            onClick={() => setActiveMenu(null)}
-                            className="rounded px-3 py-1.5 text-xs font-bold leading-5 text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"
-                          >
-                            {link.title}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  ))
-                : activeNav?.links.map((link) => (
-                    <Link
-                      key={link.slug}
-                      href={getMenuHref(activeNav.title, link.slug)}
-                      onClick={() => setActiveMenu(null)}
-                      className="rounded px-3 py-2 text-sm font-bold leading-5 text-stone-800 hover:bg-rose-50 hover:text-[#b61f4b]"
-                    >
-                      {link.title}
-                    </Link>
-                  ))}
-            </div>
-            <div className="relative hidden h-full min-h-48 overflow-hidden rounded sm:block">
-              {activeNav?.image ? (
-                <Image
-                  src={activeNav.image}
-                  alt={activeNav.imageAlt}
-                  fill
-                  sizes="220px"
-                  className="object-cover object-center"
-                />
-              ) : null}
-            </div>
+            {megaNav?.isVendorMega ? (
+              <div className="header-vendor-mega">
+                <div className="min-w-0">
+                  <div className="header-vendor-primary">
+                    {vendorMegaPrimary.map((link) => (
+                      <Link
+                        key={link.slug}
+                        href={getMenuHref(megaNav.title, link.slug)}
+                        onClick={() => setActiveMenu(null)}
+                        className="header-vendor-card"
+                      >
+                        <span className={`header-vendor-icon vendor-${link.icon}`} aria-hidden="true" />
+                        <span>{link.title}</span>
+                      </Link>
+                    ))}
+                  </div>
+                  <h3>Complete your wedding team</h3>
+                  <div className="header-vendor-secondary">
+                    {vendorMegaSecondary.map((link) => (
+                      <Link
+                        key={link.slug}
+                        href={getMenuHref(megaNav.title, link.slug)}
+                        onClick={() => setActiveMenu(null)}
+                      >
+                        {link.title}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : megaNav ? (
+              <div className="header-general-mega">
+                <div>
+                  <h2>{megaNav.title}</h2>
+                  <div className="header-general-grid">
+                    {megaNav.links.map((link) => (
+                        <Link
+                          key={link.slug}
+                          href={getMenuHref(megaNav.title, link.slug)}
+                          onClick={() => setActiveMenu(null)}
+                        >
+                          {link.title}
+                        </Link>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -484,70 +545,7 @@ export default function Header() {
           variant="mobile"
         />
 
-        <div
-          className="header-login-wrap relative flex items-center gap-2"
-          onMouseLeave={() => setIsLoginOpen(false)}
-        >
-          <button
-            type="button"
-            onClick={() => setIsLoginOpen((open) => !open)}
-            className="flex items-center justify-center gap-2 rounded-full border border-[#b61f4b] px-4 py-2 text-sm font-semibold leading-none text-[#b61f4b] hover:bg-rose-50"
-          >
-            <span className="login-icon" aria-hidden="true" />
-            <span className="inline-flex h-4 items-center">Login</span>
-            <span className="header-chevron shrink-0" aria-hidden="true" />
-          </button>
-          <div
-            className={`login-dropdown-panel absolute right-0 top-full transition duration-150 ${
-              isLoginOpen
-                ? "pointer-events-auto visible translate-y-0 opacity-100"
-                : "pointer-events-none invisible translate-y-2 opacity-0"
-            }`}
-          >
-            <div className="login-dropdown-head">
-              <span className="login-dropdown-avatar" aria-hidden="true">
-                <span className="login-icon" />
-              </span>
-              <div>
-                <p>Welcome to Epic Wedz</p>
-                <span>Access your wedding account</span>
-              </div>
-            </div>
-            <Link
-              href="/user/login"
-              onClick={() => setIsLoginOpen(false)}
-              className="login-menu-link"
-            >
-              <span className="login-menu-icon user-login-icon" aria-hidden="true" />
-              <span>
-                <strong>User Login</strong>
-                <small>Continue planning your wedding</small>
-              </span>
-            </Link>
-            <Link
-              href="/user/sign-up"
-              onClick={() => setIsLoginOpen(false)}
-              className="login-menu-link"
-            >
-              <span className="login-menu-icon signup-icon" aria-hidden="true" />
-              <span>
-                <strong>User Sign up</strong>
-                <small>Create a wedding account</small>
-              </span>
-            </Link>
-            <Link
-              href="/partner"
-              onClick={() => setIsLoginOpen(false)}
-              className="login-menu-link"
-            >
-              <span className="login-menu-icon partner-icon" aria-hidden="true" />
-              <span>
-                <strong>Become a partner</strong>
-                <small>Join as a vendor or planner</small>
-              </span>
-            </Link>
-          </div>
-        </div>
+        <HeaderAccountMenu />
 
         <button
           type="button"
@@ -634,8 +632,6 @@ export default function Header() {
           </div>
           <p className="mobile-drawer-kicker mobile-drawer-more">More</p>
           <div className="mobile-drawer-actions">
-            <a href="tel:+919999999999">+91 99999 99999</a>
-            <a href="mailto:info@wedplanners.in">info@wedplanners.in</a>
             <Link href="/agent" onClick={() => setIsDrawerOpen(false)}>
               Are you a vendor?
             </Link>

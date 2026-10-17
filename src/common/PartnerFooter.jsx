@@ -9,7 +9,7 @@ export default function PartnerFooter() {
         <div>
           <Link href="/partner" className="inline-flex rounded bg-white px-3 py-2">
             <Image
-              src="/images/epic-logo.webp"
+              src="/images/epic-logo-new.png"
               alt="Epic Wedz"
               width={142}
               height={50}
