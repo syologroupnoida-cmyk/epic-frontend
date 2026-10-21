@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import MainApi from "@/util/MainApi";
+import { filterCities, loadAllCities } from "@/util/cities.mjs";
 import { getApiErrorMessage } from "@/util/authApi";
 import { getAuthUser, setAuthUser } from "@/util/authSession";
 
@@ -116,23 +117,6 @@ function normalizeKycCategories(responseData) {
     .filter((category) => category.id && category.name);
 }
 
-function normalizeKycCities(responseData) {
-  const data = responseData?.data ?? responseData ?? {};
-  const rawList = Array.isArray(data)
-    ? data
-    : data.items || data.results || data.cities || data.data || [];
-
-  if (!Array.isArray(rawList)) return [];
-
-  return rawList
-    .map((city) => ({
-      id: city?.id || city?._id || city?.cityId || city?.name || "",
-      name: city?.name || city?.cityName || "",
-      stateName: city?.stateName || city?.state || "",
-      countryCode: city?.countryCode || city?.country || "",
-    }))
-    .filter((city) => city.id && city.name);
-}
 
 function createFallbackCategories() {
   return categoryOptions.map((category) => ({
@@ -438,8 +422,8 @@ export default function KycForm() {
     async function loadCities() {
       setIsLoadingCities(true);
       try {
-        const response = await MainApi.get("/cities", { signal: controller.signal });
-        if (!controller.signal.aborted) setCityRecords(normalizeKycCities(response.data));
+        const cities = await loadAllCities((...args) => MainApi.get(...args), { signal: controller.signal });
+        if (!controller.signal.aborted) setCityRecords(cities);
       } catch (error) {
         if (error.name === "CanceledError" || error.code === "ERR_CANCELED") return;
         setVerifyModal({
@@ -1139,7 +1123,7 @@ export default function KycForm() {
                   <label className="mui-field"><input name="locality" value={form.locality} onChange={updateField} placeholder=" " /><span>Locality</span></label>
                   <KycLocationInput label="Country" name="country" type="country" value={form.country} onSelect={(value) => setForm((current) => ({ ...current, country: value }))} />
                   <KycLocationInput label="State" name="state" type="state" value={form.state} onSelect={(value) => setForm((current) => ({ ...current, state: value }))} />
-                  <KycLocationInput label="City" name="city" type="city" value={form.city} onSelect={(value) => setForm((current) => ({ ...current, city: value }))} />
+                  <KycLocationInput label="City" name="city" type="city" value={form.city} cities={cityRecords} onSelect={(value) => setForm((current) => ({ ...current, city: value }))} />
                   <label className="mui-field">
                     <select
                       name="primaryCityId"
@@ -1435,7 +1419,7 @@ function KycImageUploadField({ label, upload, status, error, onChange, onRemove 
   );
 }
 
-function KycLocationInput({ label, name, type, value, onSelect }) {
+function KycLocationInput({ label, name, type, value, onSelect, cities = [] }) {
   const [query, setQuery] = useState(value);
   const [suggestions, setSuggestions] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -1462,7 +1446,7 @@ function KycLocationInput({ label, name, type, value, onSelect }) {
   useEffect(() => {
     const search = query.trim();
 
-    if (search.length < 2) {
+    if (type === "city" || search.length < 2) {
       return;
     }
 
@@ -1491,7 +1475,7 @@ function KycLocationInput({ label, name, type, value, onSelect }) {
 
   function activateSuggestions() {
     setHasActivated(true);
-    if (suggestions.length) setIsOpen(true);
+    if (type === "city" || suggestions.length) setIsOpen(true);
   }
 
   async function detectLocation() {
@@ -1513,7 +1497,7 @@ function KycLocationInput({ label, name, type, value, onSelect }) {
     });
   }
 
-  const visibleSuggestions = query.trim().length < 2 ? [] : suggestions;
+  const visibleSuggestions = type === "city" ? filterCities(cities, query) : query.trim().length < 2 ? [] : suggestions;
 
   return (
     <div className="kyc-location-field" ref={wrapperRef}>
@@ -1536,7 +1520,7 @@ function KycLocationInput({ label, name, type, value, onSelect }) {
       </button>
       {isOpen && visibleSuggestions.length ? (
         <div className="kyc-location-suggestions">
-          {visibleSuggestions.slice(0, 5).map((item) => (
+          {(type === "city" ? visibleSuggestions : visibleSuggestions.slice(0, 5)).map((item) => (
             <button
               key={item.id || item.name}
               type="button"

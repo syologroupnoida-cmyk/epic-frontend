@@ -4,25 +4,8 @@ import ApiStatusModal from "@/components/common/ApiStatusModal";
 import MainApi from "@/util/MainApi";
 import { getApiErrorMessage } from "@/util/authApi";
 import IsActiveRadio from "@/components/superadmin/IsActiveRadio";
+import { loadAllServiceCategories } from "@/util/serviceCategories.mjs";
 
-function normalizeCategories(responseData) {
-  const rawList =
-    responseData?.data?.items ||
-    responseData?.data?.categories ||
-    responseData?.data ||
-    responseData?.items ||
-    responseData?.categories ||
-    [];
-
-  if (!Array.isArray(rawList)) return [];
-
-  return rawList
-    .map((category) => ({
-      id: category.id || category._id || category.serviceCategoryId || "",
-      name: category.name || category.title || "",
-    }))
-    .filter((category) => category.id && category.name);
-}
 
 export default function AddServices({ embedded = false }) {
   const categoryDropdownRef = useRef(null);
@@ -56,13 +39,13 @@ export default function AddServices({ embedded = false }) {
 
   useEffect(() => {
     let isMounted = true;
+    const controller = new AbortController();
 
     async function loadCategories() {
       setIsLoadingCategories(true);
       try {
-        const response = await MainApi.get("/admin/service-categories");
+        const nextCategories = await loadAllServiceCategories((...args) => MainApi.get(...args), { signal: controller.signal });
         if (!isMounted) return;
-        const nextCategories = normalizeCategories(response.data);
         setServiceCategories(nextCategories);
         if (nextCategories.length) {
           setSelectedCategoryId(nextCategories[0].id);
@@ -85,6 +68,7 @@ export default function AddServices({ embedded = false }) {
 
     return () => {
       isMounted = false;
+      controller.abort();
     };
   }, []);
 
@@ -211,7 +195,7 @@ export default function AddServices({ embedded = false }) {
                 </button>
                 <span className="pointer-events-none absolute left-3 top-[-8px] bg-white px-1 text-xs font-medium text-[#b61f4b]">Service category</span>
                 {categoryDropdownOpen ? (
-                  <div className="absolute left-0 right-0 top-[52px] z-30 max-h-60 overflow-auto rounded border border-slate-200 bg-white py-1 shadow-xl" role="listbox">
+                  <div className="absolute left-0 right-0 top-[52px] z-30 max-h-[min(384px,60dvh)] overflow-auto rounded border border-slate-200 bg-white py-1 shadow-xl" role="listbox">
                     {serviceCategories.map((category) => (
                       <button
                         key={category.id}

@@ -4,88 +4,13 @@ import ApiStatusModal from "@/components/common/ApiStatusModal";
 import ConfirmActionModal from "@/components/common/ConfirmActionModal";
 import MainApi from "@/util/MainApi";
 import { getApiErrorMessage } from "@/util/authApi";
+import { normalizeCategoryResponse } from "@/util/serviceCategories.mjs";
+import ServiceSubcategoryMenu from "@/components/superadmin/ServiceSubcategoryMenu";
+import ServiceCategoryActions from "@/components/superadmin/ServiceCategoryActions";
+import ServiceCategoryDetails from "@/components/superadmin/ServiceCategoryDetails";
 
-function normalizeCategory(category) {
-  const rawSubcategories =
-    category.subcategories ||
-    category.subCategories ||
-    category.serviceSubcategories ||
-    category.serviceSubCategories ||
-    category.services ||
-    category.children ||
-    [];
-  const subcategories = Array.isArray(rawSubcategories)
-    ? rawSubcategories
-        .map((item, index) => {
-          if (typeof item === "string") {
-            return { id: `${category.id || category._id || "service"}-${index}`, name: item };
-          }
-
-          return {
-            id: item?.id || item?._id || item?.serviceSubcategoryId || item?.serviceSubCategoryId || `${category.id || category._id || "service"}-${index}`,
-            name: item?.name || item?.title || "",
-            description: item?.description || "",
-          };
-        })
-        .filter((item) => item.name)
-    : [];
-
-  return {
-    id: category.id || category._id || category.serviceCategoryId || "",
-    name: category.name || category.title || "Untitled category",
-    description: category.description || "",
-    subcategories,
-    createdAt: category.createdAt || category.created_at || "",
-    updatedAt: category.updatedAt || category.updated_at || "",
-  };
-}
-
-function flattenServices(categories) {
-  return categories.flatMap((category) => {
-    if (!category.subcategories.length) {
-      return [{
-        id: `${category.id}-empty`,
-        rowType: "category",
-        serviceId: "",
-        title: "No subcategory",
-        categoryId: category.id,
-        categoryName: category.name,
-        categoryDescription: category.description,
-        description: "",
-        createdAt: category.createdAt,
-        updatedAt: category.updatedAt,
-      }];
-    }
-
-    return category.subcategories.map((subcategory) => ({
-      rowType: "subcategory",
-      id: `${category.id}-${subcategory.id}`,
-      serviceId: subcategory.id,
-      title: subcategory.name,
-      categoryId: category.id,
-      categoryName: category.name,
-      categoryDescription: category.description,
-      description: subcategory.description,
-      createdAt: category.createdAt,
-      updatedAt: category.updatedAt,
-    }));
-  });
-}
-
-function normalizeCategoryResponse(responseData, fallbackPage, fallbackLimit) {
-  const data = responseData?.data || responseData || {};
-  const rawList = data.items || data.results || data.categories || data.data || [];
-  const categories = Array.isArray(rawList) ? rawList.map(normalizeCategory).filter((item) => item.id) : [];
-  const total = Number(data.total || data.totalCount || data.count || categories.length || 0);
-  const page = Number(data.page || data.currentPage || fallbackPage);
-  const limit = Number(data.limit || data.perPage || fallbackLimit);
-  const totalPages = Number(data.totalPages || data.pages || Math.max(1, Math.ceil(total / limit)));
-
-  return { categories, total, page, limit, totalPages };
-}
 
 export default function ServiceCategoryList() {
-  const actionMenuRef = useRef(null);
   const rowsDropdownRef = useRef(null);
   const editOverlayRef = useRef(null);
   const editPanelRef = useRef(null);
@@ -100,26 +25,16 @@ export default function ServiceCategoryList() {
   const [feedback, setFeedback] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [editTarget, setEditTarget] = useState(null);
+  const [detailTarget, setDetailTarget] = useState(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editError, setEditError] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
-  const [openActionId, setOpenActionId] = useState("");
   const [rowsDropdownOpen, setRowsDropdownOpen] = useState(false);
 
   const visibleFrom = useMemo(() => (total ? (page - 1) * limit + 1 : 0), [limit, page, total]);
-  const visibleTo = useMemo(() => Math.min(page * limit, total), [limit, page, total]);
-  const services = useMemo(() => flattenServices(categories), [categories]);
+  const visibleTo = useMemo(() => Math.min((page - 1) * limit + categories.length, total), [categories.length, limit, page, total]);
 
-  useEffect(() => {
-    function closeActionMenu(event) {
-      if (!actionMenuRef.current || actionMenuRef.current.contains(event.target)) return;
-      setOpenActionId("");
-    }
-
-    if (openActionId) document.addEventListener("mousedown", closeActionMenu);
-    return () => document.removeEventListener("mousedown", closeActionMenu);
-  }, [openActionId]);
 
   useEffect(() => {
     function closeRowsDropdown(event) {
@@ -167,6 +82,7 @@ export default function ServiceCategoryList() {
           signal: controller.signal,
         });
         const result = normalizeCategoryResponse(response.data, page, limit);
+        if (controller.signal.aborted) return;
         setCategories(result.categories);
         setTotal(result.total);
         setTotalPages(result.totalPages);
@@ -180,7 +96,7 @@ export default function ServiceCategoryList() {
           onOk: () => setFeedback(null),
         });
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     }
 
@@ -201,6 +117,9 @@ export default function ServiceCategoryList() {
     try {
       if (deleteTarget.rowType === "category") {
         await MainApi.delete(`/admin/service-categories/${deleteTarget.categoryId}`);
+        setTotal((current) => Math.max(0, current - 1));
+        setTotalPages(Math.max(1, Math.ceil((total - 1) / limit)));
+        if (categories.length === 1 && page > 1) setPage((current) => current - 1);
       } else {
         await MainApi.delete(`/admin/service-subcategories/${deleteTarget.serviceId}`);
       }
@@ -243,7 +162,6 @@ export default function ServiceCategoryList() {
     setEditName(target.name);
     setEditDescription(target.description || "");
     setEditError("");
-    setOpenActionId("");
   }
 
   function closeEditModal() {
@@ -359,19 +277,19 @@ export default function ServiceCategoryList() {
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto">
-        <table className="w-full table-fixed text-left text-sm">
+        <table className="w-full min-w-[760px] table-fixed text-left text-sm">
           <colgroup>
-            <col className="w-[31%]" />
-            <col className="w-[24%]" />
-            <col className="w-[12%]" />
-            <col className="w-[15%]" />
-            <col className="w-[12%]" />
-            <col className="w-[6%]" />
+            <col className="w-[27%]" />
+            <col className="w-[29%]" />
+            <col className="w-[10%]" />
+            <col className="w-[13%]" />
+            <col className="w-[13%]" />
+            <col className="w-[8%]" />
           </colgroup>
           <thead className="sticky top-0 z-10 bg-slate-100 text-slate-900">
             <tr>
-              <th className="px-4 py-2.5 text-[13px] font-semibold">Service Name</th>
               <th className="px-4 py-2.5 text-[13px] font-semibold">Service Category</th>
+              <th className="px-4 py-2.5 text-[13px] font-semibold">Subcategories</th>
               <th className="px-4 py-2.5 text-[13px] font-semibold">Status</th>
               <th className="px-4 py-2.5 text-[13px] font-semibold">Created On</th>
               <th className="px-4 py-2.5 text-[13px] font-semibold">Updated On</th>
@@ -379,118 +297,28 @@ export default function ServiceCategoryList() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
-            {isLoading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-sm font-semibold text-slate-500">
-                  Loading categories...
+            {isLoading ? <tr><td colSpan={6} className="px-4 py-12 text-center text-sm text-slate-500">Loading categories...</td></tr> : categories.length ? categories.map((category) => (
+              <tr key={category.id} className="bg-white transition hover:bg-slate-50">
+                <td className="px-4 py-3 font-semibold text-slate-800">{category.name}</td>
+                <td className="px-4 py-3">
+                  <ServiceSubcategoryMenu category={category}
+                    onLoaded={(categoryId, subcategories) => setCategories((current) => current.map((item) => item.id === categoryId ? { ...item, subcategories, subcategoriesLoaded: true } : item))}
+                    onEdit={(service) => openEditModal({ type: "subcategory", name: service.name, description: service.description, serviceId: service.id, categoryId: category.id })}
+                    onDelete={(service) => setDeleteTarget({ rowType: "subcategory", serviceId: service.id, title: service.name, categoryId: category.id, categoryName: category.name })}
+                  />
+                </td>
+                <td className="px-4 py-3"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${category.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{category.isActive ? "Active" : "Inactive"}</span></td>
+                <td className="px-4 py-3 text-xs text-slate-700">{category.createdAt ? new Date(category.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "Not available"}</td>
+                <td className="px-4 py-3 text-xs text-slate-700">{category.updatedAt ? new Date(category.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "Not available"}</td>
+                <td className="px-4 py-3">
+                  <ServiceCategoryActions category={category}
+                    onView={() => setDetailTarget(category)}
+                    onEdit={() => openEditModal({ type: "category", name: category.name, description: category.description, categoryId: category.id })}
+                    onDelete={() => setDeleteTarget({ rowType: "category", categoryId: category.id, categoryName: category.name })}
+                  />
                 </td>
               </tr>
-            ) : services.length ? (
-              services.map((service) => (
-                <tr key={service.id} className="bg-white transition hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium text-[#00194f]">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <span className={`truncate ${service.rowType === "category" ? "font-normal text-slate-400" : ""}`}>{service.title}</span>
-                      {service.rowType === "subcategory" ? (
-                        <button
-                          type="button"
-                          onClick={() => openEditModal({
-                            type: "subcategory",
-                            name: service.title,
-                            description: service.description,
-                            serviceId: service.serviceId,
-                            categoryId: service.categoryId,
-                          })}
-                          className="grid h-7 w-7 shrink-0 place-items-center text-slate-500 transition hover:text-[#b61f4b]"
-                          aria-label={`Edit ${service.title}`}
-                        >
-                          <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
-                            <path d="M5 3h9.5l-2 2H5v14h14v-7.5l2-2V19c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2Zm13.38.58a1.5 1.5 0 0 1 2.12 0l.92.92a1.5 1.5 0 0 1 0 2.12l-8.72 8.72-4.1.98.98-4.1 8.8-8.64Zm-7.02 9.44-.22.9.9-.22 6.8-6.8-.68-.68-6.8 6.8Z" />
-                          </svg>
-                        </button>
-                      ) : null}
-                    </span>
-                  </td>
-                  <td className="truncate px-4 py-3 text-sm font-semibold text-slate-800">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <span className="truncate">{service.categoryName}</span>
-                      <button
-                        type="button"
-                        onClick={() => openEditModal({
-                          type: "category",
-                          name: service.categoryName,
-                          description: service.categoryDescription,
-                          categoryId: service.categoryId,
-                        })}
-                        className="grid h-7 w-7 shrink-0 place-items-center text-slate-500 transition hover:text-[#b61f4b]"
-                        aria-label={`Edit ${service.categoryName}`}
-                      >
-                        <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
-                          <path d="M5 3h9.5l-2 2H5v14h14v-7.5l2-2V19c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2Zm13.38.58a1.5 1.5 0 0 1 2.12 0l.92.92a1.5 1.5 0 0 1 0 2.12l-8.72 8.72-4.1.98.98-4.1 8.8-8.64Zm-7.02 9.44-.22.9.9-.22 6.8-6.8-.68-.68-6.8 6.8Z" />
-                        </svg>
-                      </button>
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                      Active
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 font-normal text-slate-800">
-                    {service.createdAt ? new Date(service.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "Not available"}
-                  </td>
-                  <td className="px-4 py-3 font-normal text-slate-800">
-                    {service.updatedAt ? new Date(service.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "Not available"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div ref={openActionId === service.id ? actionMenuRef : null} className="relative flex items-center justify-end">
-                      <button
-                        type="button"
-                        onClick={() => setOpenActionId((current) => current === service.id ? "" : service.id)}
-                        className="grid h-7 w-7 place-items-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700"
-                        aria-label={`Actions for ${service.title}`}
-                      >
-                        <span className="flex gap-[2px]">
-                          <span className="h-1 w-1 rounded-full bg-current" />
-                          <span className="h-1 w-1 rounded-full bg-current" />
-                          <span className="h-1 w-1 rounded-full bg-current" />
-                        </span>
-                      </button>
-                      {openActionId === service.id ? (
-                        <div className="absolute right-0 top-7 z-20 w-40 rounded border border-slate-200 bg-white py-1.5 shadow-lg">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOpenActionId("");
-                              setDeleteTarget(service);
-                            }}
-                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
-                          >
-                            <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
-                              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12ZM8 4l1-1h6l1 1h4v2H4V4h4Z" />
-                            </svg>
-                            Delete
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-sm font-semibold text-slate-500">
-                  <div className="grid justify-items-center gap-3">
-                    <span className="grid h-12 w-12 place-items-center rounded-full bg-slate-100 text-slate-400">
-                      <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current" aria-hidden="true">
-                        <path d="M4 4h16v4H4V4Zm0 6h16v10H4V10Zm2 2v2h12v-2H6Zm0 4v2h7v-2H6Z" />
-                      </svg>
-                    </span>
-                    <span>No services found.</span>
-                  </div>
-                </td>
-              </tr>
-            )}
+            )) : <tr><td colSpan={6} className="px-4 py-12 text-center text-sm text-slate-500">No services found.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -568,6 +396,7 @@ export default function ServiceCategoryList() {
         </div>
       </div>
 
+      {detailTarget && <ServiceCategoryDetails key={detailTarget.id} category={detailTarget} onClose={() => setDetailTarget(null)} />}
       <ConfirmActionModal
         isOpen={Boolean(deleteTarget)}
         title={deleteTarget?.rowType === "category" ? "Delete category?" : "Delete subcategory?"}
