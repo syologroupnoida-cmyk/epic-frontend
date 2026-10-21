@@ -1,22 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import useCities from "@/util/useCities";
+import { filterCities } from "@/util/cities.mjs";
 
-const fallbackCityOptions = [
-  { id: "fallback-delhi-ncr", name: "Delhi NCR, Delhi, India" },
-  { id: "fallback-noida", name: "Noida, Uttar Pradesh, India" },
-  { id: "fallback-greater-noida", name: "Greater Noida, Uttar Pradesh, India" },
-  { id: "fallback-gurugram", name: "Gurugram, Haryana, India" },
-  { id: "fallback-mumbai", name: "Mumbai, Maharashtra, India" },
-  { id: "fallback-jaipur", name: "Jaipur, Rajasthan, India" },
-  { id: "fallback-bangalore", name: "Bangalore, Karnataka, India" },
-  { id: "fallback-goa", name: "Goa, India" },
-  { id: "fallback-ahmedabad", name: "Ahmedabad, Gujarat, India" },
-  { id: "fallback-udaipur", name: "Udaipur, Rajasthan, India" },
-  { id: "fallback-kolkata", name: "Kolkata, West Bengal, India" },
-  { id: "fallback-hyderabad", name: "Hyderabad, Telangana, India" },
-  { id: "fallback-chennai", name: "Chennai, Tamil Nadu, India" },
-  { id: "fallback-pune", name: "Pune, Maharashtra, India" },
-  { id: "fallback-lucknow", name: "Lucknow, Uttar Pradesh, India" },
-];
 
 export default function CitySearch({
   value,
@@ -29,22 +14,11 @@ export default function CitySearch({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState(fallbackCityOptions);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchError, setSearchError] = useState("");
+  const { cities, loading, error, retry } = useCities();
   const [locationStatus, setLocationStatus] = useState("");
   const pickerRef = useRef(null);
   const inputRef = useRef(null);
 
-  const fallbackSuggestions = useMemo(() => {
-    const search = query.trim().toLowerCase();
-
-    if (!search) return fallbackCityOptions;
-
-    return fallbackCityOptions.filter((city) =>
-      city.name.toLowerCase().includes(search),
-    );
-  }, [query]);
 
   useEffect(() => {
     function handleOutsideClick(event) {
@@ -67,64 +41,16 @@ export default function CitySearch({
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    const search = query.trim();
-
-    if (search.length < 2) {
-      return;
-    }
-
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(async () => {
-      setIsSearching(true);
-      setSearchError("");
-
-      try {
-        const response = await fetch(
-          `/api/location-search?q=${encodeURIComponent(search)}`,
-          { signal: controller.signal },
-        );
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Location search failed.");
-        }
-
-        setSuggestions(data.results?.length ? data.results : fallbackSuggestions);
-        setSearchError(data.results?.length ? "" : "No matching place found.");
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          setSuggestions(fallbackSuggestions);
-          setSearchError("Showing saved cities. Live suggestions are unavailable.");
-        }
-      } finally {
-        setIsSearching(false);
-      }
-    }, 280);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-      controller.abort();
-    };
-  }, [fallbackSuggestions, query]);
 
   function selectCity(city) {
-    onSelect(city.name);
+    onSelect(city.name, city);
     setQuery("");
-    setSearchError("");
     setLocationStatus("");
     setIsOpen(false);
   }
 
   function handleQueryChange(event) {
-    const nextQuery = event.target.value;
-
-    setQuery(nextQuery);
-
-    if (nextQuery.trim().length < 2) {
-      setSearchError("");
-      setIsSearching(false);
-    }
+    setQuery(event.target.value);
   }
 
   function detectLocation() {
@@ -148,7 +74,10 @@ export default function CitySearch({
             throw new Error(data.message || "Location lookup failed.");
           }
 
-          selectCity(data.result);
+          const detectedName = data.result.name.toLowerCase();
+          const city = cities.find((item) => detectedName.split(",").some((part) => part.trim() === item.name.toLowerCase()));
+          if (city) selectCity(city);
+          else setLocationStatus("Your detected city is not available. Please select a city from the list.");
         } catch (error) {
           setLocationStatus(
             "We found your GPS point, but could not read the city. Search manually.",
@@ -167,14 +96,16 @@ export default function CitySearch({
     );
   }
 
-  const visibleSuggestions = query.trim().length < 2 ? fallbackSuggestions : suggestions;
+  const visibleSuggestions = filterCities(cities, query);
 
   return (
-    <div className={`city-search city-search-${variant} relative`} ref={pickerRef}>
+    <div className={`city-search city-search-${variant} relative`} ref={pickerRef} onKeyDown={(event) => { if (event.key === "Escape") setIsOpen(false); }}>
       <button
         type="button"
         onClick={() => setIsOpen((open) => !open)}
         className={buttonClassName}
+        aria-expanded={isOpen}
+        aria-label={label || "Select city"}
       >
         <span className="location-pin-icon" aria-hidden="true" />
         <span className="city-search-copy">
@@ -199,7 +130,7 @@ export default function CitySearch({
             type="search"
             value={query}
             onChange={handleQueryChange}
-            placeholder="Search city, state or country"
+            placeholder="Search city or state"
           />
         </div>
         <button
@@ -215,14 +146,14 @@ export default function CitySearch({
             {locationStatus}
           </p>
         ) : null}
-        {isSearching ? (
+        {loading ? (
           <p className="px-2 py-2 text-xs font-semibold text-stone-500">
-            Searching places...
+            Loading cities...
           </p>
         ) : null}
-        {searchError ? (
+        {error ? (
           <p className="px-2 py-1 text-xs font-semibold text-stone-500">
-            {searchError}
+            {error} <button type="button" onClick={retry} className="underline">Try again</button>
           </p>
         ) : null}
         <div className="city-options-list">
@@ -234,14 +165,14 @@ export default function CitySearch({
                 onClick={() => selectCity(city)}
                 className="city-option"
               >
-                {city.name}
+                {city.label}
               </button>
             ))
-          ) : (
+          ) : !loading && !error ? (
             <p className="px-2 py-3 text-sm font-semibold text-stone-500">
-              Type at least 2 letters to search places
+              {query ? "No matching cities found." : "No cities available yet."}
             </p>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

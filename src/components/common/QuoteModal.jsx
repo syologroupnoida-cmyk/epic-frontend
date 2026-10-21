@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import useCities from "@/util/useCities";
 
 function MuiField({ label, name, value, error, onChange, type = "text" }) {
   return (
@@ -18,6 +19,7 @@ function MuiField({ label, name, value, error, onChange, type = "text" }) {
 }
 
 export default function QuoteModal({ isOpen, onClose }) {
+  const { cities, loading: citiesLoading, error: citiesError, retry: retryCities } = useCities(isOpen);
   const [form, setForm] = useState({
     name: "",
     city: "",
@@ -103,13 +105,15 @@ export default function QuoteModal({ isOpen, onClose }) {
             error={errors.name}
             onChange={handleChange}
           />
-          <MuiField
-            label="City"
-            name="city"
-            value={form.city}
-            error={errors.city}
-            onChange={handleChange}
-          />
+          <label className="mui-field">
+            <select name="city" value={form.city} onChange={handleChange} disabled={citiesLoading}>
+              <option value="">{citiesLoading ? "Loading cities..." : "Select city"}</option>
+              {cities.map((city) => <option key={city.id} value={city.name}>{city.label}</option>)}
+            </select>
+            <span>City</span>
+            {errors.city && <small>{errors.city}</small>}
+            {citiesError && <small>{citiesError} <button type="button" onClick={retryCities} className="underline">Try again</button></small>}
+          </label>
           <MuiField
             label="Phone number"
             name="phone"

@@ -1,11 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import Header from "@/common/Header";
 import Footer from "@/common/Footer";
 import CitySearch from "@/components/common/CitySearch";
 import QuoteModal from "@/components/common/QuoteModal";
-import MainApi from "@/util/MainApi";
+import { useRouter } from "next/router";
+import { getPublicCatalog, vendorSearchHref } from "@/util/publicCatalog.mjs";
+import { loadPublicServiceCategories } from "@/util/serviceCategories.mjs";
+import useDismissibleDropdown from "@/util/useDismissibleDropdown";
 import WeddingCategoryDirectory from "@/components/common/WeddingCategoryDirectory";
 import {
   brandTagline,
@@ -131,12 +134,6 @@ const weddingServiceCards = [
   },
 ];
 
-const fallbackServiceOptions = [
-  "Wedding Venues",
-  "Wedding Photographers",
-  "Bridal Makeup Artist",
-  "Wedding Planners",
-];
 
 const heroStats = [
   { value: 73000, suffix: "+", label: "Trusted Vendors" },
@@ -223,19 +220,6 @@ function CountUpStat({ value, suffix, label }) {
   );
 }
 
-function normalizeServiceCategories(responseData) {
-  const data = responseData?.data || responseData || {};
-  const rawList = data.items || data.results || data.categories || data.data || [];
-
-  if (!Array.isArray(rawList)) return [];
-
-  return rawList
-    .map((category) => ({
-      id: category?.id || category?._id || category?.serviceCategoryId || category?.name || category?.title || "",
-      name: category?.name || category?.title || "",
-    }))
-    .filter((category) => category.id && category.name);
-}
 
 
 function ImageCard({ item }) {
@@ -267,28 +251,40 @@ function ImageCard({ item }) {
   );
 }
 
-function HeroSelect({ value, options, onSelect }) {
+function HeroSelect({ value, options, onSelect, loading, error, onRetry }) {
   const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useDismissibleDropdown(isOpen, setIsOpen);
+  const id = useId();
 
   return (
     <div
       className="mui-menu-select group"
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
+      ref={wrapperRef}
     >
       <button
         type="button"
         className="mui-menu-button"
+        onClick={() => setIsOpen((current) => !current)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls={id}
+        aria-label="Select wedding category"
       >
         <span className="service-select-icon" aria-hidden="true" />
-        <span>{value}</span>
+        <span>{value || (loading ? "Loading categories..." : "Select wedding category")}</span>
         <span aria-hidden="true" className="mui-menu-chevron" />
       </button>
       <div className={`mui-menu-options ${isOpen ? "is-open" : ""}`}>
+        {loading && <p role="status" className="p-3 text-sm text-stone-600">Loading categories...</p>}
+        {error && <div role="alert" className="p-3 text-sm text-red-600">{error}<button type="button" onClick={onRetry}>Try again</button></div>}
+        {!loading && !error && options.length === 0 && <p className="p-3 text-sm text-stone-600">No categories available yet.</p>}
+        <div id={id} role="listbox" aria-label="Wedding categories">
         {options.map((option) => (
           <button
             key={option}
             type="button"
+            role="option"
+            aria-selected={value === option}
             onClick={() => {
               onSelect(option);
               setIsOpen(false);
@@ -297,38 +293,43 @@ function HeroSelect({ value, options, onSelect }) {
             {option}
           </button>
         ))}
+        </div>
       </div>
     </div>
   );
 }
 
 export default function HomePage() {
-  const [selectedService, setSelectedService] = useState("Wedding Venues");
+  const router = useRouter();
+  const [selectedService, setSelectedService] = useState("");
   const [serviceCategories, setServiceCategories] = useState([]);
-  const [selectedCity, setSelectedCity] = useState("Delhi NCR");
+  const [selectedCity, setSelectedCity] = useState("Select city");
+  const [selectedCityRecord, setSelectedCityRecord] = useState(null);
+  const [categoryLoading, setCategoryLoading] = useState(true);
+  const [categoryError, setCategoryError] = useState("");
+  const [categoryAttempt, setCategoryAttempt] = useState(0);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
-  const serviceOptions = serviceCategories.length
-    ? serviceCategories.map((category) => category.name)
-    : fallbackServiceOptions;
+  const serviceOptions = serviceCategories.map((category) => category.name);
 
   useEffect(() => {
     let isMounted = true;
+    const controller = new AbortController();
 
     async function loadServiceCategories() {
       try {
-        const response = await MainApi.get("/service-categories");
+        const nextCategories = await loadPublicServiceCategories(getPublicCatalog, { signal: controller.signal });
         if (!isMounted) return;
-
-        const nextCategories = normalizeServiceCategories(response.data);
         setServiceCategories(nextCategories);
 
         if (nextCategories.length) {
           setSelectedService((current) =>
-            fallbackServiceOptions.includes(current) ? nextCategories[0].name : current
+            nextCategories.some((category) => category.name === current) ? current : nextCategories[0].name
           );
         }
       } catch {
-        if (isMounted) setServiceCategories([]);
+        if (isMounted) setCategoryError("Unable to load categories.");
+      } finally {
+        if (isMounted) setCategoryLoading(false);
       }
     }
 
@@ -336,8 +337,9 @@ export default function HomePage() {
 
     return () => {
       isMounted = false;
+      controller.abort();
     };
-  }, []);
+  }, [categoryAttempt]);
 
   return (
     <div className="min-h-screen bg-[#fff9f5] text-stone-900">
@@ -401,20 +403,23 @@ export default function HomePage() {
                   value={selectedService}
                   onSelect={setSelectedService}
                   options={serviceOptions}
+                  loading={categoryLoading}
+                  error={categoryError}
+                  onRetry={() => { setCategoryLoading(true); setCategoryError(""); setCategoryAttempt((current) => current + 1); }}
                 />
                 <CitySearch
                   value={selectedCity}
-                  onSelect={setSelectedCity}
+                  onSelect={(name, city) => { setSelectedCity(name); setSelectedCityRecord(city); }}
                   buttonClassName="mui-menu-button"
                   panelClassName="w-full"
                   variant="hero"
                 />
                 <button
                   type="button"
-                  onClick={() => setIsQuoteOpen(true)}
+                  onClick={() => router.push(vendorSearchHref(serviceCategories.find((category) => category.name === selectedService), selectedCityRecord || selectedCity))}
                   className="h-14 rounded bg-[#b61f4b] px-7 text-sm font-bold text-white shadow-lg hover:bg-[#981a3f]"
                 >
-                  Get a Free quote
+                  Search <span aria-hidden="true" className="ml-2">→</span>
                 </button>
               </div>
             </div>

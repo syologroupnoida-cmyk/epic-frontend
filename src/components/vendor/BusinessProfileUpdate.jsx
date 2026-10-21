@@ -4,6 +4,7 @@ import ApiStatusModal from "@/components/common/ApiStatusModal";
 import ProfileSelect from "@/components/vendor/ProfileSelect";
 import MainApi from "@/util/MainApi";
 import { getApiErrorMessage } from "@/util/authApi";
+import { loadAllCities } from "@/util/cities.mjs";
 
 const emptyForm = { businessName: "", about: "", logoUrl: "", logoPublicId: "", primaryCityId: "", profileStatus: "ACTIVE", serviceCategoryIds: [], serviceSubcategoryIds: [] };
 
@@ -107,12 +108,11 @@ export default function BusinessProfileUpdate() {
     const controller = new AbortController();
     Promise.all([
       MainApi.get("/vendor/profile", { signal: controller.signal }), MainApi.get("/vendor/capabilities", { signal: controller.signal }),
-      MainApi.get("/service-categories", { signal: controller.signal }), MainApi.get("/cities", { signal: controller.signal }),
-    ]).then(([profileResponse, capabilitiesResponse, categoriesResponse, citiesResponse]) => {
+      MainApi.get("/service-categories", { signal: controller.signal }), loadAllCities((...args) => MainApi.get(...args), { signal: controller.signal }),
+    ]).then(([profileResponse, capabilitiesResponse, categoriesResponse, cityRecords]) => {
       if (controller.signal.aborted) return;
       const profile = profileResponse.data?.data || profileResponse.data || {};
       const capabilities = normalizeCapabilities(capabilitiesResponse.data);
-      const cityRecords = normalizeItems(citiesResponse.data, "city");
       if (profile.primaryCity?.id && !cityRecords.some((city) => city.id === profile.primaryCity.id)) cityRecords.unshift(profile.primaryCity);
       setForm({ ...emptyForm, businessName: profile.businessName || "", about: profile.about || "", logoUrl: profile.logoUrl || "", logoPublicId: profile.logoPublicId || "", primaryCityId: profile.primaryCity?.id || profile.primaryCityId || "", profileStatus: profile.profileStatus || "ACTIVE", serviceCategoryIds: capabilities.categoryIds, serviceSubcategoryIds: capabilities.serviceIds });
       setMeta({ kycStatus: profile.kycStatus, profileStatus: profile.profileStatus });

@@ -3,30 +3,8 @@ import ApiStatusModal from "@/components/common/ApiStatusModal";
 import EditCityModal from "@/components/superadmin/EditCityModal";
 import MainApi from "@/util/MainApi";
 import { getApiErrorMessage } from "@/util/authApi";
+import { normalizeCityResponse } from "@/util/cities.mjs";
 
-function normalizeCity(city = {}) {
-  return {
-    id: city.id || city._id || city.cityId || "",
-    name: city.name || city.cityName || "Untitled city",
-    stateName: city.stateName || city.state || "",
-    countryCode: city.countryCode || city.country || "",
-    isActive: city.isActive ?? city.active ?? false,
-    createdAt: city.createdAt || city.created_at || "",
-    updatedAt: city.updatedAt || city.updated_at || "",
-  };
-}
-
-function normalizeCityResponse(responseData, fallbackPage, fallbackLimit) {
-  const data = responseData?.data || responseData || {};
-  const rawList = data.items || data.results || data.cities || data.data || [];
-  const cities = Array.isArray(rawList) ? rawList.map(normalizeCity).filter((city) => city.id) : [];
-  const total = Number(data.total || data.totalCount || data.count || cities.length || 0);
-  const page = Number(data.page || data.currentPage || fallbackPage);
-  const limit = Number(data.limit || data.perPage || fallbackLimit);
-  const totalPages = Number(data.totalPages || data.pages || Math.max(1, Math.ceil(total / limit)));
-
-  return { cities, total, page, limit, totalPages };
-}
 
 function formatDate(value) {
   if (!value) return "Not available";
@@ -47,6 +25,7 @@ export default function CityList() {
   const [limit, setLimit] = useState(20);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [rowsDropdownOpen, setRowsDropdownOpen] = useState(false);
@@ -55,7 +34,7 @@ export default function CityList() {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const visibleFrom = useMemo(() => (total ? (page - 1) * limit + 1 : 0), [limit, page, total]);
-  const visibleTo = useMemo(() => Math.min(page * limit, total), [limit, page, total]);
+  const visibleTo = useMemo(() => Math.min((page - 1) * limit + cities.length, total), [cities.length, limit, page, total]);
 
   useEffect(() => {
     function closeRowsDropdown(event) {
@@ -92,9 +71,11 @@ export default function CityList() {
           signal: controller.signal,
         });
         const result = normalizeCityResponse(response.data, page, limit);
+        if (controller.signal.aborted) return;
         setCities(result.cities);
         setTotal(result.total);
         setTotalPages(result.totalPages);
+        setHasNextPage(result.hasNextPage);
       } catch (error) {
         if (error.name === "CanceledError" || error.code === "ERR_CANCELED") return;
         setFeedback({
@@ -105,7 +86,7 @@ export default function CityList() {
           onOk: () => setFeedback(null),
         });
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     }
 
@@ -257,13 +238,13 @@ export default function CityList() {
                       <button
                         type="button"
                         onClick={() => setOpenActionId((current) => current === city.id ? "" : city.id)}
-                        className="grid h-7 w-7 place-items-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700"
+                        className="grid h-5 w-5 cursor-pointer place-items-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700"
                         aria-label={`Actions for ${city.name}`}
                       >
                         <span className="flex gap-[2px]">
-                          <span className="h-1 w-1 rounded-full bg-current" />
-                          <span className="h-1 w-1 rounded-full bg-current" />
-                          <span className="h-1 w-1 rounded-full bg-current" />
+                          <span className="h-[3px] w-[3px] rounded-full bg-current" />
+                          <span className="h-[3px] w-[3px] rounded-full bg-current" />
+                          <span className="h-[3px] w-[3px] rounded-full bg-current" />
                         </span>
                       </button>
 
@@ -378,7 +359,7 @@ export default function CityList() {
           <button
             type="button"
             onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-            disabled={page >= totalPages || isLoading}
+            disabled={!hasNextPage || isLoading}
             className="grid h-8 w-8 place-items-center rounded text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35"
             aria-label="Next page"
           >

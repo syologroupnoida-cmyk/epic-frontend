@@ -189,8 +189,8 @@ export default function SuperAdminDashboard() {
                 <span className="grid h-11 w-11 place-items-center rounded-full bg-rose-50 text-[#b61f4b]"><Icon name="profile" /></span>
                 <AccountProfileInfo user={authUser} fallbackName="Admin" fallbackType="Admin" />
               </div>
-              <Link href="#profile-settings" className="mt-2 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-bold text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="settings" /> Profile setting</Link>
-              <button type="button" onClick={() => { setProfileOpen(false); setLogoutConfirmOpen(true); }} className="mt-1 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-bold text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="logout" /> Logout</button>
+              <Link href="#profile-settings" className="mt-2 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-normal text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="settings" /> Profile setting</Link>
+              <button type="button" onClick={() => { setProfileOpen(false); setLogoutConfirmOpen(true); }} className="mt-1 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-normal text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="logout" /> Logout</button>
             </div>
           </div>
         </header>
