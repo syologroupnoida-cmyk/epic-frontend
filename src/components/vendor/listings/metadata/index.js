@@ -1,0 +1,22 @@
+import schema0 from './wedding-planning';
+import schema1 from './guest-rsvp';
+import schema2 from './decoration';
+import schema3 from './photography';
+import schema4 from './makeup-beauty';
+import schema5 from './mehendi';
+import schema6 from './catering';
+import schema7 from './entertainment';
+import schema8 from './invitations';
+import schema9 from './bridal-wear';
+import schema10 from './groom-wear';
+import schema11 from './jewellery';
+import schema12 from './cakes';
+import schema13 from './gifts';
+import schema14 from './transportation';
+import schema15 from './hospitality';
+import schema16 from './honeymoon';
+import schema17 from './rentals';
+import schema18 from './rituals';
+import schema19 from './favors-accessories';
+
+export const metadataSchemas = [schema0, schema1, schema2, schema3, schema4, schema5, schema6, schema7, schema8, schema9, schema10, schema11, schema12, schema13, schema14, schema15, schema16, schema17, schema18, schema19];

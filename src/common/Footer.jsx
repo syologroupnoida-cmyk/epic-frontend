@@ -1,66 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-
-const cityNames = [
-  "Bangalore",
-  "Delhi NCR",
-  "Hyderabad",
-  "Indore",
-  "Jaipur",
-  "Kolkata",
-  "Mumbai",
-  "Ahmedabad",
-  "Amritsar",
-  "Chandigarh",
-  "Chennai",
-  "Goa",
-  "Kerala",
-  "Lucknow",
-  "Pondicherry",
-  "Pune",
-  "Allahabad",
-  "Bhopal",
-  "Bhubaneswar",
-  "Nagpur",
-  "Patna",
-  "Noida",
-];
-
-const upperColumns = [
-  {
-    title: "Wedding Venues",
-    label: "Venues",
-    hrefBase: "banquet-hall",
-  },
-  {
-    title: "Planning & Decoration",
-    label: "Planning & Decoration",
-    hrefBase: "wedding-decoration",
-  },
-  {
-    title: "Wedding Photographers",
-    label: "Photographers",
-    hrefBase: "candid-photography",
-  },
-  {
-    title: "Bridal Mehendi",
-    label: "Mehendi",
-    hrefBase: "bridal-mehendi",
-  },
-];
-
-const lowerColumns = [
-  {
-    title: "Bridal Makeup",
-    label: "Makeup",
-    hrefBase: "bridal-makeup",
-  },
-  {
-    title: "Wedding Caterers",
-    label: "Caterers",
-    hrefBase: "wedding-catering",
-  },
-];
+import { useEffect, useMemo, useState } from "react";
+import useCities from "@/util/useCities";
+import { getPublicCatalog, vendorSearchHref } from "@/util/publicCatalog.mjs";
+import { loadPublicServiceCategories } from "@/util/serviceCategories.mjs";
+import { FOOTER_CATEGORY_SETTINGS_KEY, FOOTER_SETTINGS_EVENT, readFooterCategoryIds } from "@/util/footerSettings";
 
 const processSteps = [
   { label: "Search", iconClass: "footer-search-icon" },
@@ -74,50 +18,6 @@ const socialLinks = [
   { label: "YouTube", iconClass: "footer-youtube-icon" },
   { label: "X", iconClass: "footer-x-icon" },
   { label: "LinkedIn", iconClass: "footer-linkedin-icon" },
-];
-
-const vendorCities = [
-  "Kolkata",
-  "Hyderabad",
-  "Bangalore",
-  "Delhi NCR",
-  "Noida",
-  "Mumbai",
-  "Jaipur",
-  "Patna",
-  "Nagpur",
-  "Chandigarh",
-  "Lucknow",
-  "Indore",
-  "Bhubaneswar",
-  "Pune",
-  "Kerala",
-  "Chennai",
-  "Mangalore",
-  "Raipur",
-  "Mysore",
-  "Ahmedabad",
-  "Bhopal",
-  "Udaipur",
-  "Goa",
-  "Ludhiana",
-  "Coimbatore",
-  "Ujjain",
-  "Surat",
-  "Ranchi",
-  "Amritsar",
-  "Jalandhar",
-  "Singapore",
-  "Dubai",
-  "Jammu",
-  "Jodhpur",
-  "Italy",
-  "Pushkar",
-  "Allahabad",
-  "Patiala",
-  "Gorakhpur",
-  "Pondicherry",
-  "Agra",
 ];
 
 const quickLinks = [
@@ -138,11 +38,39 @@ const quickLinks = [
   { label: "Career", href: "#" },
 ];
 
-function cityHref(service, city) {
-  return `/details/${service}-${city.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-}
-
 export default function Footer() {
+  const { cities } = useCities();
+  const [categories, setCategories] = useState([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadPublicServiceCategories(getPublicCatalog, { signal: controller.signal })
+      .then((items) => setCategories(items.filter((item) => item.isActive !== false)))
+      .catch(() => setCategories([]));
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    function refreshSettings(event) {
+      if (event?.type === "storage" && event.key !== FOOTER_CATEGORY_SETTINGS_KEY) return;
+      setSelectedCategoryIds(readFooterCategoryIds());
+    }
+    refreshSettings();
+    window.addEventListener("storage", refreshSettings);
+    window.addEventListener(FOOTER_SETTINGS_EVENT, refreshSettings);
+    return () => {
+      window.removeEventListener("storage", refreshSettings);
+      window.removeEventListener(FOOTER_SETTINGS_EVENT, refreshSettings);
+    };
+  }, []);
+
+  const footerCategories = useMemo(() => {
+    if (selectedCategoryIds === null) return categories;
+    const selected = new Set(selectedCategoryIds);
+    return categories.filter((category) => selected.has(category.id));
+  }, [categories, selectedCategoryIds]);
+
   return (
     <footer className="border-t border-slate-200 bg-white text-slate-700">
       <section className="bg-white px-4 pt-8 text-center text-white sm:px-6 lg:px-8">
@@ -272,66 +200,37 @@ export default function Footer() {
 
       <section className="mx-auto max-w-[1120px] px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr]">
-          {upperColumns.map((column) => (
-            <div key={column.title}>
+          {footerCategories.map((category) => (
+            <div key={category.id}>
               <h3 className="border-b border-dashed border-[#b61f4b]/70 pb-3 text-left text-[15px] font-extrabold text-[#b61f4b]">
-                {column.title}
+                {category.name}
               </h3>
               <ul className="mt-4 grid gap-1.5 text-left text-[13px] leading-5">
-                {cityNames.map((city) => (
-                  <li key={city}>
+                {cities.map((city) => (
+                  <li key={city.id}>
                     <Link
-                      href={cityHref(column.hrefBase, city)}
+                      href={vendorSearchHref(category, city)}
                       className="text-slate-700 hover:text-[#b61f4b]"
                     >
-                      {column.label} in {city}
+                      {category.name} in {city.name}
                     </Link>
                   </li>
                 ))}
               </ul>
             </div>
           ))}
-        </div>
-      </section>
-
-      <section className="border-t border-slate-200 bg-[#fafafa]">
-        <div className="mx-auto grid max-w-[1120px] gap-8 px-4 py-8 sm:px-6 md:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr] lg:px-8">
-          {lowerColumns.map((column) => (
-            <div key={column.title}>
-              <h3 className="border-b border-dashed border-[#b61f4b]/70 pb-3 text-left text-[15px] font-extrabold text-[#b61f4b]">
-                {column.title}
-              </h3>
-              <ul className="mt-4 grid gap-1.5 text-left text-[13px] leading-5">
-                {cityNames.map((city) => (
-                  <li key={city}>
-                    <Link
-                      href={cityHref(column.hrefBase, city)}
-                      className="text-slate-700 hover:text-[#b61f4b]"
-                    >
-                      {column.label} in {city}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-
           <div>
             <h3 className="border-b border-dashed border-[#b61f4b]/70 pb-3 text-left text-[15px] font-extrabold text-[#b61f4b]">
               Vendor Cities
             </h3>
             <ul className="mt-4 grid grid-cols-2 gap-x-7 gap-y-1.5 text-left text-[13px] leading-5">
-              {vendorCities.map((city) => (
-                <li key={city}>
+              {cities.map((city) => (
+                <li key={city.id}>
                   <Link
-                    href={`/marketplace?city=${city.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-                    className={
-                      city === "Jammu"
-                        ? "text-[#b61f4b] hover:text-[#8f1f3f]"
-                        : "text-slate-700 hover:text-[#b61f4b]"
-                    }
+                    href={vendorSearchHref(null, city)}
+                    className="text-slate-700 hover:text-[#b61f4b]"
                   >
-                    {city}
+                    {city.name}
                   </Link>
                 </li>
               ))}
@@ -355,6 +254,9 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+          {!footerCategories.length ? (
+            <p className="text-left text-sm text-slate-500">Vendor categories will appear here when available.</p>
+          ) : null}
         </div>
       </section>
 

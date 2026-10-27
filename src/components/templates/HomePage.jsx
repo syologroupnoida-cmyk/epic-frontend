@@ -10,6 +10,8 @@ import { getPublicCatalog, vendorSearchHref } from "@/util/publicCatalog.mjs";
 import { loadPublicServiceCategories } from "@/util/serviceCategories.mjs";
 import useDismissibleDropdown from "@/util/useDismissibleDropdown";
 import WeddingCategoryDirectory from "@/components/common/WeddingCategoryDirectory";
+import MarketplaceServices from "@/components/common/MarketplaceServices";
+import MarketplaceVenues from "@/components/common/MarketplaceVenues";
 import {
   brandTagline,
   heroSlides,
@@ -20,7 +22,6 @@ import {
   luxuryWeddingSection,
   weddingDestinationSection,
   destinationOptions,
-  serviceSections,
   stories,
   vendorCategories,
 } from "@/data/homeData";
@@ -101,38 +102,7 @@ const ideaServiceItems = [
   { title: "Destination", href: "/destination/national-wedding", position: "100% 100%" },
 ];
 
-const weddingServiceCards = [
-  {
-    title: "Makeup Artist",
-    image: vendorCategories[2].image,
-    href: detailHref("bridal-makeup"),
-  },
-  {
-    title: "Photographers",
-    image: vendorCategories[1].image,
-    href: detailHref("photographers"),
-  },
-  {
-    title: "Wedding Planners",
-    image: serviceSections[0].image,
-    href: detailHref("wedding-planners"),
-  },
-  {
-    title: "Caterers",
-    image: vendorCategories[4].image,
-    href: detailHref("caterers"),
-  },
-  {
-    title: "Mehendi Artist",
-    image: vendorCategories[5].image,
-    href: detailHref("mehendi"),
-  },
-  {
-    title: "Venues",
-    image: vendorCategories[0].image,
-    href: "/marketplace",
-  },
-];
+
 
 
 const heroStats = [
@@ -443,6 +413,8 @@ export default function HomePage() {
           </div>
         </section>
 
+        <MarketplaceServices categories={serviceCategories} />
+
 
         <section className="bg-white py-10 sm:py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -510,68 +482,9 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="py-10 sm:py-12">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="overflow-hidden rounded border border-rose-100 bg-white shadow-sm">
-              <div className="grid lg:grid-cols-[0.82fr_1.18fr]">
-                <div className="bg-[#fff9f5] p-6 sm:p-7">
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#b61f4b]">
-                    Getting married soon?
-                  </p>
-                  <h2 className="mt-2 font-serif text-2xl font-bold text-stone-950 sm:text-3xl">
-                    Book Wedding Services Here
-                  </h2>
-                  <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
-                    Choose the service you need and get curated vendor options
-                    across price, style, city, and event type.
-                  </p>
-                  <div className="mt-5 grid gap-2 text-xs font-bold text-stone-700 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                    <span className="rounded bg-white px-3 py-2 shadow-sm">
-                      Verified vendors
-                    </span>
-                    <span className="rounded bg-white px-3 py-2 shadow-sm">
-                      Fast quotes
-                    </span>
-                    <span className="rounded bg-white px-3 py-2 shadow-sm">
-                      City-wise shortlist
-                    </span>
-                    <span className="rounded bg-white px-3 py-2 shadow-sm">
-                      Budget-friendly options
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsQuoteOpen(true)}
-                    className="mt-6 rounded bg-[#b61f4b] px-7 py-3 text-sm font-bold text-white shadow-lg hover:bg-[#981a3f]"
-                  >
-                    Get Free Quotation
-                  </button>
-                </div>
-                <div className="grid gap-px bg-rose-100 sm:grid-cols-2 lg:grid-cols-3">
-                  {weddingServiceCards.map((service) => (
-                    <Link
-                      key={service.title}
-                      href={service.href}
-                      className="group relative min-h-[148px] overflow-hidden bg-stone-900"
-                    >
-                      <Image
-                        src={service.image}
-                        alt={service.title}
-                        fill
-                        sizes="(min-width: 1024px) 20vw, (min-width: 640px) 50vw, 100vw"
-                        className="object-cover opacity-80 transition duration-500 group-hover:scale-105 group-hover:opacity-95"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#2f0b17]/75 via-[#2f0b17]/8 to-transparent" />
-                      <span className="absolute inset-x-0 bottom-0 p-4 text-sm font-black text-white">
-                        {service.title}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+
+
+        <MarketplaceVenues categories={serviceCategories} />
 
         <section className="bg-[#fff9f5] py-10 sm:py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

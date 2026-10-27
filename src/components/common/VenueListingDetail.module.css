@@ -1,0 +1,7 @@
+.main > section + section { margin-top: 20px; }
+.main > section > h2 { margin-bottom: 18px; }
+.sidebar { align-self: start; border: 1px solid #e7edf8; border-radius: 17px; background: white; box-shadow: 0 3px 12px #1234690a; overflow-wrap: anywhere; }
+.title { flex-wrap: wrap; }
+.title h1 { min-width: 0; overflow-wrap: anywhere; }
+@media (min-width: 951px) { .sidebar { position: sticky; top: 105px; } }
+@media (max-width: 950px) { .sidebar { display: block; } }
