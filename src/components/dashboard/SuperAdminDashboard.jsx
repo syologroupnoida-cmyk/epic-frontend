@@ -10,7 +10,10 @@ import AddServiceCategory from "@/components/superadmin/AddServiceCategory";
 import AddServices from "@/components/superadmin/AddServices";
 import CityList from "@/components/superadmin/CityList";
 import ServiceCategoryList from "@/components/superadmin/ServiceCategoryList";
+import ServiceListingList from "@/components/superadmin/ServiceListingList";
+import PropertyListingList from "@/components/superadmin/PropertyListingList";
 import VendorKycList from "@/components/superadmin/VendorKycList";
+import FooterSettings from "@/components/superadmin/FooterSettings";
 import useAuthLogout from "@/util/useAuthLogout";
 import WeddingAdminOverview from "@/components/dashboard/WeddingAdminOverview";
 import useAuthUser from "@/util/useAuthUser";
@@ -34,31 +37,39 @@ const icons = {
 const menu = [
   { label: "Overview", icon: "dashboard", sub: [] },
   { label: "Services", icon: "store", sub: ["Services List", "Add Service Category", "Add Services"] },
+  { label: "Service Listing", icon: "store", sub: ["Service List"] },
+  { label: "Property", icon: "store", sub: ["Property List"] },
   { label: "Cities", icon: "calendar", sub: ["Add City", "City List"] },
-  { label: "Vendor Management", icon: "people", sub: ["Vendor Kyc List"] },
-  { label: "Agents", icon: "profile", sub: ["Approvals", "Performance", "Payouts"] },
-  { label: "Vendors", icon: "store", sub: ["Listings", "Verification", "Packages"] },
+  { label: "Vendor", icon: "people", sub: ["Vendor Kyc List"] },
+  // { label: "Agents", icon: "profile", sub: ["Approvals", "Performance", "Payouts"] },
+  // { label: "Vendors", icon: "store", sub: ["Listings", "Verification", "Packages"] },
   // { label: "Reports", icon: "chart", sub: ["Revenue", "Traffic", "Bookings"] },
-  { label: "Settings", icon: "settings", sub: ["Roles", "Permissions", "Platform"] },
+  { label: "Settings", icon: "settings", sub: ["Footer Settings", "Roles", "Permissions", "Platform"] },
 ];
 
 const dashboardPanels = {
   "Services List": ServiceCategoryList,
+  "Service List": ServiceListingList,
+  "Property List": PropertyListingList,
   "Add Service Category": AddServiceCategory,
   "Add Services": AddServices,
   "Add City": AddCity,
   "City List": CityList,
   "Vendor Kyc List": VendorKycList,
+  "Footer Settings": FooterSettings,
 };
 
 const panelSlugs = {
   Overview: "overview",
   "Services List": "services-list",
+  "Service List": "service-listings",
+  "Property List": "property-listings",
   "Add Service Category": "add-service-category",
   "Add Services": "add-services",
   "Add City": "add-city",
   "City List": "city-list",
   "Vendor Kyc List": "vendor-kyc-list",
+  "Footer Settings": "footer-settings",
   Approvals: "approvals",
   Performance: "performance",
   Payouts: "payouts",

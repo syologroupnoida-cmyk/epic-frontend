@@ -5,6 +5,7 @@ import ProfileSelect from "@/components/vendor/ProfileSelect";
 import MainApi from "@/util/MainApi";
 import { getApiErrorMessage } from "@/util/authApi";
 import { loadAllCities } from "@/util/cities.mjs";
+import { loadPublicServiceCategories } from "@/util/serviceCategories.mjs";
 
 const emptyForm = { businessName: "", about: "", logoUrl: "", logoPublicId: "", primaryCityId: "", profileStatus: "ACTIVE", serviceCategoryIds: [], serviceSubcategoryIds: [] };
 
@@ -108,15 +109,15 @@ export default function BusinessProfileUpdate() {
     const controller = new AbortController();
     Promise.all([
       MainApi.get("/vendor/profile", { signal: controller.signal }), MainApi.get("/vendor/capabilities", { signal: controller.signal }),
-      MainApi.get("/service-categories", { signal: controller.signal }), loadAllCities((...args) => MainApi.get(...args), { signal: controller.signal }),
-    ]).then(([profileResponse, capabilitiesResponse, categoriesResponse, cityRecords]) => {
+      loadPublicServiceCategories((...args) => MainApi.get(...args), { signal: controller.signal }), loadAllCities((...args) => MainApi.get(...args), { signal: controller.signal }),
+    ]).then(([profileResponse, capabilitiesResponse, categoryRecords, cityRecords]) => {
       if (controller.signal.aborted) return;
       const profile = profileResponse.data?.data || profileResponse.data || {};
       const capabilities = normalizeCapabilities(capabilitiesResponse.data);
       if (profile.primaryCity?.id && !cityRecords.some((city) => city.id === profile.primaryCity.id)) cityRecords.unshift(profile.primaryCity);
       setForm({ ...emptyForm, businessName: profile.businessName || "", about: profile.about || "", logoUrl: profile.logoUrl || "", logoPublicId: profile.logoPublicId || "", primaryCityId: profile.primaryCity?.id || profile.primaryCityId || "", profileStatus: profile.profileStatus || "ACTIVE", serviceCategoryIds: capabilities.categoryIds, serviceSubcategoryIds: capabilities.serviceIds });
       setMeta({ kycStatus: profile.kycStatus, profileStatus: profile.profileStatus });
-      setCategories(mergeCategories(normalizeItems(categoriesResponse.data, "category"), capabilities.categories));
+      setCategories(mergeCategories(categoryRecords.map((category) => ({ ...category, services: [] })), capabilities.categories));
       setCities(cityRecords);
       setActiveCategoryId(capabilities.categoryIds[0] || "");
       setLoadingServices(Boolean(capabilities.categoryIds[0]));

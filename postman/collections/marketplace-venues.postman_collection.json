@@ -1,0 +1,90 @@
+{
+  "info": {
+    "name": "Marketplace venues",
+    "description": "Read-only endpoints supplied for this feature. Response shapes verified against the public API on 2026-10-26; sample venue values are synthetic.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.wedplanners.in"
+    }
+  ],
+  "item": [
+    {
+      "name": "List venues",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/marketplace/venue-properties?page=1&limit=20&search=Palace&cityId=city-demo&serviceSubcategoryId=banquet-demo"
+      },
+      "response": [
+        {
+          "name": "List venues",
+          "originalRequest": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/marketplace/venue-properties?page=1&limit=20&search=Palace&cityId=city-demo&serviceSubcategoryId=banquet-demo"
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\"success\": true, \"data\": {\"venueProperties\": [{\"id\": \"venue-demo\", \"slug\": \"palace-venue\", \"title\": \"Palace venue\", \"description\": \"A wedding hall and garden.\", \"startingPrice\": 20000, \"priceType\": \"STARTING_FROM\", \"city\": {\"id\": \"city-demo\", \"name\": \"Chandigarh\"}, \"address\": {\"street\": \"12 Palace Road\", \"locality\": \"City Centre\", \"state\": \"Chandigarh\", \"pincode\": \"160001\", \"country\": \"India\"}, \"capacityMin\": 100, \"capacityMax\": 500, \"rooms\": 20, \"parkingCapacity\": 50, \"amenities\": [\"Parking\", \"Bridal room\"], \"metadata\": {\"alcoholAllowed\": false, \"outsideCateringAllowed\": true}, \"venueTypes\": [{\"venueType\": {\"id\": \"banquet-demo\", \"name\": \"Banquet\", \"category\": {\"name\": \"Venue Services\", \"offeringKind\": \"VENUE_PROPERTY\"}}}], \"media\": [], \"vendor\": {\"businessName\": \"Palace Events\", \"about\": \"Celebrate in our garden.\"}}], \"pagination\": {\"total\": 1, \"hasNextPage\": false}}}"
+        }
+      ]
+    },
+    {
+      "name": "Venue details",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/marketplace/venue-properties/palace-venue"
+      },
+      "response": [
+        {
+          "name": "Venue details",
+          "originalRequest": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/marketplace/venue-properties/palace-venue"
+          },
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\"success\": true, \"data\": {\"id\": \"venue-demo\", \"slug\": \"palace-venue\", \"title\": \"Palace venue\", \"description\": \"A wedding hall and garden.\", \"startingPrice\": 20000, \"priceType\": \"STARTING_FROM\", \"city\": {\"id\": \"city-demo\", \"name\": \"Chandigarh\"}, \"address\": {\"street\": \"12 Palace Road\", \"locality\": \"City Centre\", \"state\": \"Chandigarh\", \"pincode\": \"160001\", \"country\": \"India\"}, \"capacityMin\": 100, \"capacityMax\": 500, \"rooms\": 20, \"parkingCapacity\": 50, \"amenities\": [\"Parking\", \"Bridal room\"], \"metadata\": {\"alcoholAllowed\": false, \"outsideCateringAllowed\": true}, \"venueTypes\": [{\"venueType\": {\"id\": \"banquet-demo\", \"name\": \"Banquet\", \"category\": {\"name\": \"Venue Services\", \"offeringKind\": \"VENUE_PROPERTY\"}}}], \"media\": [], \"vendor\": {\"businessName\": \"Palace Events\", \"about\": \"Celebrate in our garden.\"}}}"
+        }
+      ]
+    },
+    {
+      "name": "Venue not found",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/marketplace/venue-properties/missing-venue"
+      },
+      "response": [
+        {
+          "name": "Venue not found",
+          "originalRequest": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/marketplace/venue-properties/missing-venue"
+          },
+          "status": "Not Found",
+          "code": 404,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\"success\": false, \"message\": \"Venue not found.\"}"
+        }
+      ]
+    }
+  ]
+}

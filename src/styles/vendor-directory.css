@@ -34,7 +34,7 @@
 .vendor-directory--listing .vd-layout > .vd-results { grid-column: 2; }
 .vd-marketplace-sidebar { display: grid; grid-column: 1; grid-row: 1; align-self: start; gap: 16px; position: sticky; top: 82px; }
 .vd-marketplace-filter { padding: 22px; border: 1px solid #eaded8; border-radius: 16px; background: #fff; box-shadow: 0 8px 28px #4d242907; }
-.vd-filter-heading { margin-bottom: 20px; padding-bottom: 17px; border-bottom: 1px solid #efe5df; }
+.vd-filter-heading { margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #efe5df; }
 .vd-filter-heading > span { color: #9a4a65; font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
 .vd-filter-heading h2 { margin: 6px 0; color: #4f2937; font-family: Georgia, 'Times New Roman', serif; font-size: 21px; font-weight: 400; line-height: 1.25; }
 .vd-filter-heading p { color: #88746d; font-size: 11px; line-height: 1.55; }
@@ -43,6 +43,9 @@
 .vd-marketplace-filter label + label { border-top: 1px solid #f1e8e3; padding-top: 12px; }
 .vd-marketplace-filter select:disabled { cursor: not-allowed; opacity: .6; }
 .vd-city-filter { padding-bottom: 10px; }
+.vd-offering-filter { padding-bottom: 10px; }
+.vd-offering-filter .vd-checkbox-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 8px; }
+.vd-offering-filter .vd-checkbox-list label + label { border-top: 0; padding-top: 0; }
 .vd-filter-section-trigger { display: flex; width: 100%; min-height: 40px; align-items: center; justify-content: space-between; gap: 10px; border: 0; background: transparent; color: #413238; font-size: 13px; font-weight: 400; text-align: left; }
 .vd-mui-chevron { width: 18px !important; height: 18px !important; flex-shrink: 0; color: #8f1f3f; transition: transform .2s ease !important; }
 .vd-mui-chevron.is-open { transform: rotate(180deg); }
@@ -232,6 +235,12 @@
 .vd-service-chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 7px 0 10px; padding: 0; }
 .vd-service-chips > li { padding: 4px 9px; border: 1px solid #e8c5d1; border-radius: 999px; background: #fff0f5; color: #8f1f3f; font-size: 11px; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
 .vendor-directory--listing .vd-results { gap: 12px; }
+.vendor-directory--listing .vd-list-title--summary { margin: 18px 0; color: #35252c; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(18px, 1.8vw, 24px); font-weight: 400; }
+.vendor-directory--listing .vd-results-meta--cards { align-items: center; margin: 0 0 4px; padding: 0 3px; }
+.vd-active-filters { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.vd-filter-chip { display: inline-flex; min-height: 27px; align-items: center; gap: 6px; border-radius: 999px; background: #fcecf1; padding: 3px 5px 3px 10px; color: #8f1f3f; font-size: 10px; font-weight: 600; }
+.vd-filter-chip button { display: grid; width: 19px; height: 19px; cursor: pointer; place-items: center; border: 0; border-radius: 50%; background: #fff; color: #8f1f3f; font-size: 14px; line-height: 1; }
+.vd-filter-chip button:hover { background: #8f1f3f; color: #fff; }
 .vendor-directory--listing .vd-card,
 .vendor-directory--listing .vd-card.vd-card-compact { padding: 10px; gap: 12px; flex-direction: row; align-items: flex-start; }
 .vendor-directory--listing .vd-card .vd-card-image,

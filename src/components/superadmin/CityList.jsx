@@ -19,8 +19,8 @@ export default function CityList() {
   const rowsDropdownRef = useRef(null);
   const actionMenuRef = useRef(null);
   const [cities, setCities] = useState([]);
-  const [countryCode, setCountryCode] = useState("IN");
-  const [countryFilter, setCountryFilter] = useState("IN");
+  const [countryCode, setCountryCode] = useState("");
+  const [countryFilter, setCountryFilter] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const [total, setTotal] = useState(0);
@@ -66,7 +66,7 @@ export default function CityList() {
           params: {
             page,
             limit,
-            countryCode: countryFilter,
+            ...(countryFilter ? { countryCode: countryFilter } : {}),
           },
           signal: controller.signal,
         });
@@ -95,9 +95,11 @@ export default function CityList() {
     return () => controller.abort();
   }, [countryFilter, limit, page]);
 
-  function applyCountryFilter(event) {
-    event.preventDefault();
-    setCountryFilter(countryCode.trim().toUpperCase());
+  function applyCountryFilter() {
+    const nextCountryCode = countryCode.trim().toUpperCase();
+    if (nextCountryCode.length !== 0 && nextCountryCode.length !== 2) return;
+    setCountryCode(nextCountryCode);
+    setCountryFilter(nextCountryCode);
     setPage(1);
   }
 
@@ -173,23 +175,37 @@ export default function CityList() {
         <h1 className="text-lg font-semibold text-slate-950">City List</h1>
       </div>
 
-      <form onSubmit={applyCountryFilter} className="flex flex-wrap items-center justify-end gap-3 border-b border-slate-200 px-4 py-2.5">
-        <label className="relative block w-full md:w-[180px]">
+      <div className="flex flex-wrap items-center justify-end gap-3 border-b border-slate-200 px-4 py-2.5">
+        <label className="relative block w-full md:w-[360px]">
+          <span className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400">
+            <svg viewBox="0 0 24 24" className="h-full w-full fill-current" aria-hidden="true">
+              <path d="m20.49 19.07-4.35-4.35a7.1 7.1 0 1 0-1.42 1.42l4.35 4.35 1.42-1.42ZM5 10.5a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0Z" />
+            </svg>
+          </span>
           <input
             value={countryCode}
-            onChange={(event) => setCountryCode(event.target.value.toUpperCase())}
-            maxLength={3}
-            placeholder="Country code"
-            className="h-9 w-full rounded border border-slate-300 bg-white px-3 text-sm font-normal uppercase text-slate-800 outline-none transition placeholder:normal-case placeholder:text-slate-400 focus:border-[#b61f4b]"
+            onChange={(event) => {
+              const nextCountryCode = event.target.value.toUpperCase();
+              setCountryCode(nextCountryCode);
+              if (nextCountryCode.length === 0 || nextCountryCode.length === 2) {
+                setCountryFilter(nextCountryCode);
+                setPage(1);
+              }
+            }}
+            onBlur={applyCountryFilter}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                applyCountryFilter();
+              }
+            }}
+            maxLength={2}
+            placeholder="Search country code"
+            aria-label="Filter cities by country code"
+            className="h-9 w-full rounded border border-slate-300 bg-white pl-10 pr-3 text-sm font-normal uppercase text-slate-800 outline-none transition placeholder:normal-case placeholder:text-slate-400 focus:border-[#b61f4b]"
           />
         </label>
-        <button
-          type="submit"
-          className="h-9 rounded bg-[#b61f4b] px-4 text-sm font-bold text-white hover:bg-[#981a3f]"
-        >
-          Apply Filter
-        </button>
-      </form>
+      </div>
 
       <div className="min-h-0 flex-1 overflow-auto">
         <table className="w-full table-fixed text-left text-sm">

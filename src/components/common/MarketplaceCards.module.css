@@ -1,0 +1,14 @@
+.services, .venues { display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch; }
+.services { gap: 12px; }
+.venues { gap: 20px; }
+.services > * { width: calc((100% - 12px) / 2); height: auto; }
+.venues > * { width: 100%; height: auto; }
+@media (min-width: 640px) {
+  .services > * { width: calc((100% - 24px) / 3); }
+  .venues > * { width: calc((100% - 20px) / 2); }
+}
+@media (min-width: 1024px) {
+  .services > * { width: calc((100% - 36px) / 4); }
+  .venues > * { width: calc((100% - 60px) / 4); }
+}
+@media (min-width: 1280px) { .services > * { width: calc((100% - 48px) / 5); } }

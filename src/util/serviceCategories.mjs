@@ -1,7 +1,7 @@
 export function collectionPage(response, page, limit) {
   if (response?.success === false) throw new Error(response.message || "Unable to load categories.");
   const data = response?.data ?? response ?? {};
-  const items = Array.isArray(data) ? data : data.items ?? data.results ?? data.categories ?? data.serviceCategories ?? data.subcategories ?? data.serviceSubcategories ?? data.cities ?? data.data ?? [];
+  const items = Array.isArray(data) ? data : data.items ?? data.results ?? data.categories ?? data.serviceCategories ?? data.subcategories ?? data.serviceSubcategories ?? data.capabilities ?? data.cities ?? data.data ?? [];
   const pagination = data.pagination ?? data.meta?.pagination ?? response?.pagination ?? response?.meta?.pagination ?? data.meta ?? response?.meta ?? data;
   const rawTotal = pagination.total ?? pagination.totalCount ?? pagination.count;
   const total = rawTotal === undefined ? null : Number(rawTotal);

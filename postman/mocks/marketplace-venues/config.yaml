@@ -1,0 +1,11 @@
+version: 1
+id: 88824b41-386d-4efa-b579-f609704569a4
+name: Marketplace venues
+slug: marketplace-venues
+protocol: http
+interceptRequests: true
+port: 4500
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

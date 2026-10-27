@@ -1,5 +1,9 @@
 export const agentPanelSlugs = {
   Overview: "overview",
+  "Add Service": "add-service",
+  "Service List": "service-list",
+  "Add Property": "add-property",
+  "Property List": "property-list",
   "Update Profile": "update-profile",
   "Update Password": "update-password",
   "Manage Services": "add-services",
