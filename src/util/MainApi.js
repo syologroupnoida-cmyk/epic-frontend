@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_BASE_URL } from "./apiBaseUrl.mjs";
 import {
   clearAuthSession,
   extractAuthPayload,
@@ -7,8 +8,6 @@ import {
   setAuthTokens,
 } from "@/util/authSession";
 
-const API_BASE_URL = "https://api.wedplanners.in/api/v1";
-
 const MainApi = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -16,6 +15,20 @@ const MainApi = axios.create({
   },
   timeout: 20000,
 });
+
+let refreshRequest;
+
+function refreshSession(refreshToken) {
+  if (!refreshRequest) {
+    refreshRequest = axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken }, { timeout: 20000 }).then((response) => {
+      const tokens = extractAuthPayload(response.data);
+      if (!tokens.accessToken) throw new Error("Refresh response did not include an access token.");
+      setAuthTokens({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken || refreshToken });
+      return tokens.accessToken;
+    }).finally(() => { refreshRequest = undefined; });
+  }
+  return refreshRequest;
+}
 
 MainApi.interceptors.request.use((config) => {
   const token = getAccessToken();
@@ -48,34 +61,23 @@ MainApi.interceptors.response.use(
     const originalRequest = error.config;
     const status = error.response?.status;
     const refreshToken = getRefreshToken();
-    const isAuthRefreshRequest = originalRequest?.url?.includes("/auth/refresh");
+    const isAuthRequest = /\/auth\/(?:login|register|google\/login|refresh)(?:[/?]|$)/.test(originalRequest?.url || "");
 
-    if (status !== 401 || originalRequest?._retry || !refreshToken || isAuthRefreshRequest) {
+    if (status !== 401 || !originalRequest || originalRequest._retry || !refreshToken || isAuthRequest) {
       return Promise.reject(error);
     }
 
     originalRequest._retry = true;
 
     try {
-      const refreshResponse = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-        refreshToken,
-      });
-      const tokens = extractAuthPayload(refreshResponse.data);
-      setAuthTokens({
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken || refreshToken,
-      });
-
-      if (!tokens.accessToken) {
-        throw new Error("Refresh response did not include an access token.");
-      }
+      const accessToken = await refreshSession(refreshToken);
 
       if (typeof originalRequest.headers?.set === "function") {
-        originalRequest.headers.set("Authorization", `Bearer ${tokens.accessToken}`);
+        originalRequest.headers.set("Authorization", `Bearer ${accessToken}`);
       } else {
         originalRequest.headers = {
           ...(originalRequest.headers || {}),
-          Authorization: `Bearer ${tokens.accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         };
       }
       return MainApi(originalRequest);

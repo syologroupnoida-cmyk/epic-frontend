@@ -1,0 +1,85 @@
+{
+  "generator": "Built-in image_gen.imagegen",
+  "assets": [
+    {
+      "key": "privacy",
+      "file": "public/images/content/privacy-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: A refined still life of closed ivory correspondence envelopes, a small brass key and delicate wedding rings on a warm stone tabletop, soft blush flowers at the far edges; a reassuring privacy and personal correspondence theme. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "terms",
+      "file": "public/images/content/terms-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: An elegant unmarked ivory document folder with a gold fountain pen, wedding rings and a small white floral arrangement on a polished wooden desk; a wedding planning agreement theme without any visible writing. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "about",
+      "file": "public/images/content/about-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: A welcoming wedding planning studio with a round consultation table, ivory floral samples and blush fabric swatches, sunlit arches behind, no people; a thoughtful collaborative celebration planning atmosphere. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "contact",
+      "file": "public/images/content/contact-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: An elegant wedding consultation lounge with two comfortable ivory chairs and a small table holding flowers and a blank notebook, softly glowing garden beyond; an inviting conversation and wedding support theme. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "stories",
+      "file": "public/images/content/stories-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: A candid Indian wedding couple in elegant traditional ivory and blush attire walking together beneath soft floral arches in a palace garden, captured as a quiet affectionate moment, realistic proportions, no prominent faces in the center. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "invitations",
+      "file": "public/images/content/invitations-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: Beautiful blank cream cotton-paper wedding invitations and envelopes, subtle embossed floral ornament, a deep rose wax seal, silk ribbons and scattered pale rose petals on ivory linen, entirely blank stationery without lettering. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "destinations",
+      "file": "public/images/content/destinations-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: A serene seaside destination wedding mandap at golden hour, graceful ivory drapes, blush flowers, palm silhouettes and a calm ocean stretching behind an intimate resort terrace. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "planner",
+      "file": "public/images/content/planner-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: A professional wedding planning workspace with a blank open planner, linen swatches, flower samples and a delicate venue miniature, warm natural light, thoughtful refined arrangement, no readable pages. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "luxury",
+      "file": "public/images/content/luxury-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: An opulent Indian palace wedding reception at blue hour, glowing chandeliers, ivory floral installations, beautifully set tables, grand sandstone arches and warm reflections in a pool. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "partner",
+      "file": "public/images/content/partner-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: A professional Indian wedding services team arranging floral samples and a blank portfolio at a tasteful studio consultation table, candid collaboration, natural human proportions, people positioned around the edges. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "blog",
+      "file": "public/images/content/blog-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: An editorial wedding inspiration still life with a blank linen-bound journal, floral samples, wedding photography prints without identifiable faces, neutral swatches and silk ribbon, warm soft daylight. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "home",
+      "file": "public/images/content/home-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: A breathtaking Indian wedding garden at sunset with a blush and ivory floral mandap, warm lanterns, graceful courtyard architecture and soft golden light, welcoming celebratory atmosphere. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "venues",
+      "file": "public/images/content/venues-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: A magnificent heritage wedding venue with sandstone arches framing a manicured lawn, ivory floral ceremony seating, sunset sky and glowing lanterns, architectural editorial photography. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "vendors",
+      "file": "public/images/content/vendors-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: An Indian wedding photographer and floral stylist quietly preparing an elegant celebration at a garden venue, candid professional atmosphere, floral details at the edges, realistic people and camera. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "marketplace",
+      "file": "public/images/content/marketplace-banner.png",
+      "prompt": "Use case: photorealistic-natural. Asset: premium landscape website banner photograph for Epic Wedz, an Indian wedding discovery and planning portal. Scene: A curated wedding essentials still life with ivory bridal fabric, delicate wedding jewellery, blank invitation envelopes, floral accents, gift ribbons and artisan details arranged on warm stone. Composition: cinematic wide horizontal, intended to be cropped to a 4:1 website banner. Keep focal details within the middle horizontal band and around the sides, leaving the central area visually calm for a centered white heading overlay. Sophisticated editorial photography with realistic materials, soft depth of field, an ivory, blush, muted burgundy and warm gold palette, rich but natural lighting. No text, no letters, no logos, no watermarks, no UI, no frames. Generate a wide landscape image."
+    },
+    {
+      "key": "vendor-enquiry",
+      "file": "public/images/content/vendor-enquiry-portrait.png",
+      "prompt": "Generate a premium portrait editorial photograph asset for the LEFT side of an Indian wedding vendor enquiry popup on Epic Wedz. Use case: photorealistic-natural. A beautifully creative, intimate luxury Indian wedding setting at blue-hour sunset: sculptural blush-pink floral arch and soft ivory draping framing an elegant lakeside palace courtyard, floating rose petals, glowing hanging glass lanterns and warm candlelight, a small aisle leading into the scene. Rich burgundy, rose, ivory and soft antique gold accents that suit a refined wedding website. Artful foreground florals, cinematic depth, realistic delicate textures, tasteful rather than crowded. Portrait composition approximately 2:3, hero floral arch in upper and middle frame, lower quarter darker and visually calm for white text overlay added later in code. No text, no lettering, no watermark, no logos, no people. This must be a polished standalone photographic website image, NOT a screenshot or UI mockup."
+    }
+  ]
+}

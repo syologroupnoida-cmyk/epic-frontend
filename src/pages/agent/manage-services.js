@@ -5,5 +5,5 @@ export default function ManageServicesPage() {
 }
 
 export function getServerSideProps() {
-  return { redirect: { destination: "/agent/add-services", permanent: false } };
+  return { redirect: { destination: "/partner/add-services", permanent: false } };
 }

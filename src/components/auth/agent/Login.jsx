@@ -222,7 +222,7 @@ export default function AgentLogin() {
           </button>
 
           <p className="epic-login-create">
-            New vendor? <Link href="/agent/sign-up">Create an account</Link>
+            New vendor? <Link href="/partner/sign-up">Create an account</Link>
           </p>
         </form>
       </section>

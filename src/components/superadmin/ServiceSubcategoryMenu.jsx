@@ -51,7 +51,7 @@ export default function ServiceSubcategoryMenu({ category, onLoaded, onEdit, onD
       <div className="border-b border-rose-100 px-3 py-1.5 text-xs font-semibold text-stone-500">{category.name}</div>
       {loading ? <p role="status" className="p-4 text-sm text-stone-500">Loading subcategories…</p> : error ? <div role="alert" className="p-4 text-sm text-red-600">{error}<button type="button" onClick={loadServices} className="mt-2 block font-semibold underline">Try again</button></div> : category.subcategories.length ? <ul className="py-1">
         {category.subcategories.map((service, index) => <li key={service.id || index} className="group flex items-center justify-between gap-2 px-3 py-1.5 hover:bg-rose-50 focus-within:bg-rose-50">
-          <span className="min-w-0 text-[13px] leading-5 text-stone-800">{service.name}</span>
+          <span className="min-w-0 text-xs leading-5 text-stone-800">{service.name}</span>
           {service.id && <span className="flex shrink-0 gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100">
             <button type="button" aria-label={`Edit ${service.name}`} title={`Edit ${service.name}`} onClick={() => { setAnchor(null); onEdit(service); }} className="grid h-7 w-7 cursor-pointer place-items-center rounded text-[#b61f4b] hover:bg-rose-100"><ServiceActionIcon action="edit" /></button>
             <button type="button" aria-label={`Delete ${service.name}`} title={`Delete ${service.name}`} onClick={() => { setAnchor(null); onDelete(service); }} className="grid h-7 w-7 cursor-pointer place-items-center rounded text-red-600 hover:bg-red-100"><ServiceActionIcon action="delete" /></button>

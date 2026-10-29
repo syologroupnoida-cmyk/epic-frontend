@@ -1,3 +1,4 @@
+import { websiteContent } from './websiteContent.mjs';
 import heroMandap from "@/images/hero-mandap.png";
 import heroReception from "@/images/hero-reception.png";
 import heroPheras from "@/images/hero-pheras.png";
@@ -37,27 +38,27 @@ export const brandTagline =
 
 export const heroSlides = [
   {
-    image: heroMandap,
-    alt: "Indian wedding couple under a floral mandap",
-    title: "Find Your Perfect Wedding Team",
-    text: "Venues, planners, decorators, caterers, and artists ready for your celebration.",
+    image: websiteContent.home.image,
+    alt: "An elegant Indian wedding garden at sunset",
+    title: websiteContent.home.title,
+    text: websiteContent.home.intro[0],
   },
   {
     image: heroReception,
     alt: "Indian wedding couple walking through a palace reception",
-    title: "Celebrate Every Moment In Style",
+    title: "Find Your Perfect Wedding Team",
     text: "Shortlist premium vendors and reception ideas for a memorable wedding night.",
   },
   {
     image: heroPheras,
     alt: "Indian wedding couple during pheras ceremony",
-    title: "Plan Rituals With Trusted Experts",
+    title: "Wedding Inspiration",
     text: "Discover specialists for ceremonies, decor, photography, and family events.",
   },
   {
     image: heroDestination,
     alt: "Indian destination wedding couple at sunset",
-    title: "Dream Destinations Start Here",
+    title: "Destination Weddings",
     text: "",
   },
 ];
@@ -159,11 +160,11 @@ export const serviceSections = [
 ];
 
 export const luxuryWeddingSection = {
-  title: "Luxury Wedding",
+  title: websiteContent.luxury.title,
   slug: "luxury-wedding",
   image: luxuryWedding,
   eyebrow: "Premium celebrations",
-  text: "Create a couture wedding experience with grand venues, signature decor, hospitality planning, and high-touch vendor coordination.",
+  text: websiteContent.luxury.intro[0],
   cards: ["Royal Venues", "Designer Decor", "Concierge Planning"],
 };
 
@@ -173,23 +174,23 @@ export const destinationOptions = [
     slug: "national-wedding",
     image: destinationNational,
     position: "center",
-    text: "Palaces, forts, beaches, and hill resorts across India for destination wedding celebrations.",
+    text: websiteContent.destinations.sections[0].paragraphs[0],
   },
   {
     title: "Destination Wedding Abroad",
     slug: "international-wedding",
     image: destinationInternational,
     position: "center",
-    text: "Seaside resorts, Mediterranean venues, and global wedding escapes for premium celebrations.",
+    text: websiteContent.destinations.sections[1].paragraphs[0],
   },
 ];
 
 export const weddingDestinationSection = {
-  title: "Destination Wedding",
+  title: websiteContent.destinations.title,
   slug: "wedding-destination",
   image: destinationInternational,
   eyebrow: "Destination planning",
-  text: "Explore national and international destination weddings with curated venues, decor ideas, and planning support.",
+  text: websiteContent.home.sections.find((section) => section.title === "Destination Weddings").paragraphs[0],
 };
 
 export const nationalDestinationCircles = [
@@ -383,25 +384,25 @@ export const invitationCards = [
     title: "Wedding Invitation",
     slug: "wedding-invitation",
     image: inviteWedding,
-    text: "Royal rose and gold invitation design for the wedding ceremony.",
+    text: websiteContent.invitations.sections[0].paragraphs[0],
   },
   {
     title: "Mehndi Invitation",
     slug: "mehndi-invitation",
     image: inviteMehndi,
-    text: "Marigold and mehendi inspired invite for colorful pre-wedding events.",
+    text: websiteContent.invitations.sections[2].paragraphs[0],
   },
   {
     title: "Engagement Invitation",
     slug: "engagement-invitation",
     image: inviteEngagement,
-    text: "Soft floral engagement invite with a premium romantic layout.",
+    text: websiteContent.invitations.sections[1].paragraphs[0],
   },
   {
     title: "Reception Invitation",
     slug: "reception-invitation",
     image: inviteReception,
-    text: "Elegant evening reception invite with velvet and gold details.",
+    text: websiteContent.invitations.sections[3].paragraphs[0],
   },
 ];
 
@@ -478,7 +479,7 @@ export const allCards = [
     ...item,
     image: serviceSections.find((service) => service.slug === item.slug)?.image,
     type: "Service",
-    text: "Explore curated vendors, packages, photos, and dummy details for this wedding service.",
+    text: "Explore wedding professionals across multiple categories and connect with providers who understand your expectations.",
   })),
   ...vendorCategories.map((item) => ({ ...item, type: "Vendor Category" })),
   ...serviceSections.map((item) => ({ ...item, type: "Wedding Service" })),

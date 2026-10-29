@@ -1,6 +1,6 @@
 # Vendor properties
 
-Property → Add Property / Property List use `/agent/add-property`, `/agent/property-list`, and `/agent/edit-property/{venuePropertyId}`.
+Property → Add Property / Property List use `/partner/add-property`, `/partner/property-list`, and `/partner/edit-property/{venuePropertyId}`.
 
 The existing authenticated client supplies the `/api/v1` prefix. Creation POSTs to `/vendor/venue-properties` with the supplied address, capacity, amenity, metadata, venue type and media fields. Draft Property sends `submitForReview: false`; Submit Property sends `true`.
 

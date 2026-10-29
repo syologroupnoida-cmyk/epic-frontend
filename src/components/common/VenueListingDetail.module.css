@@ -5,3 +5,10 @@
 .title h1 { min-width: 0; overflow-wrap: anywhere; }
 @media (min-width: 951px) { .sidebar { position: sticky; top: 105px; } }
 @media (max-width: 950px) { .sidebar { display: block; } }
+
+.page.page { --accent: #b61f4b; --ink: #421321; background: linear-gradient(180deg, #fff, #fff8fa); }
+.page .primaryButton:hover { background: #981a3f; }
+.page .primaryButton:disabled { background: #d8b2be; }
+.page .primaryButton + .primaryButton { margin-top: 10px; }
+.page .contactButtons a:hover { background: #fff1f5; }
+.page .contactButtons a { color: #b61f4b; }

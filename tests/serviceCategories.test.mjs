@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { loadAllServiceCategories, loadAllServiceSubcategories, normalizeCategoryResponse } from "../src/util/serviceCategories.mjs";
+import { loadAllServiceCategories, loadAllServiceSubcategories, loadPublicServiceCategories, normalizeCategoryResponse } from "../src/util/serviceCategories.mjs";
 
 const category = (id) => ({ id: String(id), name: `Category ${id}` });
 
@@ -72,4 +72,60 @@ test("stops requests after cancellation", async () => {
   const controller = new AbortController();
   controller.abort();
   await assert.rejects(loadAllServiceCategories(async () => ({ data: [] }), { signal: controller.signal }), { name: "AbortError" });
+});
+
+
+test("page and footer share one request and retain all 20 categories including venues", async () => {
+  let calls = 0;
+  const get = async () => {
+    calls += 1;
+    return { data: { data: {
+      categories: Array.from({ length: 20 }, (_, index) => ({
+        ...category(index), offeringKind: index === 18 ? "VENUE_PROPERTY" : "SERVICE",
+      })),
+      pagination: { total: 20, page: 1, limit: 20, totalPages: 1, hasNextPage: false },
+    } } };
+  };
+  const [page, footer, replay] = await Promise.all([
+    loadPublicServiceCategories(get), loadPublicServiceCategories(get), loadPublicServiceCategories(get),
+  ]);
+  assert.equal(calls, 1);
+  assert.equal(page.length, 20);
+  assert.equal(page[18].offeringKind, "VENUE_PROPERTY");
+  assert.strictEqual(page, footer);
+  assert.strictEqual(page, replay);
+  // A later page visit gets fresh data rather than keeping a permanent cache.
+  await loadPublicServiceCategories(get);
+  assert.equal(calls, 2);
+});
+
+test("Strict Mode cleanup cancels its subscriber without restarting the shared category request", async () => {
+  let calls = 0;
+  let resolveResponse;
+  const get = () => {
+    calls += 1;
+    return new Promise((resolve) => { resolveResponse = resolve; });
+  };
+  const controller = new AbortController();
+  const cancelled = loadPublicServiceCategories(get, { signal: controller.signal });
+  controller.abort();
+  const cancellation = assert.rejects(cancelled, { name: "AbortError" });
+  const replay = loadPublicServiceCategories(get);
+  resolveResponse({ data: [category(1)] });
+  assert.equal((await replay).length, 1);
+  await cancellation;
+  assert.equal(calls, 1);
+});
+
+test("a failed shared public category request can be retried", async () => {
+  let calls = 0;
+  const get = async () => {
+    if (++calls === 1) throw new Error("Categories unavailable");
+    return { data: [category(1)] };
+  };
+  const attempts = await Promise.allSettled([loadPublicServiceCategories(get), loadPublicServiceCategories(get)]);
+  assert.ok(attempts.every((attempt) => attempt.status === "rejected"));
+  assert.equal(calls, 1);
+  assert.equal((await loadPublicServiceCategories(get)).length, 1);
+  assert.equal(calls, 2);
 });

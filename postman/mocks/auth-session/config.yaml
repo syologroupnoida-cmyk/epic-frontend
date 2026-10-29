@@ -1,0 +1,10 @@
+version: 1
+name: Auth session regression
+slug: auth-session
+protocol: http
+port: 4501
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

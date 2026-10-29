@@ -23,8 +23,8 @@ export default function AgentFooter() {
         <div>
           <h3 className="font-serif text-xl font-bold">Agent Links</h3>
           <div className="mt-4 grid gap-2 text-sm text-rose-100/80">
-            <Link href="/agent/login" className="hover:text-white">Login</Link>
-            <Link href="/agent/sign-up" className="hover:text-white">Sign up</Link>
+            <Link href="/partner/login" className="hover:text-white">Login</Link>
+            <Link href="/partner/sign-up" className="hover:text-white">Sign up</Link>
             <a href="#workflow" className="hover:text-white">How it works</a>
             <a href="#vendors" className="hover:text-white">Vendor network</a>
           </div>

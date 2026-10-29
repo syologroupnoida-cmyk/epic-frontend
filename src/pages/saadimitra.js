@@ -104,7 +104,7 @@ export default function SaadiMitraPage() {
               SaadiMitra Service
             </h1>
 
-            <div className="mt-6 overflow-hidden rounded bg-white shadow-[0_14px_45px_rgb(15_23_42_/_0.10)]">
+            <div className="mt-6 overflow-hidden rounded-2xl bg-white shadow-[0_14px_45px_rgb(15_23_42_/_0.10)]">
               <div className="grid min-h-[500px] lg:grid-cols-[0.95fr_1.05fr]">
                 <div className="flex flex-col justify-center px-6 py-10 sm:px-10 lg:px-12">
                   <p className="text-sm font-black uppercase tracking-[0.18em] text-[#e72f78]">
@@ -140,7 +140,7 @@ export default function SaadiMitraPage() {
                   </div>
                 </div>
 
-                <div className="relative min-h-[360px] overflow-hidden">
+                <div className="relative m-3 min-h-[360px] overflow-hidden rounded-2xl">
                   <Image
                     src={stories[1].image}
                     alt="Couple exploring wedding vendors on phone"
@@ -295,7 +295,7 @@ export default function SaadiMitraPage() {
                 ))}
               </div>
             </div>
-            <div className="relative aspect-[16/10] overflow-hidden rounded border border-stone-200 bg-white shadow-sm">
+            <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
               <Image
                 src={destinationOptions[1].image}
                 alt="Destination wedding planning support"

@@ -82,8 +82,22 @@ export function loadAllServiceSubcategories(get, categoryId, options = {}) {
   });
 }
 
-export function loadPublicServiceCategories(get, options) {
-  return loadAllOptions(get, "/service-categories", normalizeServiceCategory, options);
+// The page and footer share the same catalog, including during Strict Mode's
+// effect replay. A subscriber cancelling must not cancel the other subscribers.
+const publicCategoryRequests = new WeakMap();
+
+export async function loadPublicServiceCategories(get, { signal } = {}) {
+  signal?.throwIfAborted();
+  let request = publicCategoryRequests.get(get);
+  if (!request) {
+    request = loadAllOptions(get, "/service-categories", normalizeServiceCategory);
+    publicCategoryRequests.set(get, request);
+    const cleanup = () => publicCategoryRequests.delete(get);
+    request.then(cleanup, cleanup);
+  }
+  const items = await request;
+  signal?.throwIfAborted();
+  return items;
 }
 
 export function loadPublicServiceSubcategories(get, categoryId, options = {}) {

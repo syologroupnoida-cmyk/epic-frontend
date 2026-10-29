@@ -1,4 +1,6 @@
 import Image from "next/image";
+import useFooterCategories from "@/util/useFooterCategories";
+import { vendorMenuHref } from "@/util/vendorMenuNavigation.mjs";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import CitySearch from "@/components/common/CitySearch";
@@ -314,9 +316,14 @@ const vendorMegaSecondary = [
   { title: "Promotions", slug: "promotions" },
 ];
 
-function getMenuHref(menuTitle, slug) {
+function getMenuHref(menuTitle, slug, categories) {
+  if (menuTitle === "Venues") {
+    const venue = venueLinks.find((item) => item.slug === slug);
+    return `/venues?search=${encodeURIComponent(venue?.title || slug.replaceAll('-', ' '))}`;
+  }
   if (menuTitle === "Wedding Vendors") {
-    return `/vendors/${slug}`;
+    const option = navItems.find((item) => item.title === menuTitle).links.find((item) => item.slug === slug);
+    return vendorMenuHref(option || { slug }, categories);
   }
 
   if (menuTitle === "Destination Wedding") {
@@ -353,6 +360,7 @@ const navItems = [
 ];
 
 export default function Header() {
+  const { items: menuCategories } = useFooterCategories();
   const [activeMenu, setActiveMenu] = useState(null);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -419,7 +427,7 @@ export default function Header() {
         </Link>
 
         <nav
-          className="hidden items-stretch gap-6 text-sm font-semibold text-stone-700 lg:flex"
+          className="hidden items-stretch gap-4 text-xs font-semibold text-stone-700 lg:flex"
           onWheel={() => setActiveMenu(null)}
         >
           {navItems.map((item) => (
@@ -432,8 +440,8 @@ export default function Header() {
               onKeyDown={(event) => { if (event.key === "Escape") setActiveMenu(null); }}
             >
               <Link
-                href={item.title === "Wedding Vendors" ? "/vendors" : "#"}
-                className="flex items-center gap-2 py-3 hover:text-[#b61f4b]"
+                href={item.title === "Wedding Vendors" ? "/vendors" : item.title === "Venues" ? "/venues" : item.title === "Real Weddings" ? "/real-weddings" : "/destination-weddings"}
+                className="flex items-center gap-1.5 py-2 hover:text-[#b61f4b]"
               >
                 {item.title}
                 <span className="header-chevron" aria-hidden="true" />
@@ -441,7 +449,7 @@ export default function Header() {
               {!item.isVendorMega && item.links.length <= 6 && activeMenu === item.title && (
                 <div className="header-compact-dropdown">
                   {item.links.map((link) => (
-                    <Link key={link.slug} href={getMenuHref(item.title, link.slug)} onClick={() => setActiveMenu(null)}>
+                    <Link key={link.slug} href={getMenuHref(item.title, link.slug, menuCategories)} onClick={() => setActiveMenu(null)}>
                       {link.title}
                     </Link>
                   ))}
@@ -451,21 +459,21 @@ export default function Header() {
           ))}
           <Link
             href="/luxury-wedding"
-            className="flex items-center gap-2 py-3 hover:text-[#b61f4b]"
+            className="flex items-center gap-1.5 py-2 hover:text-[#b61f4b]"
             onMouseEnter={() => setActiveMenu(null)}
           >
             Luxury Wedding
           </Link>
           <Link
             href="/saadimitra"
-            className="flex items-center gap-2 py-3 hover:text-[#b61f4b]"
+            className="flex items-center gap-1.5 py-2 hover:text-[#b61f4b]"
             onMouseEnter={() => setActiveMenu(null)}
           >
             SaadiMitra
           </Link>
           <Link
             href="/marketplace"
-            className="flex items-center gap-2 py-3 hover:text-[#b61f4b]"
+            className="flex items-center gap-1.5 py-2 hover:text-[#b61f4b]"
             onMouseEnter={() => setActiveMenu(null)}
           >
             Marketplace
@@ -482,7 +490,7 @@ export default function Header() {
         >
           <div className={`rounded border border-rose-100 bg-white p-3 shadow-2xl ${
             megaNav
-              ? "w-screen rounded-none border-x-0 border-t border-b border-rose-100 p-0 shadow-none"
+              ? "w-screen rounded-none border-x-0 border-t border-b-0 border-rose-100 p-0 shadow-none"
               : ""
           }`}>
             {megaNav?.isVendorMega ? (
@@ -492,7 +500,7 @@ export default function Header() {
                     {vendorMegaPrimary.map((link) => (
                       <Link
                         key={link.slug}
-                        href={getMenuHref(megaNav.title, link.slug)}
+                        href={getMenuHref(megaNav.title, link.slug, menuCategories)}
                         onClick={() => setActiveMenu(null)}
                         className="header-vendor-card"
                       >
@@ -506,7 +514,7 @@ export default function Header() {
                     {vendorMegaSecondary.map((link) => (
                       <Link
                         key={link.slug}
-                        href={getMenuHref(megaNav.title, link.slug)}
+                        href={getMenuHref(megaNav.title, link.slug, menuCategories)}
                         onClick={() => setActiveMenu(null)}
                       >
                         {link.title}
@@ -523,7 +531,7 @@ export default function Header() {
                     {megaNav.links.map((link) => (
                         <Link
                           key={link.slug}
-                          href={getMenuHref(megaNav.title, link.slug)}
+                          href={getMenuHref(megaNav.title, link.slug, menuCategories)}
                           onClick={() => setActiveMenu(null)}
                         >
                           {link.title}
@@ -588,7 +596,7 @@ export default function Header() {
                           {group.links.map((link) => (
                             <Link
                               key={link.slug}
-                              href={getMenuHref(item.title, link.slug)}
+                              href={getMenuHref(item.title, link.slug, menuCategories)}
                               onClick={() => setIsDrawerOpen(false)}
                             >
                               {link.title}
@@ -599,7 +607,7 @@ export default function Header() {
                     : item.links.map((link) => (
                         <Link
                           key={link.slug}
-                          href={getMenuHref(item.title, link.slug)}
+                          href={getMenuHref(item.title, link.slug, menuCategories)}
                           onClick={() => setIsDrawerOpen(false)}
                         >
                           {link.title}

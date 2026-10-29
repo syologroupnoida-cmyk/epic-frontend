@@ -22,7 +22,8 @@ function normalizeToken(value) {
     );
   }
 
-  const rawValue = String(value).trim();
+  if (typeof value !== "string") return "";
+  const rawValue = value.trim();
 
   if ((rawValue.startsWith("{") && rawValue.endsWith("}")) || (rawValue.startsWith('"') && rawValue.endsWith('"'))) {
     try {
@@ -32,22 +33,32 @@ function normalizeToken(value) {
     }
   }
 
-  return rawValue.replace(/^Bearer\s+/i, "").trim();
+  const token = rawValue.replace(/^(?:Bearer\s+)+/i, "").trim();
+  return !token || /\s/.test(token) || ["null", "undefined", "bearer"].includes(token.toLowerCase()) ? "" : token;
 }
 
 function readStorage(key) {
   if (!isBrowser()) return "";
-  return window.localStorage.getItem(key) || "";
+  try { return window.localStorage.getItem(key) || ""; }
+  catch { return ""; }
 }
 
 function writeStorage(key, value) {
   if (!isBrowser() || !value) return;
-  window.localStorage.setItem(key, value);
+  try { window.localStorage.setItem(key, value); } catch { /* Cookies can still retain the session. */ }
 }
 
 function removeStorage(key) {
   if (!isBrowser()) return;
-  window.localStorage.removeItem(key);
+  try { window.localStorage.removeItem(key); } catch { /* Continue clearing the cookie session. */ }
+}
+
+function readCookie(key) {
+  if (!isBrowser()) return "";
+  const entry = document.cookie.split(";").map((item) => item.trim()).find((item) => item.startsWith(`${key}=`));
+  if (!entry) return "";
+  try { return decodeURIComponent(entry.slice(key.length + 1)); }
+  catch { return ""; }
 }
 
 function writeCookie(key, value) {
@@ -61,21 +72,26 @@ function removeCookie(key) {
 }
 
 export function getAccessToken() {
-  return normalizeToken(readStorage(ACCESS_TOKEN_KEY));
+  return normalizeToken(readCookie(ACCESS_TOKEN_KEY)) || normalizeToken(readStorage(ACCESS_TOKEN_KEY));
 }
 
 export function getRefreshToken() {
-  return normalizeToken(readStorage(REFRESH_TOKEN_KEY));
+  return normalizeToken(readCookie(REFRESH_TOKEN_KEY)) || normalizeToken(readStorage(REFRESH_TOKEN_KEY));
 }
 
 export function setAuthTokens({ accessToken, refreshToken, role }) {
   const normalizedAccessToken = normalizeToken(accessToken);
   const normalizedRefreshToken = normalizeToken(refreshToken);
+  if (!normalizedAccessToken) throw new Error("Login did not return a valid access token. Please sign in again.");
 
   writeStorage(ACCESS_TOKEN_KEY, normalizedAccessToken);
   writeStorage(REFRESH_TOKEN_KEY, normalizedRefreshToken);
   writeCookie(ACCESS_TOKEN_KEY, normalizedAccessToken);
   writeCookie(REFRESH_TOKEN_KEY, normalizedRefreshToken);
+  if (!normalizedRefreshToken) {
+    removeStorage(REFRESH_TOKEN_KEY);
+    removeCookie(REFRESH_TOKEN_KEY);
+  }
   if (role) {
     writeStorage(AUTH_ROLE_KEY, role);
     writeCookie(AUTH_ROLE_KEY, role);

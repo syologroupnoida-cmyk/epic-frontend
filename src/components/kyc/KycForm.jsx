@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { Autocomplete, TextField } from "@mui/material";
 import MainApi from "@/util/MainApi";
 import { filterCities, loadAllCities } from "@/util/cities.mjs";
 import { getApiErrorMessage } from "@/util/authApi";
@@ -586,7 +587,7 @@ export default function KycForm() {
     if (!showSuccessModal) return undefined;
 
     const timeoutId = window.setTimeout(() => {
-      router.replace("/agent/login");
+      router.replace("/partner/login");
     }, 1800);
 
     return () => window.clearTimeout(timeoutId);
@@ -609,9 +610,7 @@ export default function KycForm() {
     setForm((current) => ({ ...current, [name]: value }));
   }
 
-  function updatePrimaryCity(event) {
-    const city = cityRecords.find((item) => item.id === event.target.value);
-
+  function updatePrimaryCity(city) {
     setForm((current) => ({
       ...current,
       primaryCityId: city?.id || "",
@@ -965,7 +964,7 @@ export default function KycForm() {
             <span className="kyc-slide kyc-slide-two" />
             <span className="kyc-slide kyc-slide-three" />
           </div>
-          <Link href="/agent/login" className="kyc-brand-mark">
+          <Link href="/partner/login" className="kyc-brand-mark">
             <Image
               src="/images/epic-logo-new.png"
               alt="Epic Wedz"
@@ -1124,22 +1123,19 @@ export default function KycForm() {
                   <KycLocationInput label="Country" name="country" type="country" value={form.country} onSelect={(value) => setForm((current) => ({ ...current, country: value }))} />
                   <KycLocationInput label="State" name="state" type="state" value={form.state} onSelect={(value) => setForm((current) => ({ ...current, state: value }))} />
                   <KycLocationInput label="City" name="city" type="city" value={form.city} cities={cityRecords} onSelect={(value) => setForm((current) => ({ ...current, city: value }))} />
-                  <label className="mui-field">
-                    <select
-                      name="primaryCityId"
-                      value={selectedPrimaryCityId}
-                      onChange={updatePrimaryCity}
-                      disabled={isLoadingCities}
-                    >
-                      <option value="">{isLoadingCities ? "Loading cities..." : "Select primary city"}</option>
-                      {cityRecords.map((city) => (
-                        <option key={city.id} value={city.id}>
-                          {[city.name, city.stateName].filter(Boolean).join(", ")}
-                        </option>
-                      ))}
-                    </select>
-                    <span>Primary city</span>
-                  </label>
+                  <Autocomplete
+                    options={cityRecords}
+                    value={selectedPrimaryCity || (form.primaryCityName ? { id: form.primaryCityId, name: form.primaryCityName } : null)}
+                    getOptionLabel={(city) => [city.name, city.stateName].filter(Boolean).join(", ")}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    onChange={(_, city) => updatePrimaryCity(city)}
+                    loading={isLoadingCities}
+                    disabled={isLoadingCities || isSubmitting}
+                    loadingText="Loading cities..."
+                    noOptionsText="No cities found"
+                    renderInput={(params) => <TextField {...params} name="primaryCityId" label="Primary city" placeholder="Select primary city" size="small" />}
+                    sx={{ mb: '10px', '& .MuiOutlinedInput-root': { minHeight: 38, borderRadius: '4px', fontSize: 13, cursor: 'pointer' }, '& .MuiAutocomplete-input': { cursor: 'pointer' }, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#f2c9d4' }, '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#b61f4b' }, '& .MuiInputLabel-root': { fontSize: 13 }, '& .MuiInputLabel-root.Mui-focused': { color: '#b61f4b' } }}
+                  />
                   <label className="mui-field"><input name="pincode" value={form.pincode} onChange={updateField} placeholder=" " /><span>Pincode</span></label>
                   <label className="mui-field"><input name="facebook" value={form.facebook} onChange={updateField} placeholder=" " /><span>Facebook link</span></label>
                   <label className="mui-field"><input name="instagram" value={form.instagram} onChange={updateField} placeholder=" " /><span>Instagram link</span></label>
@@ -1300,7 +1296,7 @@ export default function KycForm() {
             <span className="kyc-success-icon">✓</span>
             <h2 id="kyc-success-title">KYC is submitted</h2>
             <p>KYC approval is pending from Admin side.</p>
-            <button type="button" onClick={() => router.replace("/agent/login")}>
+            <button type="button" onClick={() => router.replace("/partner/login")}>
               Go to login
             </button>
           </div>

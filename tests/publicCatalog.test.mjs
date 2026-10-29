@@ -9,24 +9,19 @@ function responseRecorder() {
   return { headers: {}, setHeader(name, value) { this.headers[name] = value; }, status(code) { this.statusCode = code; return this; }, json(body) { this.body = body; return this; } };
 }
 
-test("public dropdowns load all 22 categories and both cities through local catalog routes without auth headers", async (t) => {
+test("public dropdowns load all 22 categories and both cities directly from the backend without auth headers", async (t) => {
   const originalFetch = globalThis.fetch;
   t.after(() => { globalThis.fetch = originalFetch; });
   const categoryCalls = [];
   globalThis.fetch = async (input, options) => {
     const url = new URL(input, "http://localhost");
     assert.equal(options?.headers, undefined);
-    if (url.origin === "http://localhost") {
-      const res = responseRecorder();
-      await handler({ method: "GET", query: { resource: url.pathname.split("/").at(-1), ...Object.fromEntries(url.searchParams) } }, res);
-      return { ok: res.statusCode === 200, json: async () => res.body };
-    }
     assert.equal(url.origin, "https://api.wedplanners.in");
     const page = Number(url.searchParams.get("page"));
     const city = url.pathname.endsWith("/cities");
     const records = city ? [{ id: "bijnor", name: "Bijnor", stateName: "UP" }, { id: "agra", name: "Agra", stateName: "Uttar Pradesh" }] : Array.from({ length: page === 1 ? 20 : 2 }, (_, index) => ({ id: `${page}-${index}`, name: `Category ${page}-${index}`, slug: `category-${page}-${index}` }));
     if (!city) categoryCalls.push(page);
-    return { status: 200, json: async () => ({ success: true, data: { [city ? "cities" : "categories"]: records, pagination: { total: city ? 2 : 22, page, limit: 20, totalPages: city ? 1 : 2, hasNextPage: !city && page === 1 } } }) };
+    return { ok: true, status: 200, json: async () => ({ success: true, data: { [city ? "cities" : "categories"]: records, pagination: { total: city ? 2 : 22, page, limit: 20, totalPages: city ? 1 : 2, hasNextPage: !city && page === 1 } } }) };
   };
   assert.equal((await loadPublicServiceCategories(getPublicCatalog)).length, 22);
   assert.deepEqual(categoryCalls, [1, 2]);

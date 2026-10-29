@@ -1,3 +1,5 @@
+import { WebsiteSeo, WebsiteActions } from '@/components/common/WebsiteContent';
+import { websiteContent } from '@/data/websiteContent.mjs';
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useId, useState } from "react";
@@ -32,33 +34,33 @@ function detailHref(slug) {
 
 const latestNews = [
   {
-    title: "Pastel mandaps are leading summer wedding decor",
+    title: "Wedding themes",
     tag: "Decor",
-    text: "Couples are choosing softer palettes, layered florals, and warmer aisle lighting.",
+    text: "Discover wedding themes, bridal fashion, decorations, traditional ceremonies and contemporary ideas.",
     image: vendorCategories[3].image,
   },
   {
-    title: "Destination wedding inquiries rise for beach venues",
+    title: "Destination planning",
     tag: "Venues",
-    text: "Goa-style ceremonies and resort weekends remain top choices for intimate guest lists.",
+    text: "Explore remarkable wedding destinations across India and abroad.",
     image: stories[1].image,
   },
   {
-    title: "Interactive food counters become reception favorites",
+    title: "Wedding catering",
     tag: "Catering",
-    text: "Live chaat, dessert, and regional counters are shaping modern wedding menus.",
+    text: "Explore curated menus, regional delicacies, international cuisines and live counters.",
     image: vendorCategories[4].image,
   },
   {
-    title: "Candid film teams now bundle same-day edits",
+    title: "Wedding photography",
     tag: "Photo",
-    text: "Short highlight films are becoming a must-have for reception nights.",
+    text: "Capture every emotion through professional photography and cinematic films.",
     image: vendorCategories[1].image,
   },
   {
-    title: "Digital invites become family-friendly",
+    title: "Wedding invitations",
     tag: "Invites",
-    text: "Couples are pairing printed cards with easy online RSVP links.",
+    text: "Discover designs reflecting your wedding theme, traditions and personality.",
     image: invitationCards[0].image,
   },
 ];
@@ -105,12 +107,7 @@ const ideaServiceItems = [
 
 
 
-const heroStats = [
-  { value: 73000, suffix: "+", label: "Trusted Vendors" },
-  { value: 176, suffix: "", label: "Cities Served" },
-  { value: 50000, suffix: "+", label: "Happy Customers" },
-  { value: 1200, suffix: "+", label: "Destination Experts" },
-];
+
 
 const inspirationSnaps = [
   stories[0],
@@ -156,41 +153,6 @@ function SectionHeader({ eyebrow, title, text, dark = false }) {
   );
 }
 
-function CountUpStat({ value, suffix, label }) {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    let frameId;
-    const duration = 1400;
-    const startTime = performance.now();
-
-    function tick(now) {
-      const progress = Math.min((now - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-
-      setCount(Math.round(value * eased));
-
-      if (progress < 1) {
-        frameId = requestAnimationFrame(tick);
-      }
-    }
-
-    frameId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frameId);
-  }, [value]);
-
-  return (
-    <div className="rounded border border-rose-100 bg-white p-4 text-center shadow-sm">
-      <p className="font-serif text-2xl font-bold text-[#b61f4b] sm:text-3xl">
-        {count.toLocaleString("en-IN")}
-        {suffix}
-      </p>
-      <p className="mt-1 text-xs font-bold text-stone-700">{label}</p>
-    </div>
-  );
-}
-
-
 
 function ImageCard({ item }) {
   return (
@@ -209,7 +171,7 @@ function ImageCard({ item }) {
         />
       </div>
       <div className="p-5">
-        <h3 className="font-serif text-xl font-bold text-stone-950">
+        <h3 className="font-serif text-base font-semibold text-stone-950">
           {item.title}
         </h3>
         <p className="mt-2 text-xs leading-5 text-stone-600">{item.text}</p>
@@ -313,6 +275,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#fff9f5] text-stone-900">
+      <WebsiteSeo pageKey="home" />
       <Header />
 
       <main>
@@ -341,22 +304,21 @@ export default function HomePage() {
                     className="hero-copy absolute inset-0 flex flex-col items-start justify-center"
                     style={{ animationDelay: `${index * 5}s` }}
                   >
-                    <h1 className="hero-title-typing font-serif text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
-                      {slide.title}
-                    </h1>
+                    {index === 0 ? <h1 className="font-serif text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">{slide.title}</h1> : <h2 className="font-serif text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">{slide.title}</h2>}
                   </div>
                 ))}
               </div>
               <p className="mt-5 max-w-2xl text-lg font-semibold leading-8 text-white/90">
-                Epic - {brandTagline}
+                {brandTagline}
               </p>
 
+              <WebsiteActions pageKey="home" dark />
               <div className="mt-7 flex max-w-3xl flex-wrap gap-3">
                 {heroPills.map((item) => (
                   <Link
                     key={item.slug}
-                    href="#"
-                    className="rounded-full border border-white px-5 py-2 text-sm font-bold text-white hover:bg-white hover:text-[#8f1f3f]"
+                    href={`/vendors?search=${encodeURIComponent(item.title)}`}
+                    className="rounded-full border border-white/70 px-4 py-2 text-xs font-normal text-white hover:border-white"
                   >
                     {item.title}
                   </Link>
@@ -365,7 +327,7 @@ export default function HomePage() {
             </div>
 
             <div className="hero-search-panel relative z-30 w-full rounded p-4 pt-10 shadow-2xl backdrop-blur-md lg:justify-self-end">
-              <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap px-2 text-center font-serif text-lg font-bold leading-tight text-white sm:text-xl">
+              <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap px-2 text-center font-serif text-base font-semibold leading-tight text-white sm:text-xl">
                 Search your dream wedding
               </span>
               <div className="grid gap-3">
@@ -387,7 +349,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => router.push(vendorSearchHref(serviceCategories.find((category) => category.name === selectedService), selectedCityRecord || selectedCity))}
-                  className="h-14 rounded bg-[#b61f4b] px-7 text-sm font-bold text-white shadow-lg hover:bg-[#981a3f]"
+                  className="h-11 rounded-full border border-white/70 bg-transparent px-5 text-xs font-normal text-white hover:border-white"
                 >
                   Search <span aria-hidden="true" className="ml-2">→</span>
                 </button>
@@ -398,22 +360,7 @@ export default function HomePage() {
 
         <WeddingCategoryDirectory />
 
-        <section className="relative z-0 bg-white py-5 sm:py-6">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {heroStats.map((stat) => (
-                <CountUpStat
-                  key={stat.label}
-                  value={stat.value}
-                  suffix={stat.suffix}
-                  label={stat.label}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <MarketplaceServices categories={serviceCategories} />
+        <MarketplaceServices categories={serviceCategories} categoriesLoading={categoryLoading} />
 
 
         <section className="bg-white py-10 sm:py-12">
@@ -435,7 +382,7 @@ export default function HomePage() {
                     />
                   </div>
                   <div className="p-4">
-                    <h3 className="font-serif text-xl font-bold text-stone-950">
+                    <h3 className="font-serif text-base font-semibold text-stone-950">
                       {tile.title}
                     </h3>
                     <p className="mt-2 text-xs leading-5 text-stone-600">
@@ -452,8 +399,8 @@ export default function HomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionHeader
               eyebrow="Wedding Inspiration"
-              title="Ideas For Every Wedding Mood"
-              text="Browse the planning topics couples usually search before booking vendors, from beauty and decor to rituals and destination weddings."
+              title="Wedding Inspiration"
+              text={websiteContent.home.sections.find((section) => section.title === "Wedding Inspiration").paragraphs[0]}
               dark
             />
             <div className="mt-7 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
@@ -484,14 +431,14 @@ export default function HomePage() {
 
 
 
-        <MarketplaceVenues categories={serviceCategories} />
+        <MarketplaceVenues categories={serviceCategories} categoriesLoading={categoryLoading} />
 
         <section className="bg-[#fff9f5] py-10 sm:py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionHeader
               eyebrow="Real Weddings' Stories"
-              title="Feel The Customs And Celebrations"
-              text="See real wedding pictures and celebration ideas across cities, cultures, outfits, venues, and decor styles."
+              title="Real Weddings, Beautiful Stories"
+              text={websiteContent.home.sections.find((section) => section.title === "Real Weddings, Beautiful Stories").paragraphs[0]}
             />
             <div className="mt-7 grid gap-4 md:grid-cols-3">
               {stories.map((story) => (
@@ -505,29 +452,13 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#b61f4b]">
-                Download Our Wedding App Today
+                Your Wedding, Made Simple
               </p>
               <h2 className="mt-2 font-serif text-2xl font-bold text-stone-950 sm:text-3xl">
-                Plan, shortlist, and collect ideas anywhere
+                Search, select and connect with your wedding experts
               </h2>
-              <ul className="mt-4 grid gap-2 text-sm font-bold text-stone-700">
-                <li>Book wedding vendors.</li>
-                <li>Browse wedding ideas.</li>
-                <li>Get a free wedding checklist.</li>
-              </ul>
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <input
-                  type="tel"
-                  placeholder="Enter your mobile no. to get the link"
-                  className="h-11 min-w-0 rounded border border-rose-200 bg-white px-4 text-xs font-bold outline-none focus:border-[#b61f4b] sm:flex-1"
-                />
-                <button
-                  type="button"
-                  className="h-11 rounded bg-[#b61f4b] px-6 text-xs font-bold text-white hover:bg-[#981a3f]"
-                >
-                  Send Link
-                </button>
-              </div>
+              <p className="mt-4 text-sm leading-7 text-stone-600">{websiteContent.home.sections.find((section) => section.title === 'Your Wedding, Made Simple').paragraphs[0]}</p>
+              <WebsiteActions pageKey="home" />
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {inspirationSnaps.map((snap, index) => (
@@ -553,8 +484,8 @@ export default function HomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionHeader
               eyebrow="E-Invite"
-              title="Customize Free Online Invitations"
-              text="Choose image-based invitation cards for mehndi, engagement, wedding, and reception events."
+              title={websiteContent.invitations.title}
+              text={websiteContent.invitations.intro[0]}
             />
             <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {invitationCards.map((card) => (
@@ -572,7 +503,7 @@ export default function HomePage() {
                       className="object-cover transition duration-500 group-hover:scale-105"
                     />
                   </div>
-                  <h3 className="mt-3 font-serif text-lg font-bold">
+                  <h3 className="mt-3 font-serif text-base font-semibold">
                     {card.title}
                   </h3>
                   <p className="mt-1.5 text-xs leading-5 text-stone-600">
@@ -611,7 +542,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <Link
-                    href="/destination/national-wedding"
+                    href="/destination-weddings"
                     className="inline-flex w-fit rounded-full bg-[#b61f4b] px-5 py-2.5 text-xs font-bold text-white shadow-lg hover:bg-[#981a3f]"
                   >
                     Explore Destinations
@@ -638,7 +569,7 @@ export default function HomePage() {
                         <span className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#ffd18a] backdrop-blur">
                           {index === 0 ? "Within India" : "Around The World"}
                         </span>
-                        <h3 className="mt-3 font-serif text-2xl font-bold">
+                        <h3 className="mt-3 font-serif text-lg font-semibold">
                           {destination.title}
                         </h3>
                         <p className="mt-2 text-xs leading-5 text-white/82">
@@ -661,14 +592,14 @@ export default function HomePage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#ffd18a]">
-                  Latest News
+                  Planning Inspiration
                 </p>
               <h2 className="mt-2 font-serif text-2xl font-bold sm:text-3xl">
-                  Fresh Wedding Trends
+                  Plan with Confidence
                 </h2>
               </div>
               <Link
-                href="#"
+                href="/blog"
                 className="inline-flex rounded-full border border-white px-5 py-2 text-sm font-bold text-white hover:bg-white hover:text-[#421321]"
               >
                 View All
@@ -693,7 +624,7 @@ export default function HomePage() {
                     <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#ffd18a]">
                       {item.tag}
                     </p>
-                    <h3 className="mt-2 font-serif text-lg font-bold">
+                    <h3 className="mt-2 font-serif text-base font-semibold">
                       {item.title}
                     </h3>
                     <p className="mt-2 text-xs leading-5 text-rose-50/80">
@@ -710,17 +641,17 @@ export default function HomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionHeader
               eyebrow="Marketplace"
-              title="Browse The Wedding Marketplace"
-              text="Explore handpicked vendor and service cards, then open the marketplace page for filters and more options."
+              title={websiteContent.marketplace.title}
+              text={websiteContent.marketplace.intro[0]}
             />
             <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {marketplaceCards.slice(0, 6).map((card) => (
                 <Link
                   key={card.slug}
                   href="/marketplace"
-                  className="group overflow-hidden rounded border border-rose-100 bg-[#fff9f5] shadow-sm"
+                  className="group overflow-hidden rounded-2xl border border-rose-100 bg-[#fff9f5] shadow-sm"
                 >
-                  <div className="relative aspect-[16/10] overflow-hidden">
+                  <div className="relative mx-3 mt-3 aspect-[2/1] overflow-hidden rounded-xl">
                     <Image
                       src={card.image}
                       alt={card.title}
@@ -730,8 +661,8 @@ export default function HomePage() {
                       style={{ objectPosition: card.position || "center" }}
                     />
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-serif text-xl font-bold text-stone-950">
+                  <div className="px-4 pb-4 pt-3">
+                    <h3 className="font-serif text-base font-semibold text-stone-950">
                       {card.title}
                     </h3>
                     <p className="mt-2 text-xs leading-5 text-stone-600">
@@ -751,8 +682,8 @@ export default function HomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <SectionHeader
               eyebrow="Wedding Blogs"
-              title="Ideas For Your Own Special Day"
-              text="Read practical planning guides, styling notes, venue tips, and expert ideas while your celebration takes shape."
+              title={websiteContent.blog.title}
+              text={websiteContent.blog.intro[0]}
             />
             <div className="news-slider mt-7 flex gap-4 overflow-hidden">
               {[...blogPosts, ...blogPosts].map((post, index) => (
@@ -774,7 +705,7 @@ export default function HomePage() {
                     <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#b61f4b]">
                       {post.category}
                     </p>
-                    <h3 className="mt-2 font-serif text-lg font-bold text-stone-950">
+                    <h3 className="mt-2 font-serif text-base font-semibold text-stone-950">
                       {post.title}
                     </h3>
                     <span className="mt-4 inline-flex text-sm font-bold text-[#b61f4b]">

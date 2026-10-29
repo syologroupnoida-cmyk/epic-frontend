@@ -160,7 +160,7 @@ export default function AgentSignUp() {
       await wait(950);
       setApiFeedback(null);
       setIsOtpOpen(false);
-      router.push("/agent/login");
+      router.push("/partner/login");
     } catch (error) {
       setApiFeedback({
         status: "error",
@@ -280,7 +280,7 @@ export default function AgentSignUp() {
           </button>
 
           <p className="epic-login-create">
-            Already a vendor? <Link href="/agent/login">Sign in</Link>
+            Already a vendor? <Link href="/partner/login">Sign in</Link>
           </p>
         </form>
       </section>

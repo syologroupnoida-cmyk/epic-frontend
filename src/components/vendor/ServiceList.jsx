@@ -100,10 +100,13 @@ export default function ServiceList({ routes = VENDOR_SERVICE_ROUTES }) {
                     <tbody className="divide-y divide-slate-200">
                         {loading ? <tr><td colSpan={7} className="px-4 py-12 text-center text-sm text-slate-500">Loading services...</td></tr> : !displayedRows.length ? <tr><td colSpan={7} className="px-4 py-12 text-center text-sm text-slate-500">{error ? 'Service listings could not be loaded.' : 'No services found.'}</td></tr> : displayedRows.map((listing) => {
                             const id = itemId(listing);
+                            const title = listing.title || 'Untitled listing';
+                            const titleWords = title.trim().split(/\s+/);
+                            const shortTitle = titleWords.length > 3 ? `${titleWords.slice(0, 3).join(' ')}...` : title;
                             const status = isArchived(listing) ? 'ARCHIVED' : listing.status || (listing.submitForReview ? 'PENDING_REVIEW' : 'DRAFT');
                             const statusClass = status === 'DRAFT' ? 'bg-amber-50 text-amber-700' : ['ACTIVE', 'APPROVED', 'PUBLISHED'].includes(status) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600';
                             return <tr key={id} className="bg-white transition hover:bg-slate-50">
-                                <td className="break-words px-4 py-3 font-semibold text-slate-800">{listing.title || 'Untitled listing'}</td>
+                                <td className="px-4 py-3 font-semibold text-slate-800"><span className="block truncate" title={title} aria-label={title}>{shortTitle}</span></td>
                                 <td className="break-words px-4 py-3 text-xs text-slate-700">{itemName(listing.city) || listing.cityName || '?'}</td>
                                 <td className="px-4 py-3 text-xs text-slate-700">{listing.services?.length ?? listing.serviceCount ?? '?'}</td>
                                 <td className="px-4 py-3 text-xs text-slate-700">{listing.startingPrice != null ? currency.format(Number(listing.startingPrice)) : '?'}</td>

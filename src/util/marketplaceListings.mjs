@@ -1,3 +1,5 @@
+import { API_BASE_URL } from './apiBaseUrl.mjs';
+
 export function listingName(value) {
   return typeof value === 'string' ? value : value?.name || value?.title || value?.businessName || '';
 }
@@ -28,7 +30,11 @@ export function marketplaceListingsUrl({ page = 1, limit = 20, search = '', city
   for (const [key, value] of Object.entries({ search, cityId, serviceSubcategoryId })) {
     if (value.trim()) query.set(key, value.trim());
   }
-  return `/api/marketplace/listings?${query}`;
+  return `${API_BASE_URL}/marketplace/listings?${query}`;
+}
+
+export function marketplaceListingDetailUrl(slug) {
+  return `${API_BASE_URL}/marketplace/listings/${encodeURIComponent(slug)}`;
 }
 
 export async function requestMarketplace(url, signal) {

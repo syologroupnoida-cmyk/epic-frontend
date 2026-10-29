@@ -10,6 +10,8 @@ import ConfirmActionModal from "@/components/common/ConfirmActionModal";
 import BusinessPasswordUpdate from "@/components/vendor/BusinessPasswordUpdate";
 import BusinessProfileUpdate from "@/components/vendor/BusinessProfileUpdate";
 import AddService from "@/components/vendor/AddService";
+import SharedLeadList from "@/components/vendor/SharedLeadList";
+import LeadList from "@/components/vendor/LeadList";
 import ServiceList from "@/components/vendor/ServiceList";
 import AddProperty from "@/components/vendor/AddProperty";
 import PropertyList from "@/components/vendor/PropertyList";
@@ -40,10 +42,13 @@ const menu = [
   { label: "Overview", icon: "dashboard", sub: [] },
   { label: "Business Profile", icon: "profile", sub: ["Update Profile", "Update Password", "Manage Services"] },
   { label: "Services", icon: "store", sub: ["Add Service", "Service List"] },
+  { label: "Lead", icon: "leads", sub: ["Lead List", "Shared Lead List"] },
   { label: "Property", icon: "property", sub: ["Add Property", "Property List"] },
 ];
 
 const dashboardPanels = {
+  "Lead List": LeadList,
+  "Shared Lead List": SharedLeadList,
   "Add Service": AddService,
   "Service List": ServiceList,
   "Add Property": AddProperty,
@@ -109,7 +114,7 @@ export default function AgentDashboard({ activePanel = "Overview", children }) {
   const userSnapshot = JSON.stringify(authUser);
   const displayName = accountName(authUser, "Vendor");
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-  const { handleLogout, logoutFeedback } = useAuthLogout("/agent/login");
+  const { handleLogout, logoutFeedback } = useAuthLogout("/partner/login");
   const expanded = !collapsed || hovered;
   const ActivePanel = dashboardPanels[activePanel];
   const dashboardAccess = useSyncExternalStore(
@@ -147,7 +152,7 @@ export default function AgentDashboard({ activePanel = "Overview", children }) {
         title="KYC is submitted"
         text="KYC approval is pending from Admin side."
         okLabel="OK"
-        onOk={() => router.replace("/agent/login")}
+        onOk={() => router.replace("/partner/login")}
       />
     );
   }

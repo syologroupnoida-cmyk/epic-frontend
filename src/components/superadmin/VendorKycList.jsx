@@ -1,7 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Tab, Tabs } from "@mui/material";
 import ApiStatusModal from "@/components/common/ApiStatusModal";
 import MainApi from "@/util/MainApi";
 import { getApiErrorMessage } from "@/util/authApi";
+
+const kycStatuses = ["PENDING", "SUBMITTED", "APPROVED", "REJECTED"];
+const statusColors = {
+  PENDING: "bg-slate-100 text-slate-700",
+  SUBMITTED: "bg-amber-100 text-amber-700",
+  APPROVED: "bg-emerald-100 text-emerald-700",
+  REJECTED: "bg-red-100 text-red-700",
+};
+const statusTabColors = {
+  "": { color: "#b61f4b", background: "#fff1f2" },
+  PENDING: { color: "#475569", background: "#f1f5f9" },
+  SUBMITTED: { color: "#92400e", background: "#fffbeb" },
+  APPROVED: { color: "#047857", background: "#ecfdf5" },
+  REJECTED: { color: "#b91c1c", background: "#fef2f2" },
+};
 
 function getValue(record, paths, fallback = "") {
   for (const path of paths) {
@@ -131,7 +147,7 @@ function normalizeVendorKyc(item = {}) {
     userActive: user.isActive,
     emailVerifiedAt: user.emailVerifiedAt || "",
     userCreatedAt: user.createdAt || "",
-    status: getValue(item, ["status", "kycStatus"], "SUBMITTED"),
+    status: getValue(item, ["status", "kycStatus", "kyc.status", "kyc.kycStatus"], "Unknown"),
     city: getValue(item, ["kyc.primaryOperatingCity", "businessAddress.city", "city"], ""),
     state: getValue(item, ["kyc.addressState", "businessAddress.state", "state"], ""),
     businessAddress: getValue(item, ["businessAddress", "address"], {
@@ -268,7 +284,9 @@ export default function VendorKycList() {
   const [limit, setLimit] = useState(20);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState("");
+  const [refresh, setRefresh] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const [feedback, setFeedback] = useState(null);
   const [openActionId, setOpenActionId] = useState("");
   const [rowsDropdownOpen, setRowsDropdownOpen] = useState(false);
@@ -325,18 +343,24 @@ export default function VendorKycList() {
     const controller = new AbortController();
 
     async function loadVendorKycs() {
-      setIsLoading(true);
+      queueMicrotask(() => { if (!controller.signal.aborted) setIsLoading(true); });
       try {
         const response = await MainApi.get("/admin/vendor-kyc", {
-          params: { status: "SUBMITTED", page: page - 1, size: limit },
+          params: { ...(status ? { status } : {}), page: page - 1, size: limit },
           signal: controller.signal,
         });
+        if (controller.signal.aborted) return;
+        if (response.data?.success === false) throw new Error(response.data.message || "Unable to load vendor KYC records.");
         const result = normalizeVendorKycResponse(response.data, page, limit);
+        if (!result.records.length && page > 1) { setPage((current) => current - 1); return; }
         setRecords(result.records);
         setTotal(result.total);
         setTotalPages(result.totalPages);
       } catch (error) {
-        if (error.name === "CanceledError" || error.code === "ERR_CANCELED") return;
+        if (controller.signal.aborted || error.name === "CanceledError" || error.code === "ERR_CANCELED") return;
+        setRecords([]);
+        setTotal(0);
+        setTotalPages(1);
         setFeedback({
           status: "error",
           title: "KYC list failed",
@@ -345,14 +369,14 @@ export default function VendorKycList() {
           onOk: () => setFeedback(null),
         });
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     }
 
     loadVendorKycs();
 
     return () => controller.abort();
-  }, [limit, page]);
+  }, [limit, page, status, refresh]);
 
   function openRejectModal(record) {
     setRejectTarget(record);
@@ -391,12 +415,11 @@ export default function VendorKycList() {
     try {
       const payload = action === "reject" ? { reason: nextReason } : undefined;
       await MainApi.post(`/admin/vendor-kyc/${record.vendorUserId}/${action}`, payload);
-      setRecords((current) => current.filter((item) => item.id !== record.id));
+      setRefresh((current) => current + 1);
       setDetailRecord(null);
       setRejectTarget(null);
       setRejectReason("");
       setRejectError("");
-      setTotal((current) => Math.max(0, current - 1));
       setFeedback({
         status: "success",
         title: action === "approve" ? "KYC approved" : "KYC rejected",
@@ -429,7 +452,10 @@ export default function VendorKycList() {
         <h1 className="text-lg font-semibold text-slate-950">Vendor KYC List</h1>
       </div>
 
-      <div className="flex flex-wrap items-center justify-end gap-3 border-b border-slate-200 px-4 py-2.5">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-2.5">
+        <Tabs value={status} onChange={(_, value) => { setStatus(value); setPage(1); setIsLoading(true); setOpenActionId(""); setSearch(""); }} variant="scrollable" scrollButtons="auto" aria-label="Vendor KYC status" sx={{ maxWidth: '100%', minHeight: 28, '& .MuiTabs-indicator': { display: 'none' }, '& .MuiTabs-list': { gap: 0.75 }, '& .MuiTabs-scrollButtons': { width: 24, height: 28 }, '& .MuiTab-root': { minHeight: 28, minWidth: 0, px: 1.25, py: 0.5, fontSize: 11, lineHeight: 1.2, fontWeight: 600, border: '1px solid', borderRadius: '100px', opacity: 1 }, '& .MuiTab-root.Mui-focusVisible': { outline: '2px solid currentColor', outlineOffset: '-4px' } }}>
+          {["", ...kycStatuses].map((value) => <Tab key={value} id={`kyc-tab-${value || 'all'}`} aria-controls="kyc-status-panel" value={value} label={value || "All"} disabled={isUpdatingStatus} sx={{ color: statusTabColors[value].color, borderColor: statusTabColors[value].color, bgcolor: statusTabColors[value].background, '&:hover': { bgcolor: statusTabColors[value].background, boxShadow: `inset 0 0 0 1px ${statusTabColors[value].color}` }, '&.Mui-selected': { color: '#fff', bgcolor: statusTabColors[value].color } }} />)}
+        </Tabs>
         <label className="relative block w-full md:w-[360px]">
           <span className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400">
             <svg viewBox="0 0 24 24" className="h-full w-full fill-current" aria-hidden="true">
@@ -445,7 +471,7 @@ export default function VendorKycList() {
         </label>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto">
+      <div id="kyc-status-panel" role="tabpanel" aria-labelledby={`kyc-tab-${status || 'all'}`} className="min-h-0 flex-1 overflow-auto">
         <table className="w-full table-fixed text-left text-sm">
           <colgroup>
             <col className="w-[22%]" />
@@ -486,7 +512,7 @@ export default function VendorKycList() {
                   <td className="truncate px-4 py-3 font-mono text-xs text-slate-800">{record.panNumber}</td>
                   <td className="truncate px-4 py-3 font-mono text-xs text-slate-800">{record.aadhaarNumber}</td>
                   <td className="px-4 py-3">
-                    <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">{record.status}</span>
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusColors[String(record.status).toUpperCase()] || statusColors.PENDING}`}>{record.status}</span>
                   </td>
                   <td className="px-4 py-3">
                     <div ref={openActionId === record.id ? actionMenuRef : null} className="relative flex items-center justify-end">
@@ -532,7 +558,7 @@ export default function VendorKycList() {
                         <path d="M12 2 4 5v6c0 5.05 3.41 9.76 8 11 4.59-1.24 8-5.95 8-11V5l-8-3Zm0 3.2 5 1.88V11c0 3.8-2.07 7.25-5 8.83C9.07 18.25 7 14.8 7 11V7.08l5-1.88Zm2.78 4.38L11 13.36l-1.78-1.78-1.42 1.42L11 16.2 16.2 11l-1.42-1.42Z" />
                       </svg>
                     </span>
-                    <span>{search ? "No matching vendor KYC records found." : "No submitted vendor KYC records found."}</span>
+                    <span>{search ? "No matching vendor KYC records found." : status ? `No ${status.toLowerCase()} vendor KYC records found.` : "No vendor KYC records found."}</span>
                   </div>
                 </td>
               </tr>

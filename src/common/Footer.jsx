@@ -1,9 +1,10 @@
+import QuoteModal from '@/components/common/QuoteModal';
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import useCities from "@/util/useCities";
-import { getPublicCatalog, vendorSearchHref } from "@/util/publicCatalog.mjs";
-import { loadPublicServiceCategories } from "@/util/serviceCategories.mjs";
+import { vendorSearchHref } from "@/util/publicCatalog.mjs";
+import useFooterCategories from "@/util/useFooterCategories";
 import { FOOTER_CATEGORY_SETTINGS_KEY, FOOTER_SETTINGS_EVENT, readFooterCategoryIds } from "@/util/footerSettings";
 
 const processSteps = [
@@ -22,34 +23,20 @@ const socialLinks = [
 
 const quickLinks = [
   { label: "Home", href: "/" },
-  { label: "About Us", href: "#" },
-  { label: "Services", href: "/marketplace" },
-  { label: "Luxury Wedding", href: "/luxury-wedding" },
-  { label: "Wedding Destination", href: "/destination/national-wedding" },
-  { label: "E-invites", href: "#" },
-  { label: "Blog", href: "/blog" },
-  { label: "Contact Us", href: "#" },
-  { label: "Privacy Policy", href: "#" },
-  { label: "Terms & Conditions", href: "#" },
-  { label: "Vendor Reviews", href: "#" },
-  { label: "Customer Reviews", href: "#" },
-  { label: "Testimonial", href: "#" },
-  { label: "Sitemap", href: "#" },
-  { label: "Career", href: "#" },
+  { label: "About Us", href: "/about-us" },
+  { label: "Wedding Services", href: "/services" },
+  { label: "Wedding Venues", href: "/venues" },
+  { label: "Become a Partner", href: "/partner" },
+  { label: "Contact Us", href: "/contact-us" },
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Terms & Conditions", href: "/terms-and-conditions" },
 ];
 
 export default function Footer() {
+  const [quoteOpen, setQuoteOpen] = useState(false);
   const { cities } = useCities();
-  const [categories, setCategories] = useState([]);
+  const { items: categories, loading: categoriesLoading, error: categoryError, retry: retryCategories } = useFooterCategories();
   const [selectedCategoryIds, setSelectedCategoryIds] = useState(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    loadPublicServiceCategories(getPublicCatalog, { signal: controller.signal })
-      .then((items) => setCategories(items.filter((item) => item.isActive !== false)))
-      .catch(() => setCategories([]));
-    return () => controller.abort();
-  }, []);
 
   useEffect(() => {
     function refreshSettings(event) {
@@ -79,14 +66,14 @@ export default function Footer() {
             Ready to Plan Your Epic Wedding?
           </h2>
           <p className="mt-4 text-sm font-semibold text-white/90">
-            Join 50,000+ happy couples who planned their dream wedding with us.
+            Search for vendors, select suitable professionals and connect with your preferred wedding experts.
           </p>
-          <Link
-            href="/user/sign-up"
+          <button
+            type="button" onClick={() => setQuoteOpen(true)}
             className="mt-6 inline-flex rounded-full bg-white px-7 py-2.5 text-[13px] font-extrabold text-[#b61f4b] shadow-sm hover:bg-rose-50"
           >
             Start Planning for FREE
-          </Link>
+          </button>
         </div>
       </section>
 
@@ -149,26 +136,8 @@ export default function Footer() {
           <h3 className="text-xl font-extrabold text-slate-900">
             Get In Touch
           </h3>
-          <p className="mt-3 text-[13px] text-slate-600">
-            Subscribe for latest wedding ideas & exclusive offers
-          </p>
-          <form className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <label className="sr-only" htmlFor="footer-email">
-              Your email
-            </label>
-            <input
-              id="footer-email"
-              type="email"
-              placeholder="Your email"
-              className="min-w-0 flex-1 rounded-full border border-slate-300 bg-white px-5 py-3 text-sm outline-none focus:border-[#b61f4b]"
-            />
-            <button
-              type="button"
-              className="rounded-full bg-gradient-to-r from-[#b61f4b] to-[#d59f2f] px-6 py-3 text-sm font-extrabold text-white hover:brightness-95"
-            >
-              Subscribe
-            </button>
-          </form>
+          <p className="mt-3 text-[13px] leading-6 text-slate-600">Have a question about venues, services, destination weddings or vendor registration?</p>
+          <button type="button" onClick={() => setQuoteOpen(true)} className="mt-6 inline-flex rounded-full bg-[#b61f4b] px-6 py-3 text-sm font-semibold text-white hover:bg-[#981a3f]">Request a Free Quote</button>
 
           <div className="mt-6 flex items-start gap-3 text-[13px]">
             <span className="footer-mail-icon mt-1 text-[#b61f4b]" />
@@ -254,14 +223,15 @@ export default function Footer() {
               ))}
             </ul>
           </div>
-          {!footerCategories.length ? (
-            <p className="text-left text-sm text-slate-500">Vendor categories will appear here when available.</p>
+          {categoryError ? <p role="alert" className="text-left text-xs text-red-700">{categoryError} <button type="button" onClick={retryCategories} className="underline">Retry</button></p> : !footerCategories.length ? (
+            <p role={categoriesLoading ? 'status' : undefined} className="text-left text-sm text-slate-500">{categoriesLoading ? 'Loading vendor categories...' : 'Vendor categories will appear here when available.'}</p>
           ) : null}
         </div>
       </section>
 
       <div className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-5 text-center text-[12px] text-slate-600 sm:px-6 lg:px-8">
+          <Link href="/sitemap" className="text-[#b61f4b] hover:underline">Explore all pages</Link>
           <a
             href="mailto:info@wedplanners.in"
             className="inline-flex items-center gap-2 hover:text-[#b61f4b]"
@@ -272,6 +242,7 @@ export default function Footer() {
           <p>Copyright 2026 Epic Wedz. All Rights Reserved | Made in India</p>
         </div>
       </div>
+      <QuoteModal isOpen={quoteOpen} onClose={() => setQuoteOpen(false)} />
     </footer>
   );
 }

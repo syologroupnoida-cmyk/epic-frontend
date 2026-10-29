@@ -7,7 +7,7 @@ import Link from "next/link";
 import { vendorHref } from "@/data/vendorDirectory";
 import VendorImage from "@/components/vendor/VendorImage";
 import VendorActions from "@/components/vendor/VendorActions";
-import QuoteModal from "@/components/common/QuoteModal";
+import VendorEnquiryModal from "@/components/vendor/VendorEnquiryModal";
 import VendorServiceChips from "@/components/vendor/VendorServiceChips";
 
 function subscribe(callback) {
@@ -68,6 +68,6 @@ export default function OwnVendorCard({ category, publicVendors = [], fallback =
         </div>
       </article>
     </>}
-    <QuoteModal isOpen={isQuoteOpen} onClose={() => setIsQuoteOpen(false)} />
+    <VendorEnquiryModal vendor={vendor} isOpen={isQuoteOpen} onClose={() => setIsQuoteOpen(false)} />
   </section>;
 }

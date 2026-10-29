@@ -1,3 +1,4 @@
+import { websiteContent } from '@/data/websiteContent.mjs';
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -98,7 +99,7 @@ export default function WeddingCategoryDirectory() {
   return <section aria-labelledby="wedding-categories-title" className="border-b border-rose-100 bg-white py-8 sm:py-10">
     <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="mb-7 flex min-h-16 flex-col items-center gap-3 px-10 text-center sm:px-56">
-        <div><p className="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[#b61f4b]">Your celebration starts here</p><h2 id="wedding-categories-title" className="font-serif text-2xl font-bold text-stone-950 sm:text-3xl">Find your wedding dream team</h2><p className="mt-2 text-sm text-stone-600">Choose a category and discover vendors who match your celebration.</p></div>
+        <div><p className="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[#b61f4b]">Your celebration starts here</p><h2 id="wedding-categories-title" className="font-serif text-2xl font-bold text-stone-950 sm:text-3xl">Discover Your Wedding Essentials</h2><p className="mt-2 text-sm text-stone-600">{websiteContent.home.sections.find((section) => section.title === "Explore Our Categories").paragraphs[0]}</p></div>
       </div>
       <div className="absolute right-4 top-0 z-20 flex items-center justify-end sm:right-6 lg:right-8">
         <div className={`flex h-9 items-center overflow-hidden rounded-full border bg-white shadow-sm transition-[width,border-color] duration-300 ${searchOpen ? "w-[210px] border-[#b61f4b]" : "w-9 border-rose-200"}`}>

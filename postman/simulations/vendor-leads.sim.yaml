@@ -1,0 +1,6 @@
+simulation: vendor-leads
+routing: path
+mocks:
+  - name: Vendor lead list and detail
+    routeKey: leads-api
+    path: postman/mocks/vendor-leads

@@ -218,6 +218,14 @@ svg {
   transform: rotate(45deg) translateY(-2px);
 }
 
+.site-header nav .header-chevron,
+.mobile-drawer-menu .header-chevron {
+  width: 5px;
+  height: 5px;
+  border-right-width: 1.5px;
+  border-bottom-width: 1.5px;
+}
+
 .header-mega-scroll {
   scrollbar-width: none;
 }
@@ -230,7 +238,7 @@ svg {
   background:
     radial-gradient(circle at 16% 0%, rgb(255 241 242 / 0.9), transparent 30%),
     linear-gradient(180deg, #ffffff 0%, #fffafa 100%);
-  border-bottom: 1px solid #f5c8d4;
+  border-bottom: 0;
   display: grid;
   gap: 0;
   grid-template-columns: 1fr;
@@ -408,7 +416,7 @@ svg {
   background:
     radial-gradient(circle at 14% 0%, rgb(255 241 242 / 0.86), transparent 30%),
     linear-gradient(180deg, #ffffff 0%, #fffafa 100%);
-  border-bottom: 1px solid #f5c8d4;
+  border-bottom: 0;
   display: grid;
   gap: 0;
   grid-template-columns: 1fr;
@@ -3771,11 +3779,11 @@ svg {
     align-items: center;
     cursor: pointer;
     display: flex;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 800;
     justify-content: space-between;
     list-style: none;
-    padding: 12px 0;
+    padding: 10px 0;
   }
 
   .mobile-drawer-group summary::-webkit-details-marker {
@@ -3805,9 +3813,9 @@ svg {
   .mobile-drawer-link {
     border-bottom: 1px solid #f0f0f0;
     color: #171717;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 800;
-    padding: 12px 0;
+    padding: 10px 0;
   }
 
   .mobile-drawer-actions {

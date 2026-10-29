@@ -1,0 +1,6 @@
+simulation: vendor-enquiries
+routing: path
+mocks:
+  - name: Vendor enquiry contract examples
+    routeKey: enquiry-api
+    path: postman/mocks/vendor-enquiries

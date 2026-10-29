@@ -1,0 +1,216 @@
+Title: Epic Wedz | Page-wise Website Content
+13 individual page drafts • SEO metadata and calls to action • Proposed website copy
+Title: 01 | Home
+Heading1: Your Dream Wedding Begins Here
+Subtitle: Everything You Need to Plan, Book & Celebrate Your Wedding.
+Every love story deserves an extraordinary celebration. Epic Wedz connects couples with wedding planners, beautiful venues, photographers, makeup artists, decorators, caterers and trusted wedding professionals.
+Heading2: Find Your Perfect Wedding Team
+Explore wedding professionals who understand your vision, preferences and budget. Compare services and discover the right experts.
+Heading2: Explore Our Categories
+Wedding Venues; Wedding Planners; Photography & Videography; Bridal Makeup & Mehendi; Wedding Decoration; Catering & Hospitality; Wedding Invitations; Entertainment & Music.
+Heading2: Wedding Inspiration
+Discover wedding themes, bridal fashion, decorations, traditional ceremonies and contemporary ideas.
+Heading2: Real Weddings, Beautiful Stories
+Find inspiration in memorable celebrations, heartfelt moments and beautiful real wedding stories.
+Heading2: Destination Weddings
+Explore royal palaces, picturesque beaches and remarkable wedding destinations.
+Heading2: Your Wedding, Made Simple
+Search for vendors, select suitable professionals and connect with your preferred wedding experts.
+Heading2: Call to Action
+Start Planning Your Wedding | Explore Wedding Vendors | Get a Free Wedding Quote
+Heading2: SEO Metadata (Proposed)
+SEO Title: Your Dream Wedding Begins Here | Epic Wedz
+Meta Description: Every love story deserves an extraordinary celebration. Epic Wedz connects couples with wedding planners, beautiful venues, photographers, makeup artists, 
+Suggested URL slug: /home/
+Title: 02 | Wedding Venues
+Heading1: Find the Perfect Venue for Your Wedding
+Subtitle: Discover spaces that reflect your personality and celebration style.
+Explore elegant banquet halls, luxury hotels, royal palaces, farmhouses, resorts and picturesque outdoor locations.
+Heading2: Venue Categories
+Banquet Halls & Wedding Hotels; Luxury Hotels & Resorts; Farmhouses & Wedding Lawns; Royal Palaces & Heritage Venues; Beachside Venues; Destination Wedding Properties.
+Heading2: Find Your Match
+Discover venues according to location, budget and guest requirements, whether for an intimate ceremony or a grand celebration.
+Heading2: Call to Action
+Explore Wedding Venues | Request a Free Quote
+Heading2: SEO Metadata (Proposed)
+SEO Title: Find the Perfect Venue for Your Wedding | Epic Wedz
+Meta Description: Explore elegant banquet halls, luxury hotels, royal palaces, farmhouses, resorts and picturesque outdoor locations. Discover spaces that reflect your perso
+Suggested URL slug: /wedding-venues/
+Title: 03 | Wedding Vendors
+Heading1: Discover Wedding Professionals Who Bring Your Vision to Life
+Subtitle: Find talented service providers for every ceremony and celebration.
+Explore wedding professionals across multiple categories and connect with providers who understand your expectations.
+Heading2: Wedding Photography
+Capture every emotion through professional photography and cinematic films.
+Heading2: Bridal Makeup
+Discover artists who create looks that complement your personality and attire.
+Heading2: Wedding Decoration
+Transform venues with floral arrangements, mandaps, lighting and creative themes.
+Heading2: Wedding Catering
+Explore curated menus, regional delicacies, international cuisines and live counters.
+Heading2: Mehendi Artists
+Celebrate with traditional and contemporary mehendi designs.
+Heading2: Entertainment
+Discover DJs, live music, choreographers and other performers.
+Heading2: Call to Action
+Find Wedding Vendors
+Heading2: SEO Metadata (Proposed)
+SEO Title: Discover Wedding Professionals Who Bring Your Vision to Life | Epic Wedz
+Meta Description: Explore wedding professionals across multiple categories and connect with providers who understand your expectations. Find talented service providers for e
+Suggested URL slug: /wedding-vendors/
+Title: 04 | Hire a Wedding Planner
+Heading1: Plan Your Wedding with Expert Guidance
+Subtitle: Thoughtful planning, seamless coordination and attention to detail.
+Connect with experienced planners who can organise your celebration according to your vision, budget and traditions.
+Heading2: Planning Services
+Venue selection; budget planning; vendor management; theme and decoration; guest hospitality; transport and logistics; entertainment; wedding-day management.
+Heading2: From Idea to Celebration
+Share your location, date, approximate guest count and budget, then explore suitable planning options.
+Heading2: Call to Action
+Find Your Wedding Planner | Get Free Consultation
+Heading2: SEO Metadata (Proposed)
+SEO Title: Plan Your Wedding with Expert Guidance | Epic Wedz
+Meta Description: Connect with experienced planners who can organise your celebration according to your vision, budget and traditions. Thoughtful planning, seamless coordina
+Suggested URL slug: /hire-a-wedding-planner/
+Title: 05 | Destination Weddings
+Heading1: Celebrate Love Beyond Boundaries
+Subtitle: Exchange vows against a breathtaking backdrop.
+Explore remarkable wedding destinations across India and abroad.
+Heading2: In India
+Discover Rajasthan’s royal elegance, Goa’s beaches, Kerala’s backwaters and scenic hill destinations.
+Heading2: International Weddings
+Explore extraordinary celebrations in Bali, Thailand, Dubai and other destinations.
+Heading2: Planning Support
+Find professionals for venue discovery, decor, accommodation, transport, hospitality and entertainment.
+Heading2: Call to Action
+Explore Wedding Destinations
+Heading2: SEO Metadata (Proposed)
+SEO Title: Celebrate Love Beyond Boundaries | Epic Wedz
+Meta Description: Explore remarkable wedding destinations across India and abroad. Exchange vows against a breathtaking backdrop.
+Suggested URL slug: /destination-weddings/
+Title: 06 | Luxury Weddings
+Heading1: Where Elegance Meets Extraordinary Experiences
+Subtitle: Celebrate with timeless sophistication and exquisite details.
+Discover magnificent venues, personalised concepts, premium decor and curated wedding services.
+Heading2: Royal Venues
+Palaces, heritage properties and exclusive resorts.
+Heading2: Designer Decor
+Bespoke florals, artistic installations, mandaps and reception settings.
+Heading2: Premium Hospitality
+Thoughtful accommodation, transport and guest experiences.
+Heading2: Exclusive Entertainment
+Live performances and customised entertainment.
+Heading2: Personalised Planning
+Explore services tailored to your style and celebration.
+Heading2: Call to Action
+Plan Your Luxury Wedding
+Heading2: SEO Metadata (Proposed)
+SEO Title: Where Elegance Meets Extraordinary Experiences | Epic Wedz
+Meta Description: Discover magnificent venues, personalised concepts, premium decor and curated wedding services. Celebrate with timeless sophistication and exquisite detail
+Suggested URL slug: /luxury-weddings/
+Title: 07 | Real Weddings
+Heading1: Real Weddings, Real Love Stories
+Subtitle: Every couple has a story worth celebrating.
+Explore journeys filled with love, laughter, traditions and unforgettable moments.
+Heading2: Find Inspiration
+Browse wedding photography, bridal looks, venue decor, wedding themes, destination celebrations and ceremony ideas.
+Heading2: Share Your Story
+Discover how couples bring personality, cultural traditions and creative visions into their celebrations.
+Heading2: Call to Action
+Explore Real Wedding Stories | Share Your Wedding Story
+Heading2: SEO Metadata (Proposed)
+SEO Title: Real Weddings, Real Love Stories | Epic Wedz
+Meta Description: Explore journeys filled with love, laughter, traditions and unforgettable moments. Every couple has a story worth celebrating.
+Suggested URL slug: /real-weddings/
+Title: 08 | Wedding Marketplace
+Heading1: Your Complete Wedding Marketplace
+Subtitle: Wedding essentials in one convenient destination.
+Explore wedding products, professional services and celebration essentials to make planning easier.
+Heading2: Explore Categories
+Bridal wear; groom wear; jewellery; invitations; gifts; photography; decoration; catering; beauty; transportation; entertainment.
+Heading2: Plan Every Occasion
+Browse categories, compare options and connect with providers from engagement through reception.
+Heading2: Call to Action
+Explore Marketplace
+Heading2: SEO Metadata (Proposed)
+SEO Title: Your Complete Wedding Marketplace | Epic Wedz
+Meta Description: Explore wedding products, professional services and celebration essentials to make planning easier. Wedding essentials in one convenient destination.
+Suggested URL slug: /wedding-marketplace/
+Title: 09 | Wedding Invitations
+Heading1: Beautiful Wedding Invitations for Every Celebration
+Subtitle: The first glimpse of your special day.
+Discover designs reflecting your wedding theme, traditions and personality.
+Heading2: Wedding Invitations
+Beautiful designs for the main ceremony.
+Heading2: Engagement Invitations
+Announce your new beginning in style.
+Heading2: Mehendi Invitations
+Celebrate colourful traditions with vibrant designs.
+Heading2: Reception Invitations
+Invite loved ones to a memorable evening.
+Heading2: Design Styles
+Traditional, floral, royal, minimalist and contemporary.
+Heading2: Call to Action
+Explore Wedding Invitations
+Heading2: SEO Metadata (Proposed)
+SEO Title: Beautiful Wedding Invitations for Every Celebration | Epic Wedz
+Meta Description: Discover designs reflecting your wedding theme, traditions and personality. The first glimpse of your special day.
+Suggested URL slug: /wedding-invitations/
+Title: 10 | Wedding Blog & Inspiration
+Heading1: Wedding Ideas, Inspiration & Expert Planning Tips
+Subtitle: Find the ideas and information to plan with confidence.
+Explore planning guides, bridal fashion, decoration trends, photography concepts and destination suggestions.
+Heading2: Popular Topics
+Choosing a venue; Indian wedding checklist; bridal makeup trends; mehendi decor; photography tips; destination planning; budgeting; wedding themes.
+Heading2: Plan with Confidence
+Discover fresh ideas and practical guidance for decisions throughout your wedding journey.
+Heading2: Call to Action
+Explore Wedding Blogs
+Heading2: SEO Metadata (Proposed)
+SEO Title: Wedding Ideas, Inspiration & Expert Planning Tips | Epic Wedz
+Meta Description: Explore planning guides, bridal fashion, decoration trends, photography concepts and destination suggestions. Find the ideas and information to plan with c
+Suggested URL slug: /wedding-blog-inspiration/
+Title: 11 | Become a Vendor / Partner
+Heading1: Grow Your Wedding Business with Epic Wedz
+Subtitle: Connect with couples looking for professional wedding services.
+Showcase your work whether you are a planner, photographer, decorator, caterer, makeup artist or venue owner.
+Heading2: Why Join?
+Increase visibility; receive wedding enquiries; showcase portfolio and packages; expand your professional network.
+Heading2: How It Works
+Register as a vendor, complete your profile, add services and portfolio, manage enquiries and connect with potential clients.
+Heading2: Call to Action
+Become a Partner | Register as Vendor
+Heading2: SEO Metadata (Proposed)
+SEO Title: Grow Your Wedding Business with Epic Wedz | Epic Wedz
+Meta Description: Showcase your work whether you are a planner, photographer, decorator, caterer, makeup artist or venue owner. Connect with couples looking for professional
+Suggested URL slug: /become-a-vendor-partner/
+Title: 12 | About Us
+Heading1: Making Wedding Planning Simpler, Smarter and More Memorable
+Subtitle: Epic Wedz is an online wedding discovery and planning platform.
+We bring services, planning inspiration and vendor discovery together in one destination.
+Heading2: Our Mission
+Simplify wedding planning by helping couples discover suitable services, explore ideas and connect with professionals.
+Heading2: Our Vision
+Become a trusted destination where couples, families and professionals create unforgettable celebrations.
+Heading2: What We Offer
+Vendor discovery; venue exploration; planning assistance; destination inspiration; real wedding stories; marketplace; planning resources.
+Heading2: Call to Action
+Every Love Story Deserves an Epic Celebration
+Heading2: SEO Metadata (Proposed)
+SEO Title: Making Wedding Planning Simpler, Smarter and More Memorable | Epic Wedz
+Meta Description: We bring services, planning inspiration and vendor discovery together in one destination. Epic Wedz is an online wedding discovery and planning platform.
+Suggested URL slug: /about-us/
+Title: 13 | Contact Us
+Heading1: Let’s Make Your Dream Wedding a Reality
+Subtitle: Have a question about venues, services, destination weddings or vendor registration?
+Connect with Epic Wedz to explore the next steps in planning your celebration.
+Heading2: Contact Details
+Use the verified contact information published on the live website. [Insert verified email, phone and support hours.]
+Heading2: Enquiry Form
+Full Name; Email Address; Mobile Number; Wedding City; Wedding Date; Services Required; Your Message.
+Heading2: Call to Action
+Submit Enquiry | Request a Free Quote
+Heading2: SEO Metadata (Proposed)
+SEO Title: Let’s Make Your Dream Wedding a Reality | Epic Wedz
+Meta Description: Connect with Epic Wedz to explore the next steps in planning your celebration. Have a question about venues, services, destination weddings or vendor regis
+Suggested URL slug: /contact-us/

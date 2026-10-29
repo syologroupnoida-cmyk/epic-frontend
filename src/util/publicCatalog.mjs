@@ -1,3 +1,5 @@
+import { API_BASE_URL } from './apiBaseUrl.mjs';
+
 const resources = new Set(["cities", "service-categories", "service-subcategories"]);
 
 export function publicCatalogUrl(path, params = {}) {
@@ -7,7 +9,7 @@ export function publicCatalogUrl(path, params = {}) {
   for (const key of ["page", "limit", "serviceCategoryId"]) {
     if (params[key] !== undefined) query.set(key, String(params[key]));
   }
-  return `/api/catalog/${resource}${query.size ? `?${query}` : ""}`;
+  return `${API_BASE_URL}/${resource}${query.size ? `?${query}` : ""}`;
 }
 
 export async function getPublicCatalog(path, { signal, params } = {}) {

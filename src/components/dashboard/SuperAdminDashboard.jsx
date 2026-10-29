@@ -13,6 +13,7 @@ import ServiceCategoryList from "@/components/superadmin/ServiceCategoryList";
 import ServiceListingList from "@/components/superadmin/ServiceListingList";
 import PropertyListingList from "@/components/superadmin/PropertyListingList";
 import VendorKycList from "@/components/superadmin/VendorKycList";
+import LeadList from "@/components/superadmin/LeadList";
 import FooterSettings from "@/components/superadmin/FooterSettings";
 import useAuthLogout from "@/util/useAuthLogout";
 import WeddingAdminOverview from "@/components/dashboard/WeddingAdminOverview";
@@ -41,6 +42,7 @@ const menu = [
   { label: "Property", icon: "store", sub: ["Property List"] },
   { label: "Cities", icon: "calendar", sub: ["Add City", "City List"] },
   { label: "Vendor", icon: "people", sub: ["Vendor Kyc List"] },
+  { label: "Lead", icon: "people", sub: ["Lead List"] },
   // { label: "Agents", icon: "profile", sub: ["Approvals", "Performance", "Payouts"] },
   // { label: "Vendors", icon: "store", sub: ["Listings", "Verification", "Packages"] },
   // { label: "Reports", icon: "chart", sub: ["Revenue", "Traffic", "Bookings"] },
@@ -56,6 +58,7 @@ const dashboardPanels = {
   "Add City": AddCity,
   "City List": CityList,
   "Vendor Kyc List": VendorKycList,
+  "Lead List": LeadList,
   "Footer Settings": FooterSettings,
 };
 
@@ -69,6 +72,7 @@ const panelSlugs = {
   "Add City": "add-city",
   "City List": "city-list",
   "Vendor Kyc List": "vendor-kyc-list",
+  "Lead List": "lead-list",
   "Footer Settings": "footer-settings",
   Approvals: "approvals",
   Performance: "performance",

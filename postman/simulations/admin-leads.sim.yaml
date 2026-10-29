@@ -1,0 +1,6 @@
+simulation: admin-leads
+routing: path
+mocks:
+  - name: Admin lead moderation
+    routeKey: admin-leads-api
+    path: postman/mocks/admin-leads
