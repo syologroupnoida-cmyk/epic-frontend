@@ -29,6 +29,17 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
+
+# generated test reports and downloaded Postman dependencies
+/playwright-report/
+/test-results/
+/blob-report/
+/postman/.dependencies/
+
+# temporary editor and backup files
+*.tmp
+*.bak
 
 # env files (can opt-in for committing if needed)
 .env*
