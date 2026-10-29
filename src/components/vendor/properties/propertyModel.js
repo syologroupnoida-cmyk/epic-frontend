@@ -1,7 +1,7 @@
 export const PROPERTY_ROUTES = {
-    create: '/agent/add-property',
-    list: '/agent/property-list',
-    edit: (id) => `/agent/edit-property/${encodeURIComponent(id)}`,
+    create: '/partner/add-property',
+    list: '/partner/property-list',
+    edit: (id) => `/partner/edit-property/${encodeURIComponent(id)}`,
 };
 
 export const propertyId = (item) => String(item?.id ?? item?._id ?? item?.venuePropertyId ?? item?.propertyId ?? '');

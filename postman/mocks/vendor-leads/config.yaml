@@ -1,0 +1,10 @@
+version: 1
+name: Vendor lead list and detail
+slug: vendor-leads
+protocol: http
+port: 4506
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

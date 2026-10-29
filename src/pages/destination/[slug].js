@@ -1,9 +1,10 @@
+import { websiteContent } from '@/data/websiteContent.mjs';
+import { WebsiteSeo, WebsiteSections } from '@/components/common/WebsiteContent';
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/common/Header";
 import Footer from "@/common/Footer";
 import {
-  brandTagline,
   destinationOptions,
   internationalDestinationCircles,
   nationalDestinationCircles,
@@ -47,6 +48,7 @@ export default function DestinationPage({ destination }) {
 
   return (
     <div className="min-h-screen bg-[#fff9f5] text-stone-900">
+      <WebsiteSeo pageKey="destinations" title={`${copy.headline} | Epic Wedz`} path={`/destination/${destination.slug}`} />
       <Header />
       <main>
         <section className="relative isolate min-h-[430px] overflow-hidden">
@@ -68,47 +70,31 @@ export default function DestinationPage({ destination }) {
               {copy.headline}
             </h1>
             <p className="mt-5 max-w-2xl leading-7 text-white/85">
-              {brandTagline}
+              {websiteContent.destinations.subtitle}
             </p>
           </div>
         </section>
 
-        <section className="py-16 sm:py-20">
-          <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#b61f4b]">
-                Curated Experience
-              </p>
-              <h2 className="mt-3 font-serif text-4xl font-bold text-stone-950">
-                Build a celebration guests remember
-              </h2>
-              <p className="mt-4 text-lg leading-8 text-stone-600">
-                {destination.text} Our dummy page layout includes venue themes,
-                itinerary ideas, and planning cards ready for real destination
-                data later.
-              </p>
-              <Link
-                href="/marketplace"
-                className="mt-8 inline-flex rounded-full bg-[#b61f4b] px-7 py-3 text-sm font-bold text-white hover:bg-[#981a3f]"
-              >
-                Explore Marketplace
-              </Link>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              {copy.highlights.map((item) => (
-                <div
-                  key={item}
-                  className="rounded border border-rose-100 bg-white p-5 shadow-sm"
-                >
-                  <p className="font-serif text-2xl font-bold text-stone-950">
-                    {item}
-                  </p>
-                  <p className="mt-3 text-sm leading-6 text-stone-600">
-                    Premium venue, decor, travel, and guest experience planning.
-                  </p>
+        <section className="py-12 sm:py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="overflow-hidden rounded-3xl border border-rose-100 bg-white shadow-sm">
+              <div className="mx-auto max-w-3xl px-6 pb-8 pt-10 text-center sm:px-10">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#b61f4b]">Curated Experience</p>
+                <h2 className="mt-3 font-serif text-3xl font-semibold text-stone-950 sm:text-4xl">Build a celebration guests remember</h2>
+                <p className="mt-4 text-sm leading-7 text-stone-600">{copy.lead}</p>
+              </div>
+              <div className="grid items-stretch gap-6 p-4 pt-0 sm:p-6 sm:pt-0 lg:grid-cols-2 lg:gap-10">
+                <div className="relative min-h-[260px] overflow-hidden rounded-2xl sm:min-h-[340px]">
+                  <Image src={circleDestinations[0]?.image || destination.image} alt={circleDestinations[0]?.title || destination.title} fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
                 </div>
-              ))}
+                <div className="flex flex-col justify-center py-4 sm:pr-6">
+                  <p className="text-sm leading-7 text-stone-600">{destination.text} {websiteContent.destinations.sections[2].paragraphs[0]}</p>
+                  <ul className="mt-6 space-y-3">
+                    {copy.highlights.map((item, index) => <li key={item} className="flex items-center gap-3 rounded-xl bg-[#fff9f5] px-4 py-3"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-rose-200 text-xs text-[#b61f4b]">{String(index + 1).padStart(2, '0')}</span><h3 className="text-sm font-semibold text-stone-900">{item}</h3></li>)}
+                  </ul>
+                  <Link href="/marketplace" className="mt-7 inline-flex items-center justify-center gap-3 self-start rounded-full border border-[#b61f4b] px-5 py-2.5 text-xs font-normal text-[#b61f4b] hover:bg-rose-50">Explore Marketplace <span aria-hidden="true">&rarr;</span></Link>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -195,6 +181,7 @@ export default function DestinationPage({ destination }) {
             </div>
           </div>
         </section>
+        <WebsiteSections pageKey="destinations" />
       </main>
       <Footer />
     </div>

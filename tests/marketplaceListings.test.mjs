@@ -1,11 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { marketplaceListingsUrl, normalizeMarketplaceListings, listingHref, serviceInfo, publicMediaUrl, listingPrice } from '../src/util/marketplaceListings.mjs';
+import { marketplaceListingDetailUrl, marketplaceListingsUrl, normalizeMarketplaceListings, listingHref, serviceInfo, publicMediaUrl, listingPrice } from '../src/util/marketplaceListings.mjs';
+import { API_BASE_URL } from '../src/util/apiBaseUrl.mjs';
 
 test('marketplace query sends real filters and omits empty optional IDs', () => {
   const url = new URL(marketplaceListingsUrl({ search: ' Wedding ', cityId: 'city 1', serviceSubcategoryId: 'sub/1' }), 'https://example.com');
   assert.deepEqual(Object.fromEntries(url.searchParams), { page: '1', limit: '20', search: 'Wedding', cityId: 'city 1', serviceSubcategoryId: 'sub/1' });
-  assert.equal(marketplaceListingsUrl(), '/api/marketplace/listings?page=1&limit=20');
+  assert.equal(marketplaceListingsUrl(), `${API_BASE_URL}/marketplace/listings?page=1&limit=20`);
+  assert.equal(marketplaceListingDetailUrl('wedding/package'), `${API_BASE_URL}/marketplace/listings/wedding%2Fpackage`);
   assert.equal(listingHref({ slug: 'wedding/package' }), '/services/wedding%2Fpackage');
   assert.equal(listingHref({ id: '1' }), '');
 });

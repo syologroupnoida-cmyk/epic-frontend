@@ -1,0 +1,10 @@
+version: 1
+name: Vendor enquiry contract examples
+slug: vendor-enquiries
+protocol: http
+port: 4505
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

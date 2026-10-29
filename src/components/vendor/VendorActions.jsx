@@ -17,7 +17,7 @@ export default function VendorActions({ vendor, onEnquire }) {
   const canWhatsapp = whatsapp.length >= 11 && whatsapp.length <= 15;
   return <div className="vd-contact-block"><div className="vd-actions vd-jd-actions">
     {revealed && phone ? <a className="vd-contact vd-call" href={`tel:${phone}`}><PhoneIcon />{vendor.phone}</a> : <button type="button" className="vd-contact vd-call" onClick={() => setRevealed(true)}><PhoneIcon />Show Number</button>}
-    <button type="button" className="vd-enquire" onClick={onEnquire}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 6 9 7 9-7" /></svg>Send Enquiry</button>
+    <button type="button" className="vd-enquire" onClick={onEnquire} disabled={!vendor.slug} title={!vendor.slug ? "This vendor is not available for enquiries yet" : undefined}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 6 9 7 9-7" /></svg>Send Enquiry</button>
     {canWhatsapp ? <a className="vd-whatsapp" href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer"><WhatsAppIcon />WhatsApp</a> : <button type="button" className="vd-whatsapp" disabled title="WhatsApp number not provided by this business"><WhatsAppIcon />WhatsApp</button>}
   </div>{revealed && !phone && <p className="vd-contact-note" role="status">Phone number not provided. Send an enquiry for more information.</p>}</div>;
 }

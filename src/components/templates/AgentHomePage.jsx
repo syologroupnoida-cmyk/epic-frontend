@@ -234,7 +234,7 @@ export default function AgentHomePage() {
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  href="/agent/sign-up"
+                  href="/partner/sign-up"
                   className="rounded-full bg-[#b61f4b] px-7 py-3 text-sm font-bold text-white hover:bg-[#981a3f]"
                 >
                   Join as Agent
@@ -395,8 +395,8 @@ export default function AgentHomePage() {
               <h2 className="mt-2 font-serif text-4xl font-bold">Create your agent account</h2>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link href="/agent/sign-up" className="rounded-full bg-white px-7 py-3 text-sm font-bold text-[#b61f4b]">Sign up</Link>
-              <Link href="/agent/login" className="rounded-full border border-white px-7 py-3 text-sm font-bold text-white">Login</Link>
+              <Link href="/partner/sign-up" className="rounded-full bg-white px-7 py-3 text-sm font-bold text-[#b61f4b]">Sign up</Link>
+              <Link href="/partner/login" className="rounded-full border border-white px-7 py-3 text-sm font-bold text-white">Login</Link>
             </div>
           </div>
         </section>

@@ -1,7 +1,12 @@
 import { marketplaceListingsUrl, normalizeMarketplaceListings } from './marketplaceListings.mjs';
+import { API_BASE_URL } from './apiBaseUrl.mjs';
 
 export function marketplaceVenuesUrl(filters = {}) {
   return marketplaceListingsUrl(filters).replace('/marketplace/listings?', '/marketplace/venue-properties?');
+}
+
+export function marketplaceVenueDetailUrl(slug) {
+  return `${API_BASE_URL}/marketplace/venue-properties/${encodeURIComponent(slug)}`;
 }
 
 export function venueHref(property) {

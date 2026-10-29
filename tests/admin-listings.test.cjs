@@ -39,16 +39,26 @@ function load(relative) {
 const admin = load('src/util/adminListings.mjs');
 const adminProperties = load('src/util/adminProperties.mjs');
 
-test('marketplace selection combines checkbox matches, deduplicates, loads further pages, and preserves failures', {skip: !process.env.MARKETPLACE_APP_URL}, async () => {
- const original=global.fetch;
- global.fetch=(url, options)=>original(new URL(url,process.env.MARKETPLACE_APP_URL),options);
- try {
+test('quote form renders dynamic selection controls and accessible contact and budget fields with MUI', () => {
+ const React = require('react');
+ const { renderToStaticMarkup } = require('react-dom/server');
+ const Form = load('src/components/common/QuoteRequestForm.jsx').default;
+ const html = renderToStaticMarkup(React.createElement(Form, { onClose() {} }));
+ const phoneInput = html.match(/<input\b[^>]*id="quote-customerPhone"[^>]*>/)?.[0];
+ assert.ok(phoneInput);
+ for (const attribute of [/maxlength="10"/i, /minlength="10"/i, /inputmode="numeric"/i, /pattern="\[0-9\]\{10\}"/i]) assert.match(phoneInput, attribute);
+ for (const text of ['Your vision. The right vendors.', 'quote-customerName', 'quote-cityId', 'quote-categoryId', 'quote-serviceSubcategoryId', 'quote-budgetMin', 'quote-budgetMax', 'Submit quote request', 'vendor-enquiry-portrait.png']) assert.ok(html.includes(text), text);
+});
+
+test('marketplace selection combines checkbox matches, deduplicates, loads further pages, and preserves failures', {skip: !process.env.VENUE_SIMULATION_URL || !process.env.NEXT_PUBLIC_API_BASE_URL}, async () => {
   const {loadMarketplaceSelection}=load('src/util/marketplaceSelection.mjs');
   const combined=await loadMarketplaceSelection({venue:true,subcategoryIds:['banquet-demo','garden-demo','banquet-demo']});
   assert.equal(combined.total,2); assert.equal(combined.combined,true);
   assert.equal(new Set(combined.items.map(item=>item.id)).size,2);
   const paged=await loadMarketplaceSelection({venue:true,subcategoryIds:['banquet-demo','paged-demo']});
   assert.equal(paged.total,22); assert(paged.items.some(item=>item.id==='paged-20'));
+  const allPages=await loadMarketplaceSelection({venue:true,subcategoryIds:['paged-demo'],allPages:true});
+  assert.equal(allPages.total,21); assert.equal(allPages.combined,true);
   const city=await loadMarketplaceSelection({venue:true,subcategoryIds:['banquet-demo','garden-demo'],cityId:'another-city'});
   assert.equal(city.total,0);
   const search=await loadMarketplaceSelection({venue:true,subcategoryIds:['banquet-demo','garden-demo'],search:'Garden'});
@@ -56,7 +66,6 @@ test('marketplace selection combines checkbox matches, deduplicates, loads furth
   await assert.rejects(loadMarketplaceSelection({venue:true,subcategoryIds:['banquet-demo','error-demo']}),/unavailable/);
   const controller=new AbortController(); controller.abort();
   await assert.rejects(loadMarketplaceSelection({venue:true,subcategoryIds:['banquet-demo','garden-demo']},controller.signal),{name:'AbortError'});
- } finally { global.fetch=original; }
 });
 
 test('venue cards link by slug and venue details render public fields without internal status', () => {
@@ -70,6 +79,9 @@ test('venue cards link by slug and venue details render public fields without in
  const details=renderToStaticMarkup(React.createElement(Detail,{property}));
  for(const text of ['Palace venue','Palace Events','Banquet','Minimum capacity','Maximum capacity','Rooms','Parking capacity','Bridal room','Alcohol Allowed','No','Outside Catering Allowed','Yes','12 Palace Road','160001','View on map']) assert(details.includes(text),text);
  assert(!details.includes('[object Object]')); assert(!details.includes('DRAFT'));
+ const ResultCard=load('src/components/common/MarketplaceResultCard.jsx').default;
+ const resultCard=renderToStaticMarkup(React.createElement(ResultCard,{item:{...property,averageRating:4.8,reviewCount:12},venue:true}));
+ for(const text of ['/venues/palace-venue','View Details','4.8','12','marketplace-venues-hero.png','Save Palace venue']) assert(resultCard.includes(text),text);
 });
 
 test('venue API route forwards filters and loads slug details over real HTTP', {skip: !process.env.VENUE_SIMULATION_URL}, async () => {
@@ -303,4 +315,38 @@ test('admin table and complete service details render with the installed MUI ver
   assert(!details.includes('private-id')); assert(!details.includes('[object Object]'));
  } finally { console.error=original; }
  assert.deepEqual(warnings,[]);
+});
+
+
+test('home cards accept filtered marketplace destinations while other cards keep detail links', () => {
+  const React = require('react');
+  const { renderToStaticMarkup } = require('react-dom/server');
+  const { ServiceListingCard } = load('src/components/common/MarketplaceServices.jsx');
+  const { VenueCard } = load('src/components/common/MarketplaceVenues.jsx');
+  const service = renderToStaticMarkup(React.createElement(ServiceListingCard, {
+    listing: { title: 'Candid team', slug: 'candid-team' }, marketplaceHref: '/services?serviceSubcategoryId=candid',
+  }));
+  assert(service.includes('href="/services?serviceSubcategoryId=candid"'));
+  assert(!service.includes('href="/services/candid-team"'));
+  const venue = renderToStaticMarkup(React.createElement(VenueCard, {
+    property: { title: 'Palace', slug: 'palace' }, marketplaceHref: '/venues?serviceSubcategoryId=palace-type',
+  }));
+  assert(venue.includes('href="/venues?serviceSubcategoryId=palace-type"'));
+  assert(venue.includes('Explore venues'));
+  assert(!venue.includes('href="/venues/palace"'));
+});
+
+
+test('both home marketplace searches start collapsed with labeled icon buttons', () => {
+  const React = require('react');
+  const { renderToStaticMarkup } = require('react-dom/server');
+  const Section = load('src/components/common/HomeMarketplaceSection.jsx').default;
+  for (const venue of [false, true]) {
+    const noun = venue ? 'venues' : 'services';
+    const html = renderToStaticMarkup(React.createElement(Section, { venue, Card: () => null }));
+    assert(html.includes(`aria-label="Search wedding ${noun}"`));
+    assert(html.includes(`aria-label="Search ${noun}"`));
+    assert(html.includes('aria-expanded="false"'));
+    assert(!html.includes('type="search"'));
+  }
 });

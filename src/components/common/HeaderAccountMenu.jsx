@@ -45,16 +45,16 @@ export default function HeaderAccountMenu({ variant = "user" }) {
   const role = String(user?.role || "").toUpperCase();
   const isVendor = role === "VENDOR" || role === "AGENT";
   const isAdmin = role === "SUPER_ADMIN" || role === "ADMIN";
-  const dashboard = isVendor ? "/agent/dashboard" : isAdmin ? "/superadmin/dashboard" : "/user/dashboard";
-  const loginPath = isVendor ? "/agent/login" : isAdmin ? "/superadmin/login" : "/user/login";
+  const dashboard = isVendor ? "/partner/dashboard" : isAdmin ? "/superadmin/dashboard" : "/user/dashboard";
+  const loginPath = isVendor ? "/partner/login" : isAdmin ? "/superadmin/login" : "/user/login";
   const { handleLogout, logoutFeedback } = useAuthLogout(loginPath);
   const profile = vendorData?.snapshot === snapshot ? vendorData.profile : user?.vendorProfile;
   const name = accountName(user);
   const photo = isVendor ? profile?.logoUrl : user?.profilePictureUrl || user?.profileImageUrl || user?.avatarUrl || user?.photoUrl || user?.picture || user?.logoUrl;
   const partner = variant !== "user";
   const guestLinks = partner ? [
-    ["/agent/login", variant === "partner" ? "Partner Login" : "Agent Login", "Access your partner account", "user-login-icon"],
-    ["/agent/sign-up", variant === "partner" ? "Partner Sign up" : "Agent Sign up", "Create a partner profile", "partner-icon"],
+    ["/partner/login", variant === "partner" ? "Partner Login" : "Agent Login", "Access your partner account", "user-login-icon"],
+    ["/partner/sign-up", variant === "partner" ? "Partner Sign up" : "Agent Sign up", "Create a partner profile", "partner-icon"],
   ] : [
     ["/user/login", "User Login", "Continue planning your wedding", "user-login-icon"],
     ["/user/sign-up", "User Sign up", "Create a wedding account", "signup-icon"],
@@ -101,7 +101,7 @@ export default function HeaderAccountMenu({ variant = "user" }) {
         </div>
         {user ? <>
           <Link href={dashboard} onClick={() => setOpen(false)} className="login-menu-link"><span className="login-menu-icon user-login-icon" aria-hidden="true" /><span><strong>Dashboard</strong></span></Link>
-          {isVendor && <Link href="/agent/update-profile" onClick={() => setOpen(false)} className="login-menu-link"><span className="login-menu-icon partner-icon" aria-hidden="true" /><span><strong>Update Profile</strong></span></Link>}
+          {isVendor && <Link href="/partner/update-profile" onClick={() => setOpen(false)} className="login-menu-link"><span className="login-menu-icon partner-icon" aria-hidden="true" /><span><strong>Update Profile</strong></span></Link>}
           <button type="button" onClick={() => { setOpen(false); setConfirmLogout(true); }} className="login-menu-link w-full text-left"><svg className="h-4 w-4 shrink-0 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7 15.59 8.41 18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5-5-5ZM4 5h8V3H4C2.9 3 2 3.9 2 5v14c0 1.1.9 2 2 2h8v-2H4V5Z" /></svg><span><strong>Logout</strong></span></button>
         </> : guestLinks.map(([href, title, description, icon]) => <Link key={href} href={href} onClick={() => setOpen(false)} className="login-menu-link"><span className={`login-menu-icon ${icon}`} aria-hidden="true" /><span><strong>{title}</strong><small>{description}</small></span></Link>)}
       </div>

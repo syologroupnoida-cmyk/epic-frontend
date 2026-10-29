@@ -1,0 +1,41 @@
+/* Shared option typography, including MUI menus rendered in document-body portals. */
+:root {
+  --dropdown-option-font-size: 12px;
+}
+
+/* Some screens set option sizes through sx; keep the portal-wide size consistent. */
+body .MuiAutocomplete-option,
+body .MuiMenuItem-root,
+body .MuiMenuItem-root .MuiListItemText-primary,
+body .MuiMenuItem-root .MuiListItemText-secondary,
+body .MuiMenuItem-root .MuiTypography-root,
+body .MuiAutocomplete-option .MuiTypography-root,
+body .MuiAutocomplete-noOptions,
+body .MuiAutocomplete-loading,
+body [role="option"],
+body [role="option"] > span,
+body [role="menuitem"],
+body [role="menuitemcheckbox"],
+body [role="menuitemradio"] {
+  font-size: var(--dropdown-option-font-size) !important;
+}
+
+/* Native selects and the portal's custom search, account, and navigation menus. */
+select option,
+select optgroup,
+.mui-menu-options button,
+.city-option,
+.city-current-location,
+.login-menu-link,
+.account-dropdown-panel .login-menu-link,
+.partner-signin-dropdown a,
+.partner-signin-dropdown button,
+.header-compact-dropdown a,
+.header-general-grid a,
+.header-vendor-card,
+.header-vendor-secondary a,
+.mobile-drawer-submenu a,
+.kyc-select-option,
+.kyc-multi-option {
+  font-size: var(--dropdown-option-font-size);
+}

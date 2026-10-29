@@ -6,15 +6,26 @@ const AUTH_ROLE_KEY = "epic_auth_role";
 
 const protectedRoutes = [
   {
+    prefix: "/kyc",
+    loginPath: "/partner/login",
+    roles: ["VENDOR"],
+  },
+  {
     prefix: "/user/dashboard",
     loginPath: "/user/login",
     roles: ["CLIENT"],
   },
   {
     prefix: "/agent",
-    loginPath: "/agent/login",
+    loginPath: "/partner/login",
     roles: ["VENDOR"],
     publicPaths: ["/agent", "/agent/login", "/agent/sign-up"],
+  },
+  {
+    prefix: "/partner",
+    loginPath: "/partner/login",
+    roles: ["VENDOR"],
+    publicPaths: ["/partner", "/partner/login", "/partner/sign-up"],
   },
   {
     prefix: "/superadmin",
@@ -58,7 +69,8 @@ export function proxy(request) {
 export const config = {
   matcher: [
     "/user/dashboard/:path*",
-    "/agent/:path*",
+    "/partner/:path*",
     "/superadmin/:path*",
+    "/kyc/:path*",
   ],
 };

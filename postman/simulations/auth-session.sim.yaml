@@ -1,0 +1,6 @@
+simulation: auth-session
+routing: path
+mocks:
+  - name: Auth session regression
+    routeKey: auth-api
+    path: postman/mocks/auth-session

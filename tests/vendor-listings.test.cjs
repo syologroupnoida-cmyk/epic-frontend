@@ -135,7 +135,7 @@ test('property form, list and details render all supplied fields with the instal
     const AddProperty=load('src/components/vendor/AddProperty.jsx').default;
     const PropertyList=load('src/components/vendor/PropertyList.jsx').default;
     const {PropertyDetailContent}=load('src/components/vendor/properties/PropertyDetails.jsx');
-    const router={query:{},pathname:'/agent/add-property',isReady:true,push(){},replace(){},prefetch:async()=>{}};
+    const router={query:{},pathname:'/partner/add-property',isReady:true,push(){},replace(){},prefetch:async()=>{}};
     const warnings=[]; const original=console.error; console.error=(...args)=>warnings.push(args.join(' '));
     try {
         const form=renderToStaticMarkup(React.createElement(RouterContext.Provider,{value:router},React.createElement(AddProperty)));
@@ -152,14 +152,14 @@ test('property form, list and details render all supplied fields with the instal
 
 test('property routes stay in the vendor dashboard and are vendor protected', () => {
     const {agentPanelPath}=load('src/util/agentDashboardRoutes.mjs');
-    assert.equal(agentPanelPath('Add Property'),'/agent/add-property');
-    assert.equal(agentPanelPath('Property List'),'/agent/property-list');
-    assert.equal(propertyModel.PROPERTY_ROUTES.edit('property/1'),'/agent/edit-property/property%2F1');
+    assert.equal(agentPanelPath('Add Property'),'/partner/add-property');
+    assert.equal(agentPanelPath('Property List'),'/partner/property-list');
+    assert.equal(propertyModel.PROPERTY_ROUTES.edit('property/1'),'/partner/edit-property/property%2F1');
     const {proxy}=load('src/proxy.js');
-    for(const pathname of ['/agent/add-property','/agent/property-list','/agent/edit-property/property-1']) {
+    for(const pathname of ['/partner/add-property','/partner/property-list','/partner/edit-property/property-1']) {
         const request=(role)=>({nextUrl:{pathname,search:''},url:'http://localhost'+pathname,cookies:{get:key=>({value:key==='epic_auth_role'?role:'token'})}});
         assert(proxy(request('VENDOR')).next);
-        assert(proxy(request('CLIENT')).redirect.includes('/agent/login'));
+        assert(proxy(request('CLIENT')).redirect.includes('/partner/login'));
     }
 });
 
@@ -326,24 +326,24 @@ test('empty or failed capabilities never fall back to public categories', async 
 
 test('service routes stay in the existing Partner dashboard', () => {
  const {VENDOR_SERVICE_ROUTES: routes}=load('src/util/serviceRoutes.js');
- assert.equal(routes.create,'/agent/add-service'); assert.equal(routes.list,'/agent/service-list');
- assert.equal(routes.edit('id/1'),'/agent/edit-service/id%2F1');
+ assert.equal(routes.create,'/partner/add-service'); assert.equal(routes.list,'/partner/service-list');
+ assert.equal(routes.edit('id/1'),'/partner/edit-service/id%2F1');
  const {agentPanelPath}=load('src/util/agentDashboardRoutes.mjs');
  assert.equal(agentPanelPath('Add Service'),routes.create); assert.equal(agentPanelPath('Service List'),routes.list);
 });
 test('vendor-only protection covers every service page', () => {
  const {proxy}=load('src/proxy.js');
- for(const pathname of ['/agent/add-service','/agent/service-list','/agent/edit-service/listing-1']) {
+ for(const pathname of ['/partner/add-service','/partner/service-list','/partner/edit-service/listing-1']) {
   const make=(role,token)=>({nextUrl:{pathname,search:''},url:'http://localhost'+pathname,cookies:{get:key=>({value:({epic_access_token:token,epic_refresh_token:token,epic_auth_role:role})[key]})}});
-  assert(proxy(make('', '')).redirect.includes('/agent/login'));
-  assert(proxy(make('CLIENT','x')).redirect.includes('/agent/login'));
+  assert(proxy(make('', '')).redirect.includes('/partner/login'));
+  assert(proxy(make('CLIENT','x')).redirect.includes('/partner/login'));
   assert(proxy(make('VENDOR','x')).next);
  }
 });
 test('MUI v9 renders the actual form and table with Epic routes', () => {
  const React=require('react'); const {renderToStaticMarkup}=require('react-dom/server');
  const {RouterContext}=require('next/dist/shared/lib/router-context.shared-runtime');
- const router={query:{},pathname:'/agent/add-service',asPath:'/agent/add-service',isReady:true,push(){},replace(){},prefetch:async()=>{}};
+ const router={query:{},pathname:'/partner/add-service',asPath:'/partner/add-service',isReady:true,push(){},replace(){},prefetch:async()=>{}};
  const AddService=load('src/components/vendor/AddService.jsx').default;
  const ServiceList=load('src/components/vendor/ServiceList.jsx').default;
  const render=Component=>renderToStaticMarkup(React.createElement(RouterContext.Provider,{value:router},React.createElement(Component)));

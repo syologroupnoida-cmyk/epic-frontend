@@ -44,7 +44,7 @@ export function getPostLoginAction(user = {}) {
     return {
       type: "redirect",
       role: "VENDOR",
-      route: "/agent/dashboard",
+      route: "/partner/dashboard",
     };
   }
 

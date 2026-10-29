@@ -88,10 +88,13 @@ export default function ServiceListingList() {
                 <tbody className="divide-y divide-slate-200">
                     {loading ? <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-500" role="status">Loading service listings…</td></tr> : !rows.length ? <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-500">{error ? 'Unable to load service listings.' : 'No service listings found.'}</td></tr> : rows.map((listing) => {
                         const id = listingId(listing);
+                        const title = listing.title || 'Untitled service';
+                        const titleWords = title.trim().split(/\s+/);
+                        const shortTitle = titleWords.length > 3 ? `${titleWords.slice(0, 3).join(' ')}...` : title;
                         const approved = ['APPROVED', 'ACTIVE', 'PUBLISHED'].includes(listing.status);
                         const badge = approved ? 'bg-emerald-100 text-emerald-700' : listing.status === 'REJECTED' ? 'bg-red-50 text-red-700' : listing.status === 'PENDING_REVIEW' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-600';
                         return <tr key={id} className="bg-white hover:bg-slate-50">
-                            <td className="break-words px-4 py-3 font-semibold text-slate-800"><button type="button" disabled={busy} onClick={() => setDetailId(id)} className="cursor-pointer text-left hover:text-[#b61f4b]">{listing.title || 'Untitled service'}</button></td>
+                            <td className="px-4 py-3 font-semibold text-slate-800"><button type="button" disabled={busy} onClick={() => setDetailId(id)} title={title} aria-label={title} className="block max-w-full cursor-pointer truncate text-left hover:text-[#b61f4b]">{shortTitle}</button></td>
                             <td className="break-words px-4 py-3 text-xs text-slate-700">{displayName(listing.vendor?.profile || listing.vendor?.vendorProfile || listing.vendorProfile || listing.vendor) || displayName(listing.vendorUser) || listing.vendorName || '—'}</td>
                             <td className="break-words px-4 py-3 text-xs text-slate-700">{displayName(listing.city) || listing.cityName || '—'}</td>
                             <td className="px-4 py-3 text-xs text-slate-700">{money(listing.startingPrice)}</td>

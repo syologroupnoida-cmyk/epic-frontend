@@ -1,5 +1,5 @@
 export const VENDOR_SERVICE_ROUTES = {
-    list: '/agent/service-list',
-    create: '/agent/add-service',
-    edit: (id) => `/agent/edit-service/${encodeURIComponent(id)}`,
+    list: '/partner/service-list',
+    create: '/partner/add-service',
+    edit: (id) => `/partner/edit-service/${encodeURIComponent(id)}`,
 };

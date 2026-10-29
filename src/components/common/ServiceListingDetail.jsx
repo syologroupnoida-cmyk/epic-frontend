@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
 import { listingName, listingPrice, publicMediaUrl, serviceInfo } from '@/util/marketplaceListings.mjs';
 import styles from './ServiceListingDetail.module.css';
+import VendorEnquiryModal from '@/components/vendor/VendorEnquiryModal';
 
 const label = (key) => key.replace(/([a-z])([A-Z])/g, '$1 $2').replaceAll('_', ' ').replace(/^./, (letter) => letter.toUpperCase());
 function readable(value) {
@@ -53,7 +54,8 @@ function Gallery({ media, title }) {
 
 export { Gallery as ListingGallery };
 
-export default function ServiceListingDetail({ listing }) {
+export default function ServiceListingDetail({ listing, listingSlug }) {
+  const enquirySlug = listingSlug || listing.slug || listing.listingSlug || '';
   const [activeTab, setActiveTab] = useState('overview');
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -110,19 +112,19 @@ export default function ServiceListingDetail({ listing }) {
         {reviews.length > 0 && <section id="service-reviews" className={`${styles.panel} ${styles.anchor}`}><h2>Reviews</h2>{reviews.map((review, index) => <article key={review.id || index} className={styles.review}><strong>{review.author?.name || review.user?.name || review.name || 'Customer'}</strong>{review.rating != null && <span className={styles.star}> ★ {review.rating}</span>}<p>{review.comment || review.text || review.message}</p></article>)}</section>}
       </div>
       <aside className={styles.sidebar}>
-        <div className={styles.shareRow}><span role="status">{shareMessage}</span><button type="button" className={styles.iconButton} aria-label="Share service" onClick={share}><Icon name="share" /></button><button type="button" className={styles.iconButton} aria-label={saved ? 'Remove service from shortlist' : 'Shortlist service'} aria-pressed={saved} onClick={() => setSaved((value) => !value)}><Icon name="heart" fill={saved ? 'currentColor' : 'none'} /></button></div>
         <section className={`${styles.panel} ${styles.vendorCard}`} aria-label="Service provider and contact">
+          <div className={styles.shareRow}><span role="status">{shareMessage}</span><button type="button" className={styles.iconButton} aria-label="Share service" onClick={share}><Icon name="share" /></button><button type="button" className={styles.iconButton} aria-label={saved ? 'Remove service from shortlist' : 'Shortlist service'} aria-pressed={saved} onClick={() => setSaved((value) => !value)}><Icon name="heart" fill={saved ? 'currentColor' : 'none'} /></button></div>
           <div className={styles.vendorHeading}><div className={styles.avatar}>{logo ? <Media item={{ url: logo }} title={vendorName || 'Vendor'} /> : <Icon name="camera" width="38" height="38" />}</div><div><h2>{vendorName || 'Service provider'}</h2>{vendorId && <span className={styles.vendorId}>{vendorId}</span>}{profileHref && <Link href={profileHref} className={styles.profileLink}>View Profile →</Link>}</div></div>
           {vendorDescription && <p className={styles.vendorDescription}>{vendorDescription}</p>}
           {(metadata.teamSize != null || metadata.guestCapacity != null) && <div className={styles.stats}>{[['teamSize', 'Team Size'], ['guestCapacity', 'Guest capacity']].map(([key, text]) => metadata[key] != null && <div key={key}><span className={styles.statIcon}><Icon name="team" /></span><div><p>{text}</p><strong>{Number.isFinite(Number(metadata[key])) ? Number(metadata[key]).toLocaleString('en-IN') : readable(metadata[key])}</strong></div></div>)}</div>}
           <div className={styles.location}>{location && <p><Icon name="pin" /><span>{location}</span></p>}{coverage.length > 0 && <p><Icon name="camera" /><span>Service Areas: <strong>{coverage.join(', ')}</strong></span></p>}</div>
-          <button type="button" className={styles.primaryButton} disabled={!phone && !email && !whatsappUrl} onClick={() => setQuoteOpen(true)}>Get Quote</button>
+          <button type="button" className={styles.primaryButton} disabled={!enquirySlug} onClick={() => setQuoteOpen(true)}>Send Enquiry</button>
           <div className={styles.contactButtons}>{phoneUrl && <a href={phoneUrl}><Icon name="phone" />Call Now</a>}{whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noreferrer"><Icon name="phone" />WhatsApp</a>}</div>
           {!phone && !email && !whatsappUrl && <p className={styles.contactNote}>Contact details have not been provided.</p>}
         </section>
         <section id="service-about-vendor" className={`${styles.panel} ${styles.aboutVendor} ${styles.anchor}`}><h2>About This Vendor</h2><div><h3>{vendorName || 'Service provider'}</h3>{vendorDescription ? <p>{vendorDescription}</p> : <p>No vendor description provided.</p>}{email && <a href={`mailto:${email}`}>{email}</a>}</div>{joined && !Number.isNaN(Date.parse(joined)) && <p className={styles.joined}><Icon name="calendar" />Joined: {new Date(joined).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' })}</p>}</section>
       </aside>
     </div>
-    <Dialog open={quoteOpen} onClose={() => setQuoteOpen(false)} maxWidth="xs" fullWidth disableScrollLock aria-labelledby="service-quote-title"><DialogTitle id="service-quote-title">Get a quote from {vendorName || 'the provider'}</DialogTitle><DialogContent><p>Contact the provider about {listing.title}.</p><div className={styles.quoteContacts}>{phoneUrl && <a href={phoneUrl}>Call {phone}</a>}{email && <a href={`mailto:${email}?subject=${encodeURIComponent(`Quote for ${listing.title}`)}`}>{email}</a>}{whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noreferrer">Chat on WhatsApp</a>}</div></DialogContent><DialogActions><Button onClick={() => setQuoteOpen(false)}>Close</Button></DialogActions></Dialog>
+    <VendorEnquiryModal listing={{ ...listing, slug: enquirySlug }} isOpen={quoteOpen} onClose={() => setQuoteOpen(false)} />
   </div>;
 }

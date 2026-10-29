@@ -1,6 +1,6 @@
 # Vendor service listings
 
-Open the Partner dashboard at `/agent/dashboard`, then **Services ? Add Service / Service List**.
+Open the Partner dashboard at `/partner/dashboard`, then **Services ? Add Service / Service List**.
 
 Named components live in `src/components/vendor`: `AddService.jsx`, `EditService.jsx`, `ServiceList.jsx`.
 They use the existing `MainApi` client. Its base already includes `/api/v1`, so the adapter requests `/vendor/listings`, `/vendor/capabilities?offeringKind=SERVICE`, and `/cities` without duplicating that prefix. Category and subcategory choices come only from the vendor's approved service capabilities, grouped by `service.category`; no public catalog fallback is used.
