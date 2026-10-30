@@ -29,7 +29,7 @@ function Fields({ values, prefix = '' }) {
     const title = `${prefix}${label(key)}`;
     if (value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length) return <Fields key={key} values={value} prefix={`${title} / `} />;
     const imageUrl = /(?:logo|image|photo|cover)(?:Url)?$/i.test(key) ? publicMediaUrl(value) : '';
-    return <div key={key} className={`min-w-0 ${/message|reason|description|notes/i.test(key) ? 'sm:col-span-3' : ''}`}><dt className="text-xs text-slate-500">{imageUrl ? title.replace(/\s+Url$/i, '') : title}</dt><dd className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-slate-800">{imageUrl ? <LeadImage url={imageUrl} title={title.replace(/\s+Url$/i, '')} /> : readable(value, key)}</dd></div>;
+    return <div key={key} className={`grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] items-start gap-3 ${/message|reason|description|notes/i.test(key) ? 'sm:col-span-3' : ''}`}><dt className="break-words text-xs leading-6 text-slate-500">{imageUrl ? title.replace(/\s+Url$/i, '') : title}</dt><dd className="min-w-0 whitespace-pre-wrap break-words text-sm leading-6 text-slate-800">{imageUrl ? <LeadImage url={imageUrl} title={title.replace(/\s+Url$/i, '')} /> : readable(value, key)}</dd></div>;
   });
 }
 

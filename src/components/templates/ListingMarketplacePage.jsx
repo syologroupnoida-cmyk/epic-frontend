@@ -17,7 +17,7 @@ import { loadPublicServiceCategories, loadPublicServiceSubcategories } from '@/u
 import { loadMarketplaceSelection } from '@/util/marketplaceSelection.mjs';
 import useCities from '@/util/useCities';
 
-const limit = 20;
+const limit = 12;
 const checkboxSx = { color: '#cbd5e1', '&.Mui-checked': { color: '#b61f4b' }, py: 0.75 };
 
 export default function ListingMarketplacePage({ venue = false }) {
@@ -94,7 +94,7 @@ export default function ListingMarketplacePage({ venue = false }) {
   const filtersReady = (venue ? !subcategoryIds.length : !categoryIds.length) || Boolean(currentSubs && !currentSubs.error);
   const emptyScope = !venue && categoryIds.length > 0 && filtersReady && !scopedIds.length;
   const requestPage = scopedIds.length > 1 || allPages ? 1 : page;
-  const requestKey = JSON.stringify({ venue, subcategoryIds: scopedIds, search: appliedSearch, cityId: city?.id || '', page: requestPage, limit, emptyScope, allPages });
+  const requestKey = JSON.stringify({ venue, subcategoryIds: scopedIds, search: appliedSearch, cityId: city?.id || '', page: requestPage, limit: scopedIds.length > 1 || allPages ? 20 : limit, emptyScope, allPages });
   useEffect(() => {
     if (!router.isReady || !filtersReady) return;
     const controller = new AbortController();
@@ -186,11 +186,14 @@ export default function ListingMarketplacePage({ venue = false }) {
           </div><div className={styles.toolbarActions}>
             <div className={styles.viewSwitch} aria-label="Results layout"><button type="button" aria-label="Grid view" aria-pressed={layout === 'grid'} onClick={() => setLayout('grid')}><MarketplaceIcon name="grid" /></button><button type="button" aria-label="List view" aria-pressed={layout === 'list'} onClick={() => setLayout('list')}><MarketplaceIcon name="list" /></button></div>
           </div></div>
-          {!filtersReady && currentSubs?.error ? <Alert severity="error">Unable to apply category filters. Retry the category options in the sidebar.</Alert> : !current ? <div role="status" className={styles.grid}><span className="sr-only">Loading {noun}...</span>{[0, 1, 2, 3, 4, 5].map((item) => <div key={item} className={styles.skeleton} />)}</div> : current.error ? <Alert severity="error" action={<Button onClick={() => setAttempt((value) => value + 1)}>Retry</Button>}>{current.error}</Alert> : items.length ? <div className={`${styles.grid} ${layout === 'list' ? styles.list : ''}`}>{items.map((item, index) => <MarketplaceResultCard key={item.id || item.slug || index} item={item} venue={venue} />)}</div> : <div className={styles.empty}><div className={styles.emptyImage}><Image src={heroImage} alt="" fill sizes="120px" className={styles.photo} /></div><h2>No {noun} found</h2><p>Try another city, category, or search term.</p><button type="button" onClick={clearFilters} className={styles.textButton}>Clear filters</button></div>}
-          {(page > 1 || hasNextPage) && <nav aria-label={`${venue ? 'Venue' : 'Service'} marketplace pages`} className={styles.pagination}><Button disabled={!current || page === 1} onClick={() => setPage(page - 1)} sx={{ color: '#b61f4b' }}>Previous</Button><span>Page {page}</span><Button disabled={!current || Boolean(current.error) || !hasNextPage} onClick={() => setPage(page + 1)} sx={{ color: '#b61f4b' }}>Next</Button></nav>}
+          {!filtersReady && currentSubs?.error ? <Alert severity="error">Unable to apply category filters. Retry the category options in the sidebar.</Alert> : !current ? <div role="status" className={styles.grid}><span className="sr-only">Loading {noun}...</span>{Array.from({ length: limit }, (_, item) => item).map((item) => <div key={item} className={styles.skeleton} />)}</div> : current.error ? <Alert severity="error" action={<Button onClick={() => setAttempt((value) => value + 1)}>Retry</Button>}>{current.error}</Alert> : items.length ? <div className={`${styles.grid} ${layout === 'list' ? styles.list : ''}`}>{items.map((item, index) => <MarketplaceResultCard key={item.id || item.slug || index} item={item} venue={venue} />)}</div> : <div className={styles.empty}><div className={styles.emptyImage}><Image src={heroImage} alt="" fill sizes="120px" className={styles.photo} /></div><h2>No {noun} found</h2><p>Try another city, category, or search term.</p><button type="button" onClick={clearFilters} className={styles.textButton}>Clear filters</button></div>}
+          {(page > 1 || hasNextPage) && <nav aria-label={`${venue ? 'Venue' : 'Service'} marketplace pages`} className={styles.pagination}>
+            <button type="button" className={styles.pageArrow} aria-label="Previous page" disabled={!current || page === 1} onClick={() => setPage((value) => value - 1)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg></button>
+            <span aria-live="polite">Page {page}{Number.isFinite(total) ? ` of ${Math.max(1, Math.ceil(total / limit))}` : ''}</span>
+            <button type="button" className={styles.pageArrow} aria-label="Next page" disabled={!current || Boolean(current.error) || !hasNextPage} onClick={() => setPage((value) => value + 1)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6" /></svg></button>
+          </nav>}
         </section>
       </div>
-      <div className="mx-auto max-w-7xl px-4 pt-8 text-center text-sm leading-7 text-stone-600">{pageContent.intro[0]}</div>
       <WebsiteSections pageKey={contentKey} />
       <WebsiteActions pageKey={contentKey} />
     </main><Footer /></>;

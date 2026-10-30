@@ -1,0 +1,6 @@
+simulation: subscription-plans
+routing: path
+mocks:
+  - name: Admin subscription plans
+    routeKey: plans-api
+    path: postman/mocks/subscription-plans

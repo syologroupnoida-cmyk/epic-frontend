@@ -1,0 +1,70 @@
+{
+  "success": true,
+  "message": "Available subscription plans retrieved.",
+  "data": {
+    "currentPlanId": "cmvua1qqh00dul1kw6kg5tuki",
+    "currentPlanSource": "DEFAULT_FREE_PLAN",
+    "plans": [
+      {
+        "plan": {
+          "id": "cmvua1qqh00dul1kw6kg5tuki",
+          "code": "FREE",
+          "kind": "FREE",
+          "displayName": "Free",
+          "shortDescription": "For vendors starting their marketplace journey.",
+          "monthlyPrice": 0,
+          "directLeadPrice": 100,
+          "walletCreditPerBillingCycle": 0,
+          "limits": {
+            "maxActiveServiceListings": 1,
+            "maxActiveVenueProperties": 0,
+            "maxDirectLeadPurchasesPerMonth": 5,
+            "maxSharedLeadPurchasesPerMonth": 2,
+            "maxMediaPerListing": 5,
+            "featuredListingSlots": 0
+          },
+          "benefits": ["1 active service listing", "Direct leads at standard price", "5 images per listing"],
+          "badgeText": null,
+          "theme": "BLUE",
+          "ctaText": "Current Plan",
+          "sortOrder": 1,
+          "isFeatured": false,
+          "isDefault": true,
+          "isPurchasable": false
+        },
+        "cardAction": "CURRENT_PLAN",
+        "isCurrentPlan": true
+      },
+      {
+        "plan": {
+          "id": "cmvth8ybs00dtl1kwnvxvmpa0",
+          "code": "BASIC",
+          "kind": "PAID",
+          "displayName": "Basic Plan",
+          "shortDescription": "My basic plan here..",
+          "monthlyPrice": 200,
+          "directLeadPrice": 100,
+          "walletCreditPerBillingCycle": 0,
+          "limits": {
+            "maxActiveServiceListings": 10,
+            "maxActiveVenueProperties": 10,
+            "maxDirectLeadPurchasesPerMonth": 20,
+            "maxSharedLeadPurchasesPerMonth": 10,
+            "maxMediaPerListing": 10,
+            "featuredListingSlots": 5
+          },
+          "benefits": ["You can create the 10 services", "You can create the 10 venue", "Purchase 20 lead and 10 shared lead.", "You can added the images in the services as well."],
+          "badgeText": "Basic Plan",
+          "theme": "PURPLE",
+          "ctaText": "Buy Now",
+          "sortOrder": 1,
+          "isFeatured": true,
+          "isDefault": false,
+          "isPurchasable": true
+        },
+        "cardAction": "UPGRADE",
+        "isCurrentPlan": false
+      }
+    ]
+  }
+}

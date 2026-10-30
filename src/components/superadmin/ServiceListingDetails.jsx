@@ -3,7 +3,7 @@ export { ServiceListingDetailContent };
 import { useEffect, useState } from 'react';
 import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
 import { fetchAdminListing, listingError, listingId, serviceListingActions } from '@/util/adminListings.mjs';
-
+ 
 export default function ServiceListingDetails({ id, onClose, onAction, busy }) {
     const [listing, setListing] = useState(null);
     const [error, setError] = useState('');

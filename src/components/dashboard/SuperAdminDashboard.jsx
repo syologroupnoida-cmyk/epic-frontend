@@ -1,7 +1,7 @@
 import useDismissibleDropdown from "@/util/useDismissibleDropdown";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
 import ApiStatusModal from "@/components/common/ApiStatusModal";
 import ConfirmActionModal from "@/components/common/ConfirmActionModal";
@@ -14,6 +14,7 @@ import ServiceListingList from "@/components/superadmin/ServiceListingList";
 import PropertyListingList from "@/components/superadmin/PropertyListingList";
 import VendorKycList from "@/components/superadmin/VendorKycList";
 import LeadList from "@/components/superadmin/LeadList";
+import SubscriptionPlans from "@/components/superadmin/SubscriptionPlans";
 import FooterSettings from "@/components/superadmin/FooterSettings";
 import useAuthLogout from "@/util/useAuthLogout";
 import WeddingAdminOverview from "@/components/dashboard/WeddingAdminOverview";
@@ -43,6 +44,7 @@ const menu = [
   { label: "Cities", icon: "calendar", sub: ["Add City", "City List"] },
   { label: "Vendor", icon: "people", sub: ["Vendor Kyc List"] },
   { label: "Lead", icon: "people", sub: ["Lead List"] },
+  { label: "Subscriptions", icon: "store", sub: ["Subscription Plans"] },
   // { label: "Agents", icon: "profile", sub: ["Approvals", "Performance", "Payouts"] },
   // { label: "Vendors", icon: "store", sub: ["Listings", "Verification", "Packages"] },
   // { label: "Reports", icon: "chart", sub: ["Revenue", "Traffic", "Bookings"] },
@@ -59,6 +61,7 @@ const dashboardPanels = {
   "City List": CityList,
   "Vendor Kyc List": VendorKycList,
   "Lead List": LeadList,
+  "Subscription Plans": SubscriptionPlans,
   "Footer Settings": FooterSettings,
 };
 
@@ -73,6 +76,7 @@ const panelSlugs = {
   "City List": "city-list",
   "Vendor Kyc List": "vendor-kyc-list",
   "Lead List": "lead-list",
+  "Subscription Plans": "subscription-plans",
   "Footer Settings": "footer-settings",
   Approvals: "approvals",
   Performance: "performance",
@@ -92,18 +96,6 @@ function findParentMenu(panel) {
   return menu.find((item) => item.sub.includes(panel))?.label || "";
 }
 
-function subscribeToHydrationSnapshot() {
-  return () => {};
-}
-
-function getHydratedSnapshot() {
-  return true;
-}
-
-function getServerHydrationSnapshot() {
-  return false;
-}
-
 function Icon({ name }) {
   return <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 fill-current" aria-hidden="true"><path d={icons[name] || icons.dashboard} /></svg>;
 }
@@ -119,7 +111,7 @@ function DashboardPlaceholder({ title }) {
   );
 }
 
-export default function SuperAdminDashboard() {
+export default function SuperAdminDashboard({ initialPanelSlug = null }) {
   const authUser = useAuthUser();
   const displayName = accountName(authUser, "Admin");
   const router = useRouter();
@@ -132,14 +124,8 @@ export default function SuperAdminDashboard() {
   const [menuSearch, setMenuSearch] = useState("");
   const { handleLogout, logoutFeedback } = useAuthLogout("/superadmin/login");
   const expanded = !collapsed || hovered;
-  const hasHydrated = useSyncExternalStore(
-    subscribeToHydrationSnapshot,
-    getHydratedSnapshot,
-    getServerHydrationSnapshot,
-  );
-  const currentPath = hasHydrated && router.isReady ? router.asPath.split("?")[0] : "";
-  const panelSlug = currentPath.split("/")[2] || "";
-  const activePanel = hasHydrated && router.isReady ? slugPanels[panelSlug] || "Overview" : "Overview";
+  const panelSlug = initialPanelSlug ?? (router.pathname === "/superadmin/[panel]" ? null : router.pathname?.split("/")[2] || null);
+  const activePanel = panelSlug === null ? null : Object.hasOwn(slugPanels, panelSlug) ? slugPanels[panelSlug] : "Overview";
   const ActivePanel = dashboardPanels[activePanel];
   const activeParentMenu = findParentMenu(activePanel);
 
@@ -157,15 +143,15 @@ export default function SuperAdminDashboard() {
           <Image src="/images/epic-logo-new.png" alt="Epic Wedz" width={200} height={76} priority className="wp-site-logo" />
         </Link>
         <nav className="h-[calc(100vh-4rem)] space-y-1 overflow-y-auto px-3 py-4">
-          {menu.filter((item) => !menuSearch || `${item.label} ${item.sub.join(" ")}`.toLowerCase().includes(menuSearch.toLowerCase())).map((item) => {
+          {menu.filter((item) => !menuSearch || `${item.label === "Overview" ? "Dashboard" : item.label} ${item.sub.join(" ")}`.toLowerCase().includes(menuSearch.toLowerCase())).map((item) => {
             const hasSubmenu = item.sub.length > 0;
             const visibleMenu = openMenu === null ? activeParentMenu : openMenu;
             const submenuOpen = expanded && hasSubmenu && (visibleMenu === item.label || Boolean(menuSearch));
 
             return (
             <div key={item.label}>
-              <button type="button" onClick={() => hasSubmenu ? setOpenMenu((current) => (current === null ? activeParentMenu : current) === item.label ? "" : item.label) : selectPanel(item.label)} className={`flex h-12 w-full items-center rounded px-3 text-sm font-semibold transition hover:bg-rose-50 hover:text-[#b61f4b] ${activePanel === item.label || activeParentMenu === item.label ? "bg-rose-50 text-[#b61f4b]" : "text-stone-700"} ${expanded ? "justify-between gap-3" : "justify-center"}`} title={item.label}>
-                <span className="flex items-center gap-3"><Icon name={item.icon} />{expanded ? item.label : null}</span>
+              <button type="button" onClick={() => hasSubmenu ? setOpenMenu((current) => (current === null ? activeParentMenu : current) === item.label ? "" : item.label) : selectPanel(item.label)} className={`flex h-12 w-full items-center rounded px-3 text-sm font-semibold transition hover:bg-rose-50 hover:text-[#b61f4b] ${activePanel === item.label || activeParentMenu === item.label ? "bg-rose-50 text-[#b61f4b]" : "text-stone-700"} ${expanded ? "justify-between gap-3" : "justify-center"}`} title={item.label === "Overview" ? "Dashboard" : item.label}>
+                <span className="flex items-center gap-3"><Icon name={item.icon} />{expanded ? item.label === "Overview" ? "Dashboard" : item.label : null}</span>
                 {expanded && hasSubmenu ? <span className={`${submenuOpen ? "rotate-180" : ""} transition duration-500`}><Icon name="arrow" /></span> : null}
               </button>
               {expanded && hasSubmenu ? (
@@ -210,7 +196,9 @@ export default function SuperAdminDashboard() {
           </div>
         </header>
         <main className="wp-main h-[calc(100vh-4rem)] overflow-y-auto p-2">
-          {ActivePanel ? (
+          {activePanel === null ? (
+            <div role="status" className="rounded border border-rose-100 bg-white p-10 text-center text-sm text-stone-500">Loading dashboard...</div>
+          ) : ActivePanel ? (
             <ActivePanel embedded />
           ) : activePanel === "Overview" ? (
             <WeddingAdminOverview onNavigate={selectPanel} />

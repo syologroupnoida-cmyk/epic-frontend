@@ -8,6 +8,19 @@ img[src*="epic-logo-new%2Epng"] {
   pointer-events: none;
 }
 
+.account-profile-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.account-profile-info .account-email {
+  font-size: 10px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .account-name-row {
   display: flex;
   align-items: center;

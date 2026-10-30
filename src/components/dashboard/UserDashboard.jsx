@@ -24,7 +24,7 @@ const icons = {
 };
 
 const menu = [
-  { label: "Overview", icon: "dashboard", sub: [] },
+  { label: "Dashboard", icon: "dashboard", sub: [] },
   { label: "My Wedding", icon: "leads", sub: ["Checklist", "Budget", "Guest list"] },
   { label: "Shortlist", icon: "store", sub: ["Venues", "Vendors", "Favorites"] },
   { label: "Bookings", icon: "calendar", sub: ["Visits", "Confirmed", "Pending"] },

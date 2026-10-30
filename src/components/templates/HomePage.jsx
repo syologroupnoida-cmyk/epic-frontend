@@ -2,22 +2,17 @@ import { WebsiteSeo, WebsiteActions } from '@/components/common/WebsiteContent';
 import { websiteContent } from '@/data/websiteContent.mjs';
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/common/Header";
 import Footer from "@/common/Footer";
-import CitySearch from "@/components/common/CitySearch";
+import HomeHero from "@/components/common/HomeHero";
 import QuoteModal from "@/components/common/QuoteModal";
-import { useRouter } from "next/router";
-import { getPublicCatalog, vendorSearchHref } from "@/util/publicCatalog.mjs";
+import { getPublicCatalog } from "@/util/publicCatalog.mjs";
 import { loadPublicServiceCategories } from "@/util/serviceCategories.mjs";
-import useDismissibleDropdown from "@/util/useDismissibleDropdown";
 import WeddingCategoryDirectory from "@/components/common/WeddingCategoryDirectory";
 import MarketplaceServices from "@/components/common/MarketplaceServices";
 import MarketplaceVenues from "@/components/common/MarketplaceVenues";
 import {
-  brandTagline,
-  heroSlides,
-  heroPills,
   invitationCards,
   blogPosts,
   marketplaceCards,
@@ -183,65 +178,13 @@ function ImageCard({ item }) {
   );
 }
 
-function HeroSelect({ value, options, onSelect, loading, error, onRetry }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const wrapperRef = useDismissibleDropdown(isOpen, setIsOpen);
-  const id = useId();
-
-  return (
-    <div
-      className="mui-menu-select group"
-      ref={wrapperRef}
-    >
-      <button
-        type="button"
-        className="mui-menu-button"
-        onClick={() => setIsOpen((current) => !current)}
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-        aria-controls={id}
-        aria-label="Select wedding category"
-      >
-        <span className="service-select-icon" aria-hidden="true" />
-        <span>{value || (loading ? "Loading categories..." : "Select wedding category")}</span>
-        <span aria-hidden="true" className="mui-menu-chevron" />
-      </button>
-      <div className={`mui-menu-options ${isOpen ? "is-open" : ""}`}>
-        {loading && <p role="status" className="p-3 text-sm text-stone-600">Loading categories...</p>}
-        {error && <div role="alert" className="p-3 text-sm text-red-600">{error}<button type="button" onClick={onRetry}>Try again</button></div>}
-        {!loading && !error && options.length === 0 && <p className="p-3 text-sm text-stone-600">No categories available yet.</p>}
-        <div id={id} role="listbox" aria-label="Wedding categories">
-        {options.map((option) => (
-          <button
-            key={option}
-            type="button"
-            role="option"
-            aria-selected={value === option}
-            onClick={() => {
-              onSelect(option);
-              setIsOpen(false);
-            }}
-          >
-            {option}
-          </button>
-        ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function HomePage() {
-  const router = useRouter();
-  const [selectedService, setSelectedService] = useState("");
   const [serviceCategories, setServiceCategories] = useState([]);
-  const [selectedCity, setSelectedCity] = useState("Select city");
-  const [selectedCityRecord, setSelectedCityRecord] = useState(null);
   const [categoryLoading, setCategoryLoading] = useState(true);
   const [categoryError, setCategoryError] = useState("");
   const [categoryAttempt, setCategoryAttempt] = useState(0);
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
-  const serviceOptions = serviceCategories.map((category) => category.name);
+
 
   useEffect(() => {
     let isMounted = true;
@@ -252,12 +195,6 @@ export default function HomePage() {
         const nextCategories = await loadPublicServiceCategories(getPublicCatalog, { signal: controller.signal });
         if (!isMounted) return;
         setServiceCategories(nextCategories);
-
-        if (nextCategories.length) {
-          setSelectedService((current) =>
-            nextCategories.some((category) => category.name === current) ? current : nextCategories[0].name
-          );
-        }
       } catch {
         if (isMounted) setCategoryError("Unable to load categories.");
       } finally {
@@ -279,84 +216,7 @@ export default function HomePage() {
       <Header />
 
       <main>
-        <section className="relative isolate z-20 min-h-[620px] overflow-visible bg-[#16080d]">
-          {heroSlides.map((slide, index) => (
-            <Image
-              key={slide.alt}
-              src={slide.image}
-              alt={slide.alt}
-              fill
-              priority={index === 0}
-              sizes="100vw"
-              className="hero-slide object-cover object-top"
-              style={{ animationDelay: `${index * 5}s` }}
-            />
-          ))}
-          <div className="absolute inset-0 bg-black/45" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#2f0b17]/20 via-transparent to-[#2f0b17]/60" />
-
-          <div className="relative mx-auto grid min-h-[620px] max-w-7xl items-center gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_420px] lg:px-8">
-            <div className="w-full pt-8 text-left text-white">
-              <div className="relative h-[132px] max-w-3xl sm:h-[150px]">
-                {heroSlides.map((slide, index) => (
-                  <div
-                    key={slide.title}
-                    className="hero-copy absolute inset-0 flex flex-col items-start justify-center"
-                    style={{ animationDelay: `${index * 5}s` }}
-                  >
-                    {index === 0 ? <h1 className="font-serif text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">{slide.title}</h1> : <h2 className="font-serif text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">{slide.title}</h2>}
-                  </div>
-                ))}
-              </div>
-              <p className="mt-5 max-w-2xl text-lg font-semibold leading-8 text-white/90">
-                {brandTagline}
-              </p>
-
-              <WebsiteActions pageKey="home" dark />
-              <div className="mt-7 flex max-w-3xl flex-wrap gap-3">
-                {heroPills.map((item) => (
-                  <Link
-                    key={item.slug}
-                    href={`/vendors?search=${encodeURIComponent(item.title)}`}
-                    className="rounded-full border border-white/70 px-4 py-2 text-xs font-normal text-white hover:border-white"
-                  >
-                    {item.title}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="hero-search-panel relative z-30 w-full rounded p-4 pt-10 shadow-2xl backdrop-blur-md lg:justify-self-end">
-              <span className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap px-2 text-center font-serif text-base font-semibold leading-tight text-white sm:text-xl">
-                Search your dream wedding
-              </span>
-              <div className="grid gap-3">
-                <HeroSelect
-                  value={selectedService}
-                  onSelect={setSelectedService}
-                  options={serviceOptions}
-                  loading={categoryLoading}
-                  error={categoryError}
-                  onRetry={() => { setCategoryLoading(true); setCategoryError(""); setCategoryAttempt((current) => current + 1); }}
-                />
-                <CitySearch
-                  value={selectedCity}
-                  onSelect={(name, city) => { setSelectedCity(name); setSelectedCityRecord(city); }}
-                  buttonClassName="mui-menu-button"
-                  panelClassName="w-full"
-                  variant="hero"
-                />
-                <button
-                  type="button"
-                  onClick={() => router.push(vendorSearchHref(serviceCategories.find((category) => category.name === selectedService), selectedCityRecord || selectedCity))}
-                  className="h-11 rounded-full border border-white/70 bg-transparent px-5 text-xs font-normal text-white hover:border-white"
-                >
-                  Search <span aria-hidden="true" className="ml-2">→</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
+        <HomeHero categories={serviceCategories} loading={categoryLoading} error={categoryError} onRetry={() => { setCategoryLoading(true); setCategoryError(""); setCategoryAttempt((current) => current + 1); }} onPlan={() => setIsQuoteOpen(true)} />
 
         <WeddingCategoryDirectory />
 

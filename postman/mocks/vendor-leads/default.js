@@ -27,11 +27,11 @@ http.createServer((req, res) => {
   if (req.method === 'POST' && purchase) {
     const id = decodeURIComponent(purchase[1]);
     if (id === 'unavailable') return send(503, { message: 'Unable to purchase this lead.' });
-    const item = shared.find((item) => item.sharedLeadId === id);
-    if (!item) return send(404, { message: 'Shared lead not found.' });
+    const item = shared.find((item) => item.sharedLeadId === id) || leads.find((item) => item.id === id);
+    if (!item) return send(404, { message: 'Lead not found.' });
     if (purchased.has(id)) return send(409, { message: 'Lead already purchased.' });
     purchased.add(id);
-    return send(200, { success: true, message: 'Lead purchased successfully.', data: { sharedLeadId: id, leadId: item.leadId, isPurchased: true } });
+    return send(200, { success: true, message: 'Lead purchased successfully.', data: { ...(item.sharedLeadId ? { sharedLeadId: id } : {}), leadId: item.leadId || item.id, isPurchased: true } });
   }
   if (req.method !== 'GET') return send(501, { message: 'Endpoint not modeled.' });
   if (url.pathname === '/api/v1/vendor/leads/shared') {
@@ -41,7 +41,7 @@ http.createServer((req, res) => {
   }
   if (url.pathname === '/api/v1/vendor/leads') {
     const page = Number(url.searchParams.get('page') || 1), limit = Number(url.searchParams.get('limit') || 20);
-    const items = leads.filter(matchesSearch);
+    const items = leads.filter(matchesSearch).map((item) => ({ ...item, isPurchased: purchased.has(item.id) }));
     return send(200, { success: true, data: { leads: items.slice((page - 1) * limit, page * limit), pagination: { page, limit, total: items.length, hasNextPage: page * limit < items.length } } });
   }
   const id = decodeURIComponent(url.pathname.slice('/api/v1/vendor/leads/'.length));
@@ -53,5 +53,5 @@ http.createServer((req, res) => {
   if (id === 'invalid') return send(200, { success: true, data: {} });
   if (id === 'rejected') return send(200, { success: false, message: 'Lead access denied.' });
   const lead = leads.find((item) => item.id === id);
-  return lead ? send(200, { success: true, data: { lead } }) : send(404, { success: false, message: 'Lead not found.' });
+  return lead ? send(200, { success: true, data: { lead: { ...lead, isPurchased: purchased.has(lead.id) } } }) : send(404, { success: false, message: 'Lead not found.' });
 }).listen(process.env.PORT || 4506);

@@ -6,6 +6,6 @@ export default function AccountProfileInfo({ user, fallbackName = "My Account", 
       <p className="break-words text-sm font-normal text-stone-950">{accountName(user, fallbackName)}</p>
       <span className="account-role-chip">{accountType(user, fallbackType)}</span>
     </div>
-    <p className="account-email mt-1 break-words text-stone-500">{user?.email || "Email not provided"}</p>
+    <p className="account-email mt-1 text-stone-500" title={user?.email || undefined}>{user?.email || "Email not provided"}</p>
   </div>;
 }

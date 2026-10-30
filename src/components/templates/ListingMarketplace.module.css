@@ -85,6 +85,10 @@
 .emptyImage { position:relative; width:120px; height:80px; border-radius:12px; overflow:hidden; margin:0 auto 20px; }
 .skeleton { height:310px; background:linear-gradient(100deg,#eeedf6,#f7f6fc,#eeedf6); border-radius:13px; animation:pulse 1.5s infinite; }
 .pagination { display:flex; align-items:center; justify-content:center; gap:20px; margin-top:30px; font-size:13px; }
+.pageArrow { display:grid; place-items:center; width:40px; height:40px; flex-shrink:0; border:1px solid #b61f4b; border-radius:50%; background:white; color:#b61f4b; cursor:pointer; transition:background .15s,color .15s; }
+.pageArrow svg { width:20px; height:20px; }
+.pageArrow:hover:not(:disabled) { background:#b61f4b; color:white; }
+.pageArrow:disabled { border-color:#e2e8f0; background:#f8fafc; color:#cbd5e1; cursor:default; }
 .page button:focus-visible,.page a:focus-visible,.page select:focus-visible,.page input:focus-visible { outline:2px solid #b61f4b; outline-offset:3px; }
 .page .searchField input:focus,.page .searchField input:focus-visible { border:0; outline:none; box-shadow:none; }
 @keyframes pulse { 50% { opacity:.5; } }

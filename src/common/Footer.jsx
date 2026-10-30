@@ -231,14 +231,6 @@ export default function Footer() {
 
       <div className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-5 text-center text-[12px] text-slate-600 sm:px-6 lg:px-8">
-          <Link href="/sitemap" className="text-[#b61f4b] hover:underline">Explore all pages</Link>
-          <a
-            href="mailto:info@wedplanners.in"
-            className="inline-flex items-center gap-2 hover:text-[#b61f4b]"
-          >
-            <span className="footer-mail-icon text-[#b61f4b]" />
-            info@wedplanners.in
-          </a>
           <p>Copyright 2026 Epic Wedz. All Rights Reserved | Made in India</p>
         </div>
       </div>

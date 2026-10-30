@@ -38,11 +38,17 @@ export function sharedLeadPrice(row) {
   return amount !== undefined && amount !== null && amount !== '' && Number.isFinite(Number(amount)) ? Number(amount).toLocaleString('en-IN', { style: 'currency', currency: /^[A-Z]{3}$/.test(row?.currency || '') ? row.currency : 'INR', maximumFractionDigits: 2 }) : '';
 }
 
-export async function purchaseSharedLead(api, id) {
-  if (typeof id !== 'string' || !id.trim()) throw new Error('A shared lead ID is required.');
+export async function purchaseVendorLead(api, id) {
+  if (typeof id !== 'string' || !id.trim()) throw new Error('A lead ID is required.');
   const response = await api.post(`/vendor/leads/${encodeURIComponent(id)}/purchase`);
   const data = responseData(response);
+  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') window.dispatchEvent(new Event('epic-vendor-wallet-change'));
   return { data, message: response.data?.message || 'Lead purchased successfully.' };
+}
+
+export async function purchaseSharedLead(api, id) {
+  if (typeof id !== 'string' || !id.trim()) throw new Error('A shared lead ID is required.');
+  return purchaseVendorLead(api, id);
 }
 
 export function leadSummary(row) {
