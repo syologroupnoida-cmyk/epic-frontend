@@ -64,6 +64,21 @@ test('React-compiled lead list safely renders with a closed null menu', () => {
   assert.ok(!shared.includes('>Refresh<'));
 });
 
+test('detail fields hide identifiers and slugs throughout nested objects and arrays', () => {
+  const React = require('react');
+  const { renderToStaticMarkup } = require('react-dom/server');
+  const { LeadDetailFields } = load('src/components/vendor/LeadDetails.jsx');
+  const html = renderToStaticMarkup(React.createElement(LeadDetailFields, { lead: {
+    id: 'hidden-root', leadId: 'hidden-lead', slug: 'hidden-slug', customerName: 'Visible customer',
+    listing: { _id: 'hidden-listing', venueSlug: 'hidden-venue-slug', title: 'Visible venue' },
+    services: [{ service_id: 'hidden-service', slug: 'hidden-service-slug', name: 'Visible service' }],
+    guestCount: 0, metadata: { contacted: false, followUpCount: 0 },
+  } }));
+  assert.ok(!html.includes('hidden-'));
+  for (const value of ['Visible customer', 'Visible venue', 'Visible service', '>0<', '>No<']) assert.ok(html.includes(value), value);
+  assert.ok(!html.includes('rounded-xl'));
+});
+
 const originalWindow = global.window;
 const originalDocument = global.document;
 after(() => { if (originalWindow === undefined) delete global.window; else global.window = originalWindow; if (originalDocument === undefined) delete global.document; else global.document = originalDocument; });
@@ -118,4 +133,19 @@ test('shared purchases use the shared ID, preserve error responses and unlock de
   await assert.rejects(model.purchaseSharedLead(api, model.sharedLeadId(row)), (error) => error.response.status === 409);
   await assert.rejects(model.purchaseSharedLead(api, 'unavailable'), (error) => error.response.status === 503);
   await assert.rejects(model.purchaseSharedLead(api, ''), /shared lead ID/);
+});
+
+test('direct purchases use the lead ID and refresh purchased status in list and detail reads', { skip: !process.env.VENDOR_LEADS_SIMULATION_URL }, async () => {
+  global.window = { localStorage: { getItem: () => 'lead-vendor-token' }, location: { href: 'http://localhost/partner/lead-list' } };
+  global.document = { cookie: '' };
+  const api = load('src/util/MainApi.js').default;
+  const row = (await model.fetchVendorLeads(api)).items[0];
+  const id = model.leadId(row);
+  assert.equal(model.isLeadPurchased(row), false);
+  assert.equal((await model.purchaseVendorLead(api, id)).data.leadId, id);
+  assert.equal(model.isLeadPurchased((await model.fetchVendorLeads(api)).items[0]), true);
+  assert.equal(model.isLeadPurchased(await model.fetchVendorLead(api, id)), true);
+  await assert.rejects(model.purchaseVendorLead(api, id), (error) => error.response.status === 409);
+  await assert.rejects(model.purchaseVendorLead(api, 'unavailable'), (error) => error.response.status === 503);
+  await assert.rejects(model.purchaseVendorLead(api, ''), /lead ID/);
 });

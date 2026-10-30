@@ -1,0 +1,10 @@
+version: 1
+name: Vendor subscriptions and wallet
+slug: vendor-billing
+protocol: http
+port: 4509
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

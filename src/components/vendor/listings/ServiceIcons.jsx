@@ -1,5 +1,7 @@
 import { SvgIcon } from '@mui/material';
 
+export function PurchaseOutlined(props) { return <SvgIcon {...props}><path d="M3 3h2l2.5 12h11L21 7H6M9 20h.01M18 20h.01" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></SvgIcon>; }
+
 export function ViewOutlined(props) { return <SvgIcon {...props}><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" strokeWidth="1.7" /><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.7" /></SvgIcon>; }
 
 export function Add(props) { return <SvgIcon {...props}><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></SvgIcon>; }

@@ -1,0 +1,6 @@
+simulation: vendor-billing
+routing: path
+mocks:
+  - name: Vendor subscriptions and wallet
+    routeKey: vendor-billing-api
+    path: postman/mocks/vendor-billing

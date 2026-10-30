@@ -4,6 +4,8 @@ export const agentPanelSlugs = {
   "Service List": "service-list",
   "Lead List": "lead-list",
   "Shared Lead List": "shared-lead-list",
+  "Subscription Plans": "subscription-plans",
+  "Wallet Transactions": "wallet-transactions",
   "Add Property": "add-property",
   "Property List": "property-list",
   "Update Profile": "update-profile",
