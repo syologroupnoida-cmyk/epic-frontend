@@ -61,33 +61,6 @@ const latestNews = [
 ];
 
 
-const planningTiles = [
-  {
-    title: "Wedding Website",
-    text: "Create a polished wedding page with story, events, gallery, and RSVP details.",
-    image: invitationCards[2].image,
-    href: detailHref("wedding-website"),
-  },
-  {
-    title: "Wedding Vogue",
-    text: "See trending ideas, bridal looks, decor notes, rituals, and planning inspiration.",
-    image: blogPosts[3].image,
-    href: "/blog",
-  },
-  {
-    title: "Vendors",
-    text: "Find verified wedding vendors within your budget and preferred city.",
-    image: vendorCategories[0].image,
-    href: "/marketplace",
-  },
-  {
-    title: "Real Wedding",
-    text: "Browse real celebrations for customs, venues, outfits, and photo ideas.",
-    image: stories[2].image,
-    href: detailHref(stories[2].slug),
-  },
-];
-
 const ideaServiceItems = [
   { title: "Wedding Venues", href: "/marketplace", position: "0% 0%" },
   { title: "Bridal Makeup", href: detailHref("bridal-makeup"), position: "33.333% 0%" },
@@ -131,7 +104,7 @@ function SectionHeader({ eyebrow, title, text, dark = false }) {
         {eyebrow}
       </p>
       <h2
-        className={`mt-2 font-serif text-2xl font-bold sm:text-3xl ${
+        className={`portal-section-heading mt-2 font-serif font-bold ${
           dark ? "text-white" : "text-stone-950"
         }`}
       >
@@ -223,37 +196,7 @@ export default function HomePage() {
         <MarketplaceServices categories={serviceCategories} categoriesLoading={categoryLoading} />
 
 
-        <section className="bg-white py-10 sm:py-12">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {planningTiles.map((tile) => (
-                <Link
-                  key={tile.title}
-                  href={tile.href}
-                  className="group overflow-hidden rounded border border-rose-100 bg-[#fff9f5] shadow-sm"
-                >
-                  <div className="relative aspect-[16/9] overflow-hidden">
-                    <Image
-                      src={tile.image}
-                      alt={tile.title}
-                      fill
-                      sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
-                      className="object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-serif text-base font-semibold text-stone-950">
-                      {tile.title}
-                    </h3>
-                    <p className="mt-2 text-xs leading-5 text-stone-600">
-                      {tile.text}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+
 
         <section className="bg-[#421321] py-10 text-white sm:py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -314,7 +257,7 @@ export default function HomePage() {
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#b61f4b]">
                 Your Wedding, Made Simple
               </p>
-              <h2 className="mt-2 font-serif text-2xl font-bold text-stone-950 sm:text-3xl">
+              <h2 className="portal-section-heading mt-2 font-serif font-bold text-stone-950">
                 Search, select and connect with your wedding experts
               </h2>
               <p className="mt-4 text-sm leading-7 text-stone-600">{websiteContent.home.sections.find((section) => section.title === 'Your Wedding, Made Simple').paragraphs[0]}</p>
@@ -384,7 +327,7 @@ export default function HomePage() {
                     <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#b61f4b]">
                       {weddingDestinationSection.eyebrow}
                     </p>
-                    <h2 className="mt-2 font-serif text-2xl font-bold text-stone-950 sm:text-3xl">
+                    <h2 className="portal-section-heading mt-2 font-serif font-bold text-stone-950">
                       {weddingDestinationSection.title}
                     </h2>
                     <p className="mt-3 text-sm leading-6 text-stone-600">
@@ -454,7 +397,7 @@ export default function HomePage() {
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#ffd18a]">
                   Planning Inspiration
                 </p>
-              <h2 className="mt-2 font-serif text-2xl font-bold sm:text-3xl">
+              <h2 className="portal-section-heading mt-2 font-serif font-bold">
                   Plan with Confidence
                 </h2>
               </div>

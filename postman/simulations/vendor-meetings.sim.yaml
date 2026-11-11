@@ -1,0 +1,6 @@
+simulation: vendor-meetings
+routing: path
+mocks:
+  - name: Vendor sales meetings
+    routeKey: meetings-api
+    path: postman/mocks/vendor-meetings

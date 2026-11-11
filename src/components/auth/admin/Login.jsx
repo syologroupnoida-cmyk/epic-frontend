@@ -1,9 +1,6 @@
-import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import PasswordToggle from "@/components/auth/PasswordToggle";
-import ApiStatusModal from "@/components/common/ApiStatusModal";
+import AdminLoginView from "@/components/auth/AdminLoginView";
 import { getApiErrorMessage, loginAccount } from "@/util/authApi";
 import { getPostLoginAction } from "@/util/authRedirect";
 import {
@@ -94,90 +91,14 @@ export default function AdminLogin() {
     }
   }
 
-  return (
-    <div className="epic-login-page epic-admin-page">
-      <section className="epic-login-hero" aria-label="Admin workspace">
-        <Image
-          src="/images/auth-admin-login-bg.png"
-          alt=""
-          aria-hidden="true"
-          className="epic-login-hero-image"
-          fill
-          priority
-          sizes="(max-width: 1023px) 100vw, 50vw"
-        />
-        <div className="epic-login-hero-overlay epic-admin-hero-overlay" />
-        <Link href="/" className="epic-login-brand" aria-label="Go to home page">
-          <Image src="/images/epic-logo-new.png" alt="Epic Wed Planner" width={150} height={72} priority />
-        </Link>
-        <div className="epic-login-hero-copy">
-          <h1>
-            Command the
-            <span>platform.</span>
-          </h1>
-          <p>Review users, vendors, services, and approvals from a focused admin desk.</p>
-        </div>
-      </section>
-
-      <section className="epic-login-form-shell epic-admin-form-shell">
-        <form onSubmit={handleSubmit} className="epic-login-form epic-admin-form">
-          <div className="epic-login-heading">
-            <h2>Admin login</h2>
-            <p>Secure access for platform operations.</p>
-          </div>
-
-          <div className="epic-login-divider">
-            <span>authorized access only</span>
-          </div>
-
-          <div className="epic-login-fields">
-            <label className="epic-login-field">
-              <span>Email address</span>
-              <span className="epic-login-input-wrap">
-                <input name="email" value={form.email} onChange={handleChange} placeholder="admin@epic.com" autoComplete="email" />
-              </span>
-              {errors.email ? <small>{errors.email}</small> : null}
-            </label>
-            <label className="epic-login-field">
-              <span>Password</span>
-              <span className="epic-login-input-wrap">
-                <input
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                />
-                <PasswordToggle
-                  isVisible={showPassword}
-                  label="Toggle password visibility"
-                  onClick={() => setShowPassword((show) => !show)}
-                />
-              </span>
-              {errors.password ? <small>{errors.password}</small> : null}
-            </label>
-          </div>
-
-          <div className="epic-login-options">
-            <span />
-            <Link href="/forgot-password">Forgot password?</Link>
-          </div>
-
-          <button type="submit" disabled={isSubmitting} className="epic-signin-button">
-            {isSubmitting ? <span className="button-spinner" aria-hidden="true" /> : null}
-            {isSubmitting ? "Please wait..." : "Sign in"}
-            <span className="epic-button-arrow" aria-hidden="true" />
-          </button>
-        </form>
-      </section>
-      <ApiStatusModal
-        status={apiFeedback?.status}
-        title={apiFeedback?.title}
-        text={apiFeedback?.text}
-        okLabel={apiFeedback?.okLabel}
-        onOk={apiFeedback?.onOk}
-      />
-    </div>
-  );
+  return <AdminLoginView
+    form={form}
+    errors={errors}
+    showPassword={showPassword}
+    isSubmitting={isSubmitting}
+    apiFeedback={apiFeedback}
+    onChange={handleChange}
+    onSubmit={handleSubmit}
+    onTogglePassword={() => setShowPassword((show) => !show)}
+  />;
 }

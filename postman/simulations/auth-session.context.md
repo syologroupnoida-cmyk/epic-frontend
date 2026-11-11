@@ -39,6 +39,21 @@ URL; the application build keeps the production default.
 - 2026-10-27: All four auth tests passed; the combined run passed 47 tests with two unrelated venue-simulation tests skipped. The auth-api member served cookie-token requests, two concurrent 401s, one shared successful refresh, both retries, rejected login, and failed refresh. No member was silent. Production build passed; lint had one pre-existing KYC image warning.
 <!-- end:observations -->
 
+## Password update verification (2026-11-03)
+
+- The user supplied `/api/v1/auth/change-password` with `currentPassword` and
+  `newPassword`. POST is assumed from the existing auth mutation conventions;
+  the HTTP method and backend response contract still need live verification.
+- Extended the existing synthetic auth mock, without an owning workspace mock
+  lookup. The real `changePassword` helper and Axios interceptors passed against
+  the local simulation on port 4907: only the two API fields were sent, password
+  whitespace was preserved, Bearer auth was attached, and a modeled incorrect
+  current password surfaced its API error message. The log recorded two 200 and
+  two 400 responses to POST `/api/v1/auth/change-password`.
+- All five tests in `tests/auth-session.test.cjs` passed with the simulation.
+  Vendor and super-admin local role states were exercised; opaque mock tokens
+  do not establish backend role permissions or actual password persistence.
+
 ## What didn't work
 
 - 2026-10-27: The first HTTP test used a browser shim without `window.location.href`, which Axios requires. The shim now includes a local URL. The initial mock also tried to reread an already-consumed request stream; it now uses Postman's parsed `req.body`.

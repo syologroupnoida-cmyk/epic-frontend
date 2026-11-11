@@ -34,6 +34,14 @@ http.createServer((req, res) => {
     return send(200, { success: true, message: 'Lead purchased successfully.', data: { ...(item.sharedLeadId ? { sharedLeadId: id } : {}), leadId: item.leadId || item.id, isPurchased: true } });
   }
   if (req.method !== 'GET') return send(501, { message: 'Endpoint not modeled.' });
+  if (url.pathname === '/api/v1/vendor/leads/purchased') {
+    const page = Number(url.searchParams.get('page') || 1), limit = Number(url.searchParams.get('limit') || 20);
+    const leadType = url.searchParams.get('leadType');
+    if (leadType && !['DIRECT', 'SHARED'].includes(leadType)) return send(400, { message: 'Invalid lead type.' });
+    const candidates = leadType === 'DIRECT' ? leads : leadType === 'SHARED' ? shared : [...leads, ...shared];
+    const items = candidates.filter((item) => purchased.has(item.sharedLeadId || item.id)).map((item) => ({ ...item, isPurchased: true })).filter(matchesSearch);
+    return send(200, { success: true, data: { purchasedLeads: items.slice((page - 1) * limit, page * limit), pagination: { page, limit, total: items.length, hasNextPage: page * limit < items.length } } });
+  }
   if (url.pathname === '/api/v1/vendor/leads/shared') {
     const page = Number(url.searchParams.get('page') || 1), limit = Number(url.searchParams.get('limit') || 20);
     const items = shared.filter(matchesSearch);

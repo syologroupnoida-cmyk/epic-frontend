@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
+import { shopPanelPath, shopPanelSlugs } from '@/util/shopDashboardRoutes.mjs';
 
 const ACCESS_TOKEN_KEY = "epic_access_token";
 const REFRESH_TOKEN_KEY = "epic_refresh_token";
 const AUTH_ROLE_KEY = "epic_auth_role";
 
 const protectedRoutes = [
+  ...Object.keys(shopPanelSlugs).map((panel) => ({
+    prefix: shopPanelPath(panel),
+    loginPath: '/superadmin/login',
+    roles: ['SUPER_ADMIN', 'ADMIN'],
+  })),
   {
     prefix: "/kyc",
     loginPath: "/partner/login",
@@ -68,6 +74,13 @@ export function proxy(request) {
 
 export const config = {
   matcher: [
+    '/add-category/:path*',
+    '/categories/:path*',
+    '/add-subcategory/:path*',
+    '/subcategories/:path*',
+    '/products/:path*',
+    '/orders/:path*',
+    "/dashboard/shop/:path*",
     "/user/dashboard/:path*",
     "/partner/:path*",
     "/superadmin/:path*",

@@ -1,0 +1,37 @@
+purpose:
+  stands_in_for: Admin imported-business list, detail, PATCH and business-import-batch endpoints.
+  unblocks: Local verification of the super-admin Vendor Businesses UI client without production credentials or writes.
+assumptions:
+  - id: optional-search
+    status: unknown
+    claim: Both live admin list endpoints accept the optional search query parameter.
+    reason: Search was requested for the table header; its query name follows the other admin tables but no live search contract was supplied.
+    verification: On 2026-11-06, seven API/render/access checks passed against the local simulation. Request logs confirmed trimmed business and batch searches, status NEW with search, empty results, and omitted blank search values. The UI debounces input by 350ms, resets pagination, preserves each tab's search, and cancels stale requests. This verifies the client against the synthetic model, not live search support.
+    source: src/util/importedBusinesses.mjs; src/components/superadmin/VendorBusinesses.jsx; tests/importedBusinesses.test.mjs; tests/importedBusinesses.ui.test.cjs; postman/mocks/imported-businesses/default.js
+    updated_at: '2026-11-06'
+  - id: user-supplied-contract
+    status: supported
+    claim: The requested integration uses GET /admin/imported-businesses with page, limit and optional status, GET and PATCH /admin/imported-businesses/{id}, and GET /admin/business-import-batches with page and limit. PATCH sends status and salesNote.
+    reason: These endpoints and PATCH fields were explicitly supplied by the user. The UI defaults to status NEW and offers NEW and CONTACTED, preserving other returned statuses.
+    verification: User supplied a businesses sample on 2026-11-06 containing id, slug, businessName, category, website, address, city, state, pincode, rating, reviewCount and createdAt. The admin API itself was not called.
+    source: User request and sample on 2026-11-06; src/util/importedBusinesses.mjs; src/components/superadmin/VendorBusinesses.jsx
+    updated_at: '2026-11-06'
+  - id: local-client-http
+    status: supported
+    claim: The client paginates both resources, reads encoded IDs, sends only status and salesNote on PATCH, and observes changed status and notes against this local stand-in.
+    reason: Four API tests passed through real Axios requests and the simulation log recorded all relevant GET and PATCH paths. The first run exposed a mock body-reading issue under interceptRequests; the handler was corrected and restarted before the passing run.
+    verification: On 2026-11-06, ran postman simulation run postman/simulations/imported-businesses.sim.yaml --port 4912 --output ndjson --no-history and ran tests/importedBusinesses.test.mjs with IMPORTED_BUSINESSES_SIMULATION_URL=http://127.0.0.1:4912/business-admin/api/v1. Verified page 2 for both lists, NEW to CONTACTED update, trimmed sales note, empty-note update, empty filtered results, 401/403/404/503 responses, success-false rejection, malformed envelopes and cancellation. The mock validates the exact two PATCH fields.
+    source: tests/importedBusinesses.test.mjs; postman/mocks/imported-businesses/default.js; local run on 2026-11-06 (CLI 1.76.0)
+    updated_at: '2026-11-06'
+  - id: response-and-status-assumptions
+    status: unknown
+    claim: The live admin service returns the modeled pagination/detail envelopes and batch count fields, accepts empty salesNote values, and supports only the user-supplied or returned statuses.
+    reason: No authenticated live admin session, detail response, batch response or complete status enum was provided. The fixtures are synthetic and do not establish backend validation or permissions.
+    verification: Business list fields were mapped from the user sample. Local fallback keys were implemented for business and batch envelopes. Published owner mock lookup was skipped because installed CLI 1.76.0 does not support postman status; no mock was published or deployed. Confirm detail, batches, status enum and update semantics with a real admin session.
+    source: User business sample on 2026-11-06; src/util/importedBusinesses.mjs; postman/mocks/imported-businesses/default.js
+    updated_at: '2026-11-06'
+fingerprints:
+  - id: local-2026-11-06
+    date: '2026-11-06'
+    commit: 9653bac9c24a15ae15e3a3ffe1a8c651ac7078ba (dirty working tree, including existing user changes)
+    cli: Postman 1.76.0

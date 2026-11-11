@@ -1,0 +1,6 @@
+simulation: admin-sales-meetings
+routing: path
+mocks:
+  - name: Admin sales meetings
+    routeKey: admin-meetings-api
+    path: postman/mocks/admin-sales-meetings

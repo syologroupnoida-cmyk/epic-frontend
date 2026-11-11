@@ -19,7 +19,18 @@ export function getVendorCategory(slug) {
 }
 
 export function vendorHref(vendor) {
-  return vendor.slug ? `/vendors/${encodeURIComponent(vendor.categorySlug)}/${encodeURIComponent(vendor.slug)}` : null;
+  return vendor.slug ? `/vendors/${encodeURIComponent(vendor.categorySlug)}/${encodeURIComponent(vendor.slug)}${vendor.resource === 'businesses' ? '?source=businesses' : ''}` : null;
+}
+
+export function formatVendorName(name) {
+  const value = name.trim().toLowerCase();
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+export function vendorCardName(name) {
+  const value = formatVendorName(name);
+  const words = value.split(/\s+/);
+  return words.length > 4 ? `${words.slice(0, 4).join(' ')}...` : value;
 }
 
 export function formatVendorPrice(price) {

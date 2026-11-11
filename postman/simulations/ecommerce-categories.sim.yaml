@@ -1,0 +1,6 @@
+simulation: ecommerce-categories
+routing: path
+mocks:
+  - name: Admin ecommerce categories
+    routeKey: categories-api
+    path: postman/mocks/ecommerce-categories

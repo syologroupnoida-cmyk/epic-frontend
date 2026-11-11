@@ -1,8 +1,7 @@
 import { useState } from "react";
 import ApiStatusModal from "@/components/common/ApiStatusModal";
 import PasswordToggle from "@/components/auth/PasswordToggle";
-import MainApi from "@/util/MainApi";
-import { getApiErrorMessage } from "@/util/authApi";
+import { changePassword, getApiErrorMessage } from "@/util/authApi";
 
 const initialForm = {
   currentPassword: "",
@@ -45,7 +44,7 @@ export default function BusinessPasswordUpdate() {
   async function submitPassword(event) {
     event.preventDefault();
 
-    if (!validateForm()) return;
+    if (isSubmitting || !validateForm()) return;
 
     setIsSubmitting(true);
     setFeedback({
@@ -55,11 +54,12 @@ export default function BusinessPasswordUpdate() {
     });
 
     try {
-      await MainApi.patch("/vendor/profile/password", {
+      await changePassword({
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
       });
       setForm(initialForm);
+      setShowPassword({ currentPassword: false, newPassword: false, confirmPassword: false });
       setFeedback({
         status: "success",
         title: "Password updated",

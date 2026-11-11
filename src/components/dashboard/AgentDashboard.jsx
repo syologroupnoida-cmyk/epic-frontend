@@ -1,9 +1,10 @@
+import DashboardMenuIcon from './DashboardMenuIcon';
 import useDismissibleDropdown from "@/util/useDismissibleDropdown";
 import AccountProfileInfo from "@/components/common/AccountProfileInfo";
 import { accountName } from "@/util/accountProfile.mjs";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import ApiStatusModal from "@/components/common/ApiStatusModal";
 import ConfirmActionModal from "@/components/common/ConfirmActionModal";
@@ -15,12 +16,15 @@ import VendorSubscriptionPlans from "@/components/vendor/billing/VendorSubscript
 import WalletTransactions from "@/components/vendor/billing/WalletTransactions";
 import { VendorPlanChip, VendorWalletBalance, VendorWalletProvider } from "@/components/vendor/billing/VendorWalletProvider";
 import LeadList from "@/components/vendor/LeadList";
+import PurchasedLeadList from "@/components/vendor/PurchasedLeadList";
+import MeetingList from "@/components/vendor/meetings/MeetingList";
+import MeetingHeaderButton from "@/components/vendor/meetings/MeetingHeaderButton";
 import ServiceList from "@/components/vendor/ServiceList";
 import AddProperty from "@/components/vendor/AddProperty";
 import PropertyList from "@/components/vendor/PropertyList";
 import VendorDashboardOverview from "@/components/dashboard/VendorDashboardOverview";
 import MainApi from "@/util/MainApi";
-import { getAuthUser } from "@/util/authSession";
+import useVendorDashboardAccess from "@/util/useVendorDashboardAccess";
 import useAuthLogout from "@/util/useAuthLogout";
 import { agentPanelPath } from "@/util/agentDashboardRoutes.mjs";
 import useAuthUser from "@/util/useAuthUser";
@@ -45,12 +49,13 @@ const icons = {
 
 const menu = [
   { label: "Overview", icon: "dashboard", sub: [] },
-  { label: "Business Profile", icon: "profile", sub: ["Update Profile", "Update Password", "Manage Services"] },
   { label: "Services", icon: "store", sub: ["Add Service", "Service List"] },
-  { label: "Lead", icon: "leads", sub: ["Lead List", "Shared Lead List"] },
+  { label: "Lead", icon: "leads", sub: ["Lead List", "Shared Lead List", "Purchased Leads"] },
+  { label: "My Meeting", icon: "calendar", sub: ["Meeting List"] },
   { label: "Subscriptions", icon: "store", sub: ["Subscription Plans"] },
   { label: "Wallet", icon: "wallet", sub: ["Wallet Transactions"] },
   { label: "Property", icon: "property", sub: ["Add Property", "Property List"] },
+  { label: "Business Profile", icon: "profile", sub: ["Update Profile", "Update Password", "Manage Services"] },
 ];
 
 const dashboardPanels = {
@@ -58,6 +63,8 @@ const dashboardPanels = {
   "Wallet Transactions": WalletTransactions,
   "Lead List": LeadList,
   "Shared Lead List": SharedLeadList,
+  "Purchased Leads": PurchasedLeadList,
+  "Meeting List": MeetingList,
   "Add Service": AddService,
   "Service List": ServiceList,
   "Add Property": AddProperty,
@@ -78,38 +85,6 @@ function VendorAvatar({ src, name }) {
 }
 
 
-function normalizeKycStatus(status = "") {
-  return String(status).trim().toUpperCase();
-}
-
-function isApprovedKycStatus(status) {
-  const normalizedStatus = normalizeKycStatus(status);
-  return normalizedStatus === "APPROVED" || normalizedStatus === "APPROVEL";
-}
-
-function getVendorDashboardAccess() {
-  const user = getAuthUser();
-  const isVendor = user?.role === "VENDOR";
-  const kycStatus = normalizeKycStatus(user?.vendorProfile?.kycStatus);
-  const nextStep = user?.vendorProfile?.nextStep;
-
-  if (!isVendor || isApprovedKycStatus(kycStatus)) return "approved";
-  if (kycStatus === "AWAITING") return "awaiting";
-  if (kycStatus === "PENDING" || nextStep === "COMPLETE_KYC") return "pending";
-  return "pending";
-}
-
-function subscribeToAuthSnapshot(callback) {
-  window.addEventListener("epic-auth-change", callback);
-  window.addEventListener("storage", callback);
-  return () => { window.removeEventListener("epic-auth-change", callback); window.removeEventListener("storage", callback); };
-}
-
-
-function getVendorDashboardServerSnapshot() {
-  return "loading";
-}
-
 export default function AgentDashboard({ activePanel = "Overview", children }) {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
@@ -126,11 +101,7 @@ export default function AgentDashboard({ activePanel = "Overview", children }) {
   const { handleLogout, logoutFeedback } = useAuthLogout("/partner/login");
   const expanded = !collapsed || hovered;
   const ActivePanel = dashboardPanels[activePanel];
-  const dashboardAccess = useSyncExternalStore(
-    subscribeToAuthSnapshot,
-    getVendorDashboardAccess,
-    getVendorDashboardServerSnapshot,
-  );
+  const dashboardAccess = useVendorDashboardAccess();
 
   function navigateToPanel(panel) {
     setMenuSearch("");
@@ -170,10 +141,11 @@ export default function AgentDashboard({ activePanel = "Overview", children }) {
     <VendorWalletProvider key={userSnapshot}><div className={`wp-dashboard vp-dashboard ${expanded ? "wp-expanded" : "wp-collapsed"} h-screen overflow-hidden bg-[#f7f2ef] text-stone-900`}>
       <aside onMouseEnter={() => collapsed && setHovered(true)} onMouseLeave={() => setHovered(false)} className={`wp-sidebar fixed inset-y-0 left-0 z-40 border-r border-rose-100 bg-white shadow-sm transition-all duration-200 ${expanded ? "w-72" : "w-20"}`}>
         <Link href="/" className="wp-brand flex h-16 items-center justify-center border-b border-rose-100 px-4" aria-label="Epic Wedz home"><Image src="/images/epic-logo-new.png" alt="Epic Wedz" width={200} height={76} priority className="wp-site-logo" /></Link>
-        <nav className="h-[calc(100vh-4rem)] space-y-1 overflow-y-auto px-3 py-4">{menu.filter((item) => !menuSearch || `${item.label === "Overview" ? "Dashboard" : item.label} ${item.sub.join(" ")}`.toLowerCase().includes(menuSearch.toLowerCase())).map((item) => { const hasSubmenu = item.sub.length > 0; const menuActive = activePanel === item.label || item.sub.includes(activePanel) || (item.label === "Services" && activePanel === "Edit Service") || (item.label === "Property" && activePanel === "Edit Property"); const submenuOpen = expanded && hasSubmenu && ((openMenu || (menuActive ? item.label : "")) === item.label || Boolean(menuSearch)); return <div key={item.label}><button type="button" onClick={() => hasSubmenu ? setOpenMenu((current) => (current || (menuActive ? item.label : "")) === item.label ? "closed" : item.label) : navigateToPanel(item.label)} className={`flex h-12 w-full items-center rounded px-3 text-sm font-semibold transition hover:bg-rose-50 hover:text-[#b61f4b] ${menuActive ? "bg-rose-50 text-[#b61f4b]" : "text-stone-700"} ${expanded ? "justify-between gap-3" : "justify-center"}`} title={item.label === "Overview" ? "Dashboard" : item.label}><span className="flex items-center gap-3"><Icon name={item.icon} />{expanded ? item.label === "Overview" ? "Dashboard" : item.label : null}</span>{expanded && hasSubmenu ? <span className={`${submenuOpen ? "rotate-180" : ""} transition duration-500`}><Icon name="arrow" /></span> : null}</button>{expanded && hasSubmenu ? <div className={`dashboard-submenu ml-8 grid gap-1 ${submenuOpen ? "mt-1 max-h-40 pb-2 opacity-100" : "mt-0 max-h-0 pb-0 opacity-0"}`}>{item.sub.map((sub) => <button key={sub} type="button" onClick={() => navigateToPanel(sub)} className={`flex items-center gap-2 rounded px-3 py-2 text-left text-xs font-semibold hover:bg-rose-50 hover:text-[#b61f4b] ${(activePanel === sub) ? "bg-rose-50 text-[#b61f4b]" : "text-stone-500"}`}><span className={`h-1.5 w-1.5 rounded-full border border-white ${(activePanel === sub) ? "bg-white opacity-100" : "opacity-100"}`} aria-hidden="true" />{sub}</button>)}</div> : null}</div>; })}</nav>
+        <nav style={{ height: "calc(100dvh - 4rem)" }} className="h-[calc(100vh-4rem)] space-y-1 overflow-y-auto px-3 py-4">{menu.filter((item) => !menuSearch || `${item.label === "Overview" ? "Dashboard" : item.label} ${item.sub.join(" ")}`.toLowerCase().includes(menuSearch.toLowerCase())).map((item) => { const hasSubmenu = item.sub.length > 0; const menuActive = activePanel === item.label || item.sub.includes(activePanel) || (item.label === "Services" && activePanel === "Edit Service") || (item.label === "Property" && activePanel === "Edit Property"); const submenuOpen = expanded && hasSubmenu && ((openMenu || (menuActive ? item.label : "")) === item.label || Boolean(menuSearch)); return <div key={item.label}><button type="button" onClick={() => hasSubmenu ? setOpenMenu((current) => (current || (menuActive ? item.label : "")) === item.label ? "closed" : item.label) : navigateToPanel(item.label)} className={`flex h-12 w-full items-center rounded px-3 text-sm font-semibold transition hover:bg-rose-50 hover:text-[#b61f4b] ${menuActive ? "bg-rose-50 text-[#b61f4b]" : "text-stone-700"} ${expanded ? "justify-between gap-3" : "justify-center"}`} title={item.label === "Overview" ? "Dashboard" : item.label}><span className="flex items-center gap-3"><DashboardMenuIcon label={item.label} />{expanded ? item.label === "Overview" ? "Dashboard" : item.label : null}</span>{expanded && hasSubmenu ? <span className={`${submenuOpen ? "rotate-180" : ""} transition duration-500`}><Icon name="arrow" /></span> : null}</button>{expanded && hasSubmenu ? <div className={`dashboard-submenu ml-8 grid gap-1 ${submenuOpen ? "mt-1 max-h-40 pb-2 opacity-100" : "mt-0 max-h-0 pb-0 opacity-0"}`}>{item.sub.map((sub) => <button key={sub} type="button" onClick={() => navigateToPanel(sub)} className={`flex items-center gap-2 rounded px-3 py-2 text-left text-xs font-semibold hover:bg-rose-50 hover:text-[#b61f4b] ${(activePanel === sub) ? "bg-rose-50 text-[#b61f4b]" : "text-stone-500"}`}><span className="h-1.5 w-1.5 shrink-0 rounded-full border border-current" aria-hidden="true" />{sub}</button>)}</div> : null}</div>; })}</nav>
+
       </aside>
       <div className={`vp-workspace h-screen overflow-hidden transition-all duration-200 ${expanded ? "pl-72" : "pl-20"}`}>
-        <header className="wp-topbar relative z-30 flex h-16 items-center justify-between border-b border-rose-100 bg-white/95 px-5 shadow-sm backdrop-blur"><div className="flex items-center gap-4"><button type="button" onClick={() => setCollapsed((value) => !value)} className="grid h-9 w-9 place-items-center rounded-full border border-rose-100 text-stone-700 hover:border-[#b61f4b] hover:text-[#b61f4b]" aria-label="Toggle sidebar"><Icon name={collapsed ? "expand" : "collapse"} /></button><strong className="wp-header-role">Partner</strong><label className="wp-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="m15 15 6 6" /></svg><span className="sr-only">Search vendor dashboard navigation</span><input type="search" value={menuSearch} onChange={(event) => setMenuSearch(event.target.value)} placeholder="Search bookings, enquiries, services…" /></label></div><div className="flex min-w-0 items-center"><div className={billingStyles.headerBilling}><VendorWalletBalance /><VendorPlanChip /></div><div ref={profileMenuRef} className="vp-header-account relative"><button type="button" onClick={() => setProfileOpen((open) => !open)} className="wp-account-button" aria-label="Profile" aria-expanded={profileOpen}><span className="wp-account-avatar"><VendorAvatar src={profile?.logoUrl || authUser?.profilePictureUrl} name={displayName} /></span><span><strong>{displayName}</strong><small>{authUser?.email || "Wedding Partner"}</small></span><Icon name="arrow" /></button><div className={`absolute right-0 top-full mt-3 w-64 rounded border border-rose-100 bg-white p-3 shadow-xl transition duration-150 ${profileOpen ? "pointer-events-auto visible translate-y-0 opacity-100" : "pointer-events-none invisible translate-y-2 opacity-0"}`}><div className="flex items-center gap-3 border-b border-rose-100 pb-3"><span className="grid h-11 w-11 place-items-center rounded-full bg-rose-50 text-[#b61f4b]"><Icon name="profile" /></span><AccountProfileInfo user={authUser} fallbackName="Vendor" fallbackType="Vendor" /></div><button type="button" onClick={() => { setProfileOpen(false); setOpenMenu("Business Profile"); navigateToPanel("Update Profile"); }} className="mt-2 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-normal text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="settings" /> Profile setting</button><button type="button" onClick={() => { setProfileOpen(false); setLogoutConfirmOpen(true); }} className="mt-1 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-normal text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="logout" /> Logout</button></div></div></div></header>
+        <header className="wp-topbar relative z-30 flex h-16 items-center justify-between border-b border-rose-100 bg-white/95 px-5 shadow-sm backdrop-blur"><div className="flex items-center gap-4"><button type="button" onClick={() => setCollapsed((value) => !value)} className="grid h-9 w-9 place-items-center rounded-full border border-rose-100 text-stone-700 hover:border-[#b61f4b] hover:text-[#b61f4b]" aria-label="Toggle sidebar"><Icon name={collapsed ? "expand" : "collapse"} /></button><strong className="wp-header-role">Partner</strong><label className="wp-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="m15 15 6 6" /></svg><span className="sr-only">Search vendor dashboard navigation</span><input type="search" value={menuSearch} onChange={(event) => setMenuSearch(event.target.value)} placeholder="Search bookings, enquiries, servicesÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦" /></label></div><div className="flex min-w-0 items-center"><MeetingHeaderButton /><div className={billingStyles.headerBilling}><VendorWalletBalance /><VendorPlanChip /></div><div ref={profileMenuRef} className="vp-header-account relative"><button type="button" onClick={() => setProfileOpen((open) => !open)} className="wp-account-button" aria-label="Profile" aria-expanded={profileOpen}><span className="wp-account-avatar"><VendorAvatar src={profile?.logoUrl || authUser?.profilePictureUrl} name={displayName} /></span><span><strong>{displayName}</strong><small>{authUser?.email || "Wedding Partner"}</small></span><Icon name="arrow" /></button><div className={`absolute right-0 top-full mt-3 w-64 rounded border border-rose-100 bg-white p-3 shadow-xl transition duration-150 ${profileOpen ? "pointer-events-auto visible translate-y-0 opacity-100" : "pointer-events-none invisible translate-y-2 opacity-0"}`}><div className="flex items-center gap-3 border-b border-rose-100 pb-3"><span className="grid h-11 w-11 place-items-center rounded-full bg-rose-50 text-[#b61f4b]"><Icon name="profile" /></span><AccountProfileInfo user={authUser} fallbackName="Vendor" fallbackType="Vendor" /></div><button type="button" onClick={() => { setProfileOpen(false); setOpenMenu("Business Profile"); navigateToPanel("Update Profile"); }} className="mt-2 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-normal text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="settings" /> Profile setting</button><button type="button" onClick={() => { setProfileOpen(false); setLogoutConfirmOpen(true); }} className="mt-1 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-normal text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="logout" /> Logout</button></div></div></div></header>
         <main className="wp-main h-[calc(100vh-4rem)] overflow-y-auto p-2">
           {children || (ActivePanel ? <ActivePanel /> : <VendorDashboardOverview name={displayName} activePanel={activePanel} onNavigate={navigateToPanel} />)}
         </main>

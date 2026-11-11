@@ -40,6 +40,10 @@ export function resetPassword({ resetToken, newPassword }) {
   return MainApi.post("/auth/password/reset", { resetToken, newPassword });
 }
 
+export function changePassword({ currentPassword, newPassword }) {
+  return MainApi.post("/auth/change-password", { currentPassword, newPassword });
+}
+
 export function getApiErrorMessage(error, fallback = "Something went wrong. Please try again.") {
   if ([502, 503, 504].includes(error?.response?.status)) {
     return `The API server is temporarily unavailable (HTTP ${error.response.status}). Please try again shortly.`;

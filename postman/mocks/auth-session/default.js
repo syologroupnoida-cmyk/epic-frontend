@@ -16,6 +16,15 @@ http.createServer(async (req, res) => {
     return send(200, { success: true, data: { accessToken: 'fresh-access', refreshToken: 'valid-refresh' } });
   }
   if (url.pathname === '/api/v1/auth/login') return send(401, { message: 'Invalid credentials.' });
+  if (url.pathname === '/api/v1/auth/change-password' && req.method === 'POST') {
+    if (!['Bearer cookie-access', 'Bearer fresh-access'].includes(req.headers.authorization)) return send(401, { message: 'Authentication token missing or malformed.' });
+    let body = req.body;
+    if (!body) { let raw = ''; for await (const chunk of req) raw += chunk; body = JSON.parse(raw || '{}'); }
+    if (Object.keys(body).sort().join(',') !== 'currentPassword,newPassword') return send(400, { message: 'Unexpected password payload.' });
+    if (body.currentPassword !== ' CurrentPassword123! ') return send(400, { message: 'Current password is incorrect.' });
+    if (body.newPassword !== ' NewPassword456! ') return send(400, { message: 'New password did not preserve its value.' });
+    return send(200, { success: true, message: 'Password updated successfully.' });
+  }
   if (['/api/v1/vendor/kyc', '/api/v1/vendor/profile'].includes(url.pathname)) {
     if (!['Bearer cookie-access', 'Bearer fresh-access'].includes(req.headers.authorization)) return send(401, { message: 'Authentication token missing or malformed.' });
     return send(200, { success: true, data: { authenticated: true } });

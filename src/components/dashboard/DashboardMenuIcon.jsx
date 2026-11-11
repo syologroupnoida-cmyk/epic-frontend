@@ -1,0 +1,56 @@
+const paths = {
+  dashboard: 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
+  services: 'M8 6V4h8v2 M3 7h18v14H3z M3 12h18 M10 12v3h4v-3',
+  list: 'M9 5h12 M9 12h12 M9 19h12 M3 5h1 M3 12h1 M3 19h1',
+  add: 'M12 4v16 M4 12h16',
+  house: 'm3 10 9-7 9 7 M5 9v12h14V9 M9 21v-7h6v7',
+  city: 'M3 21V8h6 M9 21V3h7v18 M16 11h5v10 M2 21h20 M12 7h1 M12 11h1 M12 15h1 M5 12h1 M5 16h1 M18 15h1 M18 18h1',
+  people: 'M9 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M3 21v-3a6 6 0 0 1 12 0v3 M16 4a3 3 0 0 1 0 6 M18 13a5 5 0 0 1 3 5v3',
+  lead: 'M21 12a9 9 0 1 1-9-9 M17 12a5 5 0 1 1-5-5 M12 12l8-8 M16 4h4v4',
+  calendar: 'M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z M7 3v4 M17 3v4 M3 10h18 M7 14h2 M13 14h2 M7 17h2',
+  mail: 'M3 5h18v14H3z m0 1 9 7 9-7',
+  card: 'M3 4h18v16H3z M3 9h18 M6 15h5 M16 15h2',
+  wallet: 'M20 7H5a2 2 0 0 1 0-4h13v4 M3 5v14a2 2 0 0 0 2 2h15V7 M20 12h-6v5h6 M16 14.5h.1',
+  receipt: 'M6 3h12v18l-3-2-3 2-3-2-3 2V3z M9 7h6 M9 11h6 M9 15h3',
+  settings: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M9 3h6l1 3 3 1 2 5-2 2-1 4-4 3-3-1-4-1-1-4-3-2 1-5 3-1 2-4z',
+  profile: 'M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21v-2a8 8 0 0 1 16 0v2',
+  lock: 'M5 10h14v11H5z M8 10V7a4 4 0 0 1 8 0v3 M12 14v3',
+  shield: 'm12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3z m-4 9 3 3 5-6',
+  import: 'M12 21H4V3h10l5 5v4 M14 3v5h5 M14 17h8 m-3-3 3 3-3 3',
+  share: 'M6 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z M18 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4z M18 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z M8 11l8-5 M8 13l8 5',
+  bag: 'M5 7h14l2 14H3L5 7z M8 8V6a4 4 0 0 1 8 0v2',
+  heart: 'M20 5c-3-3-7-1-8 2-1-3-5-5-8-2s-1 7 8 15c9-8 11-12 8-15z',
+  checklist: 'M10 5h11 M10 12h11 M10 19h11 M3 5l2 2 3-4 M3 12l2 2 3-4 M3 19l2 2 3-4',
+  check: 'm5 12 4 4L19 6 M21 12a9 9 0 1 1-6-8.5',
+  clock: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 7v5l3 2',
+  bell: 'M5 17h14l-2-3V9a5 5 0 0 0-10 0v5l-2 3z M10 21h4 M12 2v2',
+  support: 'M4 14v-3a8 8 0 0 1 16 0v3 M4 11H2v7h4v-7H4z M20 11h2v7h-4v-7h2z M20 18v3h-8',
+  footer: 'M3 3h18v18H3z M3 16h18 M7 19h10',
+  box: 'm3 7 9-4 9 4v10l-9 4-9-4V7z m0 0 9 5 9-5 M12 12v9 M7 5l10 5',
+  cart: 'M2 3h3l3 13h11l3-9H6 M9 21h.1 M18 21h.1',
+  store: 'M4 3h16l2 6-2 3-3-2-5 2-5-2-3 2-2-3 2-6z M4 12v9h16v-9 M9 21v-6h6v6',
+};
+
+const menuIcons = {
+  Overview: 'dashboard', Dashboard: 'dashboard', 'Shop Overview': 'dashboard',
+  Services: 'services', 'Service Listing': 'list', Property: 'house', Cities: 'city', Vendor: 'people',
+  Lead: 'lead', Meetings: 'calendar', 'My Meeting': 'calendar', Contact: 'mail', Subscriptions: 'card',
+  Wallet: 'wallet', 'Business Profile': 'store', Profile: 'profile', Settings: 'settings',
+  Categories: 'dashboard', 'Shop Products': 'box', 'Shop Orders': 'cart',
+  'Services List': 'list', 'Service List': 'list', 'Property List': 'house', 'City List': 'city',
+  'Vendor Kyc List': 'shield', 'Vendor Businesses': 'store', 'Business Import Batches': 'import',
+  'Lead List': 'lead', 'Shared Lead List': 'share', 'Purchased Leads': 'bag',
+  'Sales Meetings': 'calendar', 'Meeting List': 'calendar', 'Contact Enquiries': 'mail',
+  'Subscription Plans': 'card', 'Wallet Transactions': 'receipt', 'Update Profile': 'profile',
+  'Update Password': 'lock', 'Manage Services': 'services', 'Footer Settings': 'footer',
+  Roles: 'people', Permissions: 'shield', Platform: 'settings', 'Category List': 'list', 'Subcategory List': 'list',
+  'My Wedding': 'heart', Shortlist: 'heart', Bookings: 'calendar', Checklist: 'checklist', Budget: 'wallet',
+  'Guest list': 'people', Venues: 'house', Vendors: 'store', Favorites: 'heart', Visits: 'calendar',
+  Confirmed: 'check', Pending: 'clock', Account: 'profile', 'Family details': 'people', Preferences: 'settings',
+  Notifications: 'bell', Privacy: 'shield', Support: 'support',
+};
+
+export default function DashboardMenuIcon({ label, small = false }) {
+  const name = label.startsWith('Add ') ? 'add' : menuIcons[label] || 'dashboard';
+  return <svg viewBox="0 0 24 24" className={`${small ? 'h-4 w-4' : 'h-5 w-5'} shrink-0`} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;
+}

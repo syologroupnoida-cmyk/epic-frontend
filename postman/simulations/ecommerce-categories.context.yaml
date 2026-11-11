@@ -1,0 +1,46 @@
+purpose:
+  stands_in_for: Admin ecommerce category creation, paginated list and category detail APIs.
+  unblocks: Local verification of the dedicated shop dashboard without production credentials or writes.
+assumptions:
+  - id: supplied-category-contract
+    status: supported
+    claim: POST /api/v1/admin/ecommerce/categories sends one object with name, description and numeric sortOrder. GET on the same resource uses page and limit; GET /api/v1/admin/ecommerce/categories/{ecommerceCategoryId} reads details.
+    reason: The user supplied the three endpoint operations and an example create payload on 2026-11-10.
+    verification: The mock rejects extra create fields and nonnumeric sortOrder. The real Axios client sent the exact create fields through the local simulation; POST 201 was followed by list and detail reads showing the new category.
+    source: User request; src/util/ecommerceCategories.mjs; tests/ecommerceCategories.test.mjs
+    updated_at: '2026-11-10'
+  - id: response-envelopes-and-input-limits
+    status: unknown
+    claim: The backend uses the modeled category and pagination envelopes, accepts an empty description and nonnegative integer sortOrder, and exposes the modeled validation and conflict messages.
+    reason: No live list, create or detail responses, or complete validation rules were supplied. Fixtures and error scenarios are synthetic.
+    verification: The client supports categories, ecommerceCategories, items and results list keys, raw lists, category or ecommerceCategory detail wrappers, and common pagination keys. Production create calls were not made. Confirm the actual response envelope and validation rules against an authenticated live session.
+    source: src/util/ecommerceCategories.mjs; postman/mocks/ecommerce-categories/default.js
+    updated_at: '2026-11-10'
+  - id: local-http-verification
+    status: supported
+    claim: Local client tests establish exact payload construction, paginated reads, encoded IDs, create-then-read behavior, auth errors, conflict and service failure handling, malformed-response rejection and request cancellation.
+    reason: Five category model and HTTP tests passed against the Postman simulation, and three UI/access tests passed using compiled components.
+    verification: Ran postman simulation run postman/simulations/ecommerce-categories.sim.yaml --port 4918 --output ndjson --no-history and tests/ecommerceCategories.test.mjs with ECOMMERCE_CATEGORIES_SIMULATION_URL=http://127.0.0.1:4918/categories-api/api/v1. Simulation request logs recorded the tested GET and POST requests. The UI tests verified distinct shop navigation, the return link, form fields and initial list loading markup. Browser clicks and live API behavior were not tested.
+    source: tests/ecommerceCategories.test.mjs; tests/ecommerceCategories.ui.test.cjs; local run on 2026-11-10
+    updated_at: '2026-11-10'
+  - id: mock-discovery
+    status: unknown
+    claim: An owning-team published category mock is available.
+    reason: Installed Postman CLI does not support postman status, so published owner mock discovery was skipped. No mock or collection was published.
+    verification: postman status returned unknown command status. A local mock was created from the supplied endpoint and request-field contract.
+    source: Local CLI output on 2026-11-10
+    updated_at: '2026-11-10'
+  - id: supplied-subcategory-contract
+    status: supported
+    claim: POST /api/v1/admin/ecommerce/subcategories sends categoryId, name and specificationTemplate.fields. SELECT fields include key, label, type, boolean required and options; BOOLEAN fields omit options. GET on the same path accepts optional categoryId.
+    reason: User supplied the endpoints, nested payload and all-category default behavior on 2026-11-10.
+    verification: The simulation rejected extra fields. POST 201 was followed by GET with an encoded parent category ID and returned the created specification template. GET without a categoryId returned rows from different parents. All fourteen category, subcategory and compiled UI checks passed, including malformed envelopes, auth and service errors, cancellation, parent filters and dropdown pagination.
+    source: src/util/ecommerceSubcategories.mjs; tests/ecommerceSubcategories.test.mjs; tests/ecommerceCategories.ui.test.cjs; local run on 2026-11-10 at port 4918
+    updated_at: '2026-11-10'
+  - id: subcategory-envelope-and-all-list
+    status: unknown
+    claim: The live subcategory GET returns an unpaginated list and accepts an omitted categoryId to return every parent; SELECT and BOOLEAN are the supported field types.
+    reason: Only the example request and category-filter URL were supplied, without live responses or a full field-type enum. No speculative search or pagination parameters are sent to the subcategory endpoint.
+    verification: The client accepts raw arrays or subcategories, ecommerceSubcategories, items or results envelopes. It paginates the loaded list locally. Category dropdowns follow all pages of the supplied category list API. Category table search applies to the current server page; subcategory search applies to the loaded result set. These behaviors passed local tests; live API behavior and browser interaction remain unverified.
+    source: src/modules/ecommerce/management/subcategories; src/util/ecommerceSubcategories.mjs; src/util/ecommerceCategories.mjs
+    updated_at: '2026-11-10'

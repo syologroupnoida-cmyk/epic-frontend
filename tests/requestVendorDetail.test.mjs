@@ -2,6 +2,49 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { requestVendorDetail } from "../src/util/requestVendorDetail.mjs";
 
+test('imported business links request their encoded slug directly and preserve cancellation', async () => {
+  const calls = [];
+  const signal = new AbortController().signal;
+  const response = { data: { success: true, data: { businessName: 'Imported Studio' } } };
+  const result = await requestVendorDetail(async (...args) => { calls.push(args); return response; }, 'imported & studio', { resource: 'businesses', signal, allowOwnProfile: true });
+  assert.deepEqual(calls, [['/marketplace/businesses/imported%20%26%20studio', { signal }]]);
+  assert.equal(result.data, response.data);
+  assert.equal(result.marketplaceResource, 'businesses');
+});
+
+test('imported business failures do not substitute a vendor or private profile', async () => {
+  const calls = [];
+  const error = { response: { status: 404 } };
+  await assert.rejects(requestVendorDetail(async (path) => { calls.push(path); throw error; }, 'missing', { resource: 'businesses', allowOwnProfile: true }), (failure) => failure === error);
+  assert.deepEqual(calls, ['/marketplace/businesses/missing']);
+});
+
+test('business profiles fall back to their public endpoint without requesting a private profile', async () => {
+  const calls = [];
+  const result = await requestVendorDetail(async (path) => {
+    calls.push(path);
+    if (path.startsWith('/marketplace/vendors/')) throw { response: { status: 404 } };
+    return { data: { success: true, data: { slug: 'noida-studio', businessName: 'Noida Studio' } } };
+  }, 'noida-studio', { allowBusinessProfile: true });
+  assert.equal(result.marketplaceResource, 'businesses');
+  assert.deepEqual(calls, ['/marketplace/vendors/noida-studio', '/marketplace/businesses/noida-studio']);
+});
+
+test('missing business profiles retain the exact-slug owner fallback and business errors propagate', async () => {
+  const calls = [];
+  const own = { data: { data: { slug: 'draft' } } };
+  assert.equal(await requestVendorDetail(async (path) => {
+    calls.push(path);
+    if (path !== '/vendor/profile') throw { response: { status: 404 } };
+    return own;
+  }, 'draft', { allowOwnProfile: true, allowBusinessProfile: true }), own);
+  assert.deepEqual(calls, ['/marketplace/vendors/draft', '/marketplace/businesses/draft', '/vendor/profile']);
+  const error = { response: { status: 503 } };
+  await assert.rejects(requestVendorDetail(async (path) => {
+    throw path.startsWith('/marketplace/vendors/') ? { response: { status: 404 } } : error;
+  }, 'studio', { allowBusinessProfile: true, allowOwnProfile: true }), (result) => result === error);
+});
+
 test("published vendors use the public detail endpoint", async () => {
   const calls = [];
   const response = { data: { data: { slug: "transport" } } };

@@ -1,3 +1,5 @@
+import Portal from "@mui/material/Portal";
+
 export default function ConfirmActionModal({
   isOpen,
   title,
@@ -10,8 +12,9 @@ export default function ConfirmActionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/45 px-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white px-7 py-8 text-center text-stone-900 shadow-2xl">
+    <Portal>
+    <div className="fixed inset-0 z-[3000] flex items-center justify-center overflow-y-auto bg-black/45 px-4 py-6">
+      <div role="dialog" aria-modal="true" aria-label={title} className="my-auto w-full max-w-sm rounded-2xl bg-white px-7 py-8 text-center text-stone-900 shadow-2xl">
         <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-rose-50 text-[#b61f4b]">
           <span className="text-3xl font-black">?</span>
         </div>
@@ -35,5 +38,6 @@ export default function ConfirmActionModal({
         </div>
       </div>
     </div>
+    </Portal>
   );
 }

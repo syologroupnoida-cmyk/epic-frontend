@@ -1,6 +1,7 @@
 import QuoteModal from '@/components/common/QuoteModal';
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import Header from "@/common/Header";
 import Footer from "@/common/Footer";
@@ -8,16 +9,17 @@ import VendorEnquiryModal from "@/components/vendor/VendorEnquiryModal";
 import { VendorActions, VendorImage, VendorRating, VendorRequestState } from "@/components/vendor/VendorDirectory";
 import useMarketplaceVendors from "@/components/vendor/useMarketplaceVendors";
 import VendorBusinessDetails, { vendorLocation } from "@/components/vendor/VendorBusinessDetails";
-import { formatVendorPrice, getVendorCategory } from "@/data/vendorDirectory";
+import { formatVendorName, formatVendorPrice, getVendorCategory } from "@/data/vendorDirectory";
 
 export default function VendorProfilePage(props) {
   return <BusinessProfile key={`${props.category.slug}:${props.vendorSlug}`} {...props} />;
 }
 
 function BusinessProfile({ category, vendorSlug }) {
+  const router = useRouter();
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [getQuoteOpen, setGetQuoteOpen] = useState(false);
-  const { vendor, loading, error, notFound, retry } = useMarketplaceVendors(category, { slug: vendorSlug });
+  const { vendor, loading, error, notFound, retry } = useMarketplaceVendors(category, { slug: vendorSlug, resource: router.query.source === 'businesses' ? 'businesses' : 'vendors', enabled: router.isReady });
   const location = vendor ? vendorLocation(vendor) : "";
   return <div className="vendor-directory vendor-directory--profile">
     <Head><title>{vendor ? `${vendor.name} | Epic Wedz` : "Vendor Business Profile | Epic Wedz"}</title><meta name="description" content={vendor ? `Explore ${vendor.name}. View services, business information and pricing.` : "Explore wedding vendor business profiles on Epic Wedz."} />{notFound && <meta name="robots" content="noindex" />}</Head>
@@ -26,7 +28,7 @@ function BusinessProfile({ category, vendorSlug }) {
       <nav className="vd-breadcrumb" aria-label="Breadcrumb"><Link href="/">Home</Link><span>›</span><Link href={`/vendors/${category.slug}`}>{category.title}</Link><span>›</span><span>{vendor?.name || "Business profile"}</span></nav>
       {loading || error ? <VendorRequestState loading={loading} error={error} notFound={notFound} retry={retry} /> : vendor && <>
         <div className="vd-profile-hero"><div className="vd-profile-cover"><VendorImage vendor={vendor} category={category} fill priority sizes="(min-width: 900px) 55vw, 100vw" /></div>
-          <div className="vd-profile-heading"><h1>{vendor.name}</h1><span className="vd-eyebrow">{vendor.category}</span><VendorRating vendor={vendor} /><p className="vd-location">{location || "Location not provided"}</p>
+          <div className="vd-profile-heading"><h1>{formatVendorName(vendor.name)}</h1><span className="vd-eyebrow">{vendor.category}</span><VendorRating vendor={vendor} /><p className="vd-location">{location || "Location not provided"}</p>
             <div className="vd-tags">{vendor.verified && <span className="vd-verified">✓ KYC verified</span>}{vendor.profileStatus && <span>Profile: {vendor.profileStatus}</span>}{vendor.years !== null && <span>{vendor.years} years of experience</span>}</div>
             <p className="vd-price">{formatVendorPrice(vendor.price)}{vendor.price !== null && <span> onwards</span>}</p><VendorActions vendor={vendor} showProfile={false} onEnquire={() => setIsQuoteOpen(true)} />
           </div></div>
