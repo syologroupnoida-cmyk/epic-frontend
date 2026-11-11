@@ -4,7 +4,7 @@ import { getAccessToken, getAuthUser } from "@/util/authSession";
 import { normalizeVendorDetail } from "@/util/marketplaceVendors.mjs";
 import { vendorLocation } from "@/components/vendor/VendorBusinessDetails";
 import Link from "next/link";
-import { vendorHref } from "@/data/vendorDirectory";
+import { vendorCardName, vendorHref } from "@/data/vendorDirectory";
 import VendorImage from "@/components/vendor/VendorImage";
 import VendorActions from "@/components/vendor/VendorActions";
 import VendorEnquiryModal from "@/components/vendor/VendorEnquiryModal";
@@ -62,7 +62,7 @@ export default function OwnVendorCard({ category, publicVendors = [], fallback =
     {!current ? <p role="status">Loading your business profile…</p> : current.error ? <div role="alert"><p>Unable to load your business profile.</p><button type="button" className="vd-profile-link mt-3" onClick={() => setAttempt((value) => value + 1)}>Try again</button></div> : <>
       <article className="vd-card vd-card-compact">
         <div className="vd-card-image"><VendorImage key={vendor.image?.src || vendor.image} vendor={vendor} category={category} fill sizes="(max-width: 600px) 104px, 180px" /></div>
-        <div className="vd-card-body"><h3>{vendorHref(vendor) ? <Link className="vd-card-link" href={vendorHref(vendor)} aria-label={`View ${vendor.name} business profile`}>{vendor.name}</Link> : vendor.name}</h3><p className="vd-location">{vendorLocation(vendor) || "Location not provided"}</p><p className="vd-service vd-card-description whitespace-pre-line">{vendor.about || "Contact this business to learn more about its services."}</p>
+        <div className="vd-card-body"><h3 title={vendor.name}>{vendorHref(vendor) ? <Link className="vd-card-link" href={vendorHref(vendor)} aria-label={`View ${vendor.name} business profile`}>{vendorCardName(vendor.name)}</Link> : vendorCardName(vendor.name)}</h3><p className="vd-location">{vendorLocation(vendor) || "Location not provided"}</p><p className="vd-service vd-card-description whitespace-pre-line">{vendor.about || "Contact this business to learn more about its services."}</p>
           <VendorServiceChips services={vendor.services} />
           <VendorActions vendor={vendor} showProfile={false} onEnquire={() => setIsQuoteOpen(true)} />
         </div>

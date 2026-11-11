@@ -1,8 +1,6 @@
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import PasswordToggle from "@/components/auth/PasswordToggle";
-import ApiStatusModal from "@/components/common/ApiStatusModal";
+import AdminLoginView from "@/components/auth/AdminLoginView";
 import { getApiErrorMessage, loginAccount } from "@/util/authApi";
 import { getPostLoginAction } from "@/util/authRedirect";
 import {
@@ -93,66 +91,15 @@ export default function SuperAdminLogin() {
     }
   }
 
-  return (
-    <div className="auth-main auth-admin-split auth-split-page min-h-screen px-4 py-10 text-stone-900">
-      <div className="auth-split-card">
-        <aside className="auth-visual-panel">
-          <div className="auth-visual-copy">
-            <p>Super Admin Access</p>
-            <h1>Control the platform securely</h1>
-            <span>Manage high-level platform operations with secure account access.</span>
-          </div>
-        </aside>
-        <div className="auth-form-panel">
-          <form
-            onSubmit={handleSubmit}
-            className="auth-panel w-full rounded border border-white/40 p-6 shadow-2xl sm:p-8"
-          >
-            <h2 className="font-serif text-3xl font-bold">Super Admin Login</h2>
-            <div className="mt-6 grid gap-4">
-              <label className="mui-field">
-                <input name="email" value={form.email} onChange={handleChange} placeholder=" " />
-                <span>Email address</span>
-                {errors.email ? <small>{errors.email}</small> : null}
-              </label>
-              <label className="mui-field password-field">
-                <input
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder=" "
-                />
-                <span>Password</span>
-                <PasswordToggle
-                  isVisible={showPassword}
-                  label="Toggle password visibility"
-                  onClick={() => setShowPassword((show) => !show)}
-                />
-                {errors.password ? <small>{errors.password}</small> : null}
-              </label>
-              <Link href="/forgot-password" className="auth-forgot-link">
-                Forgot Password?
-              </Link>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded bg-[#b61f4b] text-sm font-bold text-white hover:bg-[#981a3f] disabled:cursor-not-allowed disabled:bg-stone-300"
-              >
-                {isSubmitting ? <span className="button-spinner" aria-hidden="true" /> : null}
-                {isSubmitting ? "Please wait..." : "Login"}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-      <ApiStatusModal
-        status={apiFeedback?.status}
-        title={apiFeedback?.title}
-        text={apiFeedback?.text}
-        okLabel={apiFeedback?.okLabel}
-        onOk={apiFeedback?.onOk}
-      />
-    </div>
-  );
+  return <AdminLoginView
+    superAdmin
+    form={form}
+    errors={errors}
+    showPassword={showPassword}
+    isSubmitting={isSubmitting}
+    apiFeedback={apiFeedback}
+    onChange={handleChange}
+    onSubmit={handleSubmit}
+    onTogglePassword={() => setShowPassword((show) => !show)}
+  />;
 }

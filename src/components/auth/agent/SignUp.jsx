@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { readPartnerSignupDraft } from "@/util/partnerRegistration.mjs";
 import EmailOtpModal from "@/components/auth/EmailOtpModal";
 import PasswordToggle from "@/components/auth/PasswordToggle";
 import ApiStatusModal from "@/components/common/ApiStatusModal";
@@ -39,6 +40,14 @@ function wait(ms) {
 export default function AgentSignUp() {
   const router = useRouter();
   const [form, setForm] = useState(initialForm);
+  const [partnerDraft, setPartnerDraft] = useState(null);
+  useEffect(() => {
+    if (!router.isReady || router.query.source !== 'partner-page') return;
+    const draft = readPartnerSignupDraft(window.sessionStorage);
+    if (!draft) return;
+    setPartnerDraft(draft);
+    setForm((current) => ({ ...current, email: current.email || draft.email, phone: current.phone || draft.phone }));
+  }, [router.isReady, router.query.source]);
   const [errors, setErrors] = useState({});
   const [otpMessage, setOtpMessage] = useState("");
   const [otpError, setOtpError] = useState("");
@@ -205,6 +214,7 @@ export default function AgentSignUp() {
             <h2>Create vendor account</h2>
             <p>Start managing leads and packages with Epic.</p>
           </div>
+          {partnerDraft && <div className="rounded-xl border border-rose-100 bg-rose-50/60 px-4 py-3 text-left"><p className="text-xs font-semibold text-[#8f1f3f]">{partnerDraft.businessName}</p><p className="mt-1 text-[11px] leading-5 text-stone-600">{partnerDraft.categoryName} &middot; {partnerDraft.cityName}</p></div>}
 
           <div className="epic-login-divider">
             <span>sign up with email</span>

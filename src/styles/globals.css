@@ -46,6 +46,12 @@ img[src*="epic-logo-new%2Epng"] {
 :root {
   --background: #fff9f5;
   --foreground: #171717;
+  --portal-section-heading-size: clamp(20px, 1.65vw, 24px);
+}
+
+.portal-section-heading {
+  font-size: var(--portal-section-heading-size);
+  line-height: 1.3;
 }
 
 @theme inline {

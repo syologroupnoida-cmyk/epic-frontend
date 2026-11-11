@@ -1,4 +1,5 @@
 import Image from "next/image";
+import styles from "./HeaderNavigation.module.css";
 import useFooterCategories from "@/util/useFooterCategories";
 import { vendorMenuHref } from "@/util/vendorMenuNavigation.mjs";
 import Link from "next/link";
@@ -376,7 +377,7 @@ export default function Header() {
 
   return (
     <>
-    <header className="site-header border-b border-rose-100 bg-white/95 shadow-sm backdrop-blur">
+    <header className={`${styles.header} site-header border-b border-rose-100 bg-white/95 shadow-sm backdrop-blur`}>
       <div className="header-top bg-[#8f1f3f] text-white">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-1.5 text-xs sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center gap-4 text-white/90">
@@ -397,13 +398,17 @@ export default function Header() {
           </div>
           <div className="flex items-center gap-4 font-semibold">
             <Link
-              href="/agent"
+              href="/partner"
               className="rounded-full border border-white px-3 py-1 text-white hover:bg-white hover:text-[#8f1f3f]"
             >
-              Are you a vendor?
+              Become a Partner ?
             </Link>
             <Link href="/hire-free-wedding-planner" className="hover:text-rose-100">
               Hire Free Wedding Planner
+            </Link>
+            <span aria-hidden="true" className="text-white/60">|</span>
+            <Link href="/shop" className="whitespace-nowrap hover:text-rose-100">
+              Shop Now
             </Link>
           </div>
         </div>
@@ -414,15 +419,17 @@ export default function Header() {
           isDrawerOpen ? "drawer-open" : ""
         }`}
         onMouseLeave={() => setActiveMenu(null)}
+        onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setActiveMenu(null); }}
+        onKeyDown={(event) => { if (event.key === "Escape") setActiveMenu(null); }}
       >
         <Link href="/" className="flex items-center gap-3">
           <Image
             src="/images/epic-logo-new.png"
             alt="Epic Wedz"
-            width={154}
-            height={54}
-            priority
-            className="h-11 w-auto object-contain"
+            width={194}
+            height={68}
+            preload
+            className={styles.logo}
           />
         </Link>
 
@@ -436,11 +443,10 @@ export default function Header() {
               className="relative flex items-center"
               onMouseEnter={() => setActiveMenu(item.title)}
               onFocus={() => setActiveMenu(item.title)}
-              onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setActiveMenu(null); }}
-              onKeyDown={(event) => { if (event.key === "Escape") setActiveMenu(null); }}
             >
               <Link
                 href={item.title === "Wedding Vendors" ? "/vendors" : item.title === "Venues" ? "/venues" : item.title === "Real Weddings" ? "/real-weddings" : "/destination-weddings"}
+                aria-expanded={activeMenu === item.title}
                 className="flex items-center gap-1.5 py-2 hover:text-[#b61f4b]"
               >
                 {item.title}
@@ -448,6 +454,7 @@ export default function Header() {
               </Link>
               {!item.isVendorMega && item.links.length <= 6 && activeMenu === item.title && (
                 <div className="header-compact-dropdown">
+                  <p className={styles.menuCaption}>Explore {item.title}</p>
                   {item.links.map((link) => (
                     <Link key={link.slug} href={getMenuHref(item.title, link.slug, menuCategories)} onClick={() => setActiveMenu(null)}>
                       {link.title}
@@ -478,11 +485,14 @@ export default function Header() {
           >
             Marketplace
           </Link>
+          <Link href="/shop" className="flex items-center gap-1.5 py-2 hover:text-[#b61f4b]" onMouseEnter={() => setActiveMenu(null)}>
+            Shop
+          </Link>
         </nav>
 
         <div
           onMouseEnter={() => megaNav && setActiveMenu(megaNav.title)}
-          className={`absolute left-1/2 top-full z-50 w-screen -translate-x-1/2 transition duration-150 ${
+          className={`${styles.megaPanel} absolute left-1/2 top-full z-50 w-screen -translate-x-1/2 transition duration-150 ${
             megaNav
               ? "pointer-events-auto visible translate-y-0 opacity-100"
               : "pointer-events-none invisible translate-y-2 opacity-0"
@@ -495,6 +505,12 @@ export default function Header() {
           }`}>
             {megaNav?.isVendorMega ? (
               <div className="header-vendor-mega">
+                <div className={styles.menuIntro}>
+                  <span className={styles.menuCaption}>The wedding directory</span>
+                  <h2>Find your dream team.</h2>
+                  <p>Explore businesses and specialists for every part of your celebration.</p>
+                  <Link href="/vendors" onClick={() => setActiveMenu(null)}>View all business profiles <span aria-hidden="true">↗</span></Link>
+                </div>
                 <div className="min-w-0">
                   <div className="header-vendor-primary">
                     {vendorMegaPrimary.map((link) => (
@@ -637,11 +653,12 @@ export default function Header() {
             >
               Marketplace
             </Link>
+            <Link href="/shop" onClick={() => setIsDrawerOpen(false)} className="mobile-drawer-link">Shop</Link>
           </div>
           <p className="mobile-drawer-kicker mobile-drawer-more">More</p>
           <div className="mobile-drawer-actions">
-            <Link href="/agent" onClick={() => setIsDrawerOpen(false)}>
-              Are you a vendor?
+            <Link href="/partner" onClick={() => setIsDrawerOpen(false)}>
+              Become a Partner ?
             </Link>
             <Link href="/hire-free-wedding-planner" onClick={() => setIsDrawerOpen(false)}>
               Hire Free Wedding Planner

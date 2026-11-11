@@ -11,7 +11,6 @@ export default function VendorBusinessDetails({ vendor, showStatus = true }) {
   const rows = [
     ["Vendor ID", vendor.userId],
     ["Business name", vendor.name],
-    ["Business slug", vendor.slug],
     ["Location", vendorLocation(vendor)],
     ["KYC status", showStatus ? vendor.kycStatus : ""],
     ["Profile status", showStatus ? vendor.profileStatus : ""],

@@ -1,0 +1,10 @@
+version: 1
+name: Admin ecommerce categories
+slug: ecommerce-categories
+protocol: http
+port: 4518
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

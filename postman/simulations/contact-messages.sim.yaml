@@ -1,0 +1,6 @@
+simulation: contact-messages
+routing: path
+mocks:
+  - name: Contact enquiries
+    routeKey: contact-api
+    path: postman/mocks/contact-messages

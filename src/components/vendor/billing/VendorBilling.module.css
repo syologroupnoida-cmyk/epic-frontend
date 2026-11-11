@@ -12,7 +12,7 @@
 .header p { margin-top:4px; font-size:12px; color:#64748b; }
 .body { min-height:0; overflow:auto; padding:24px; flex:1; }
 .intro { text-align:center; margin:4px 0 26px; }
-.intro h2 { font-family:Georgia,'Times New Roman',serif; font-size:28px; color:#650b27; font-weight:600; }
+.intro h2 { font-family:Georgia,'Times New Roman',serif; font-size:var(--portal-section-heading-size); color:#650b27; font-weight:600; }
 .intro p { margin-top:8px; font-size:12px; color:#64748b; }
 .activePlan { display:inline-flex; align-items:center; align-self:flex-end; flex-shrink:0; gap:8px; margin-bottom:12px; padding:6px 11px; border:1px solid #a7f3d0; border-radius:100px; color:#047857; background:#ecfdf5; font-size:11px; line-height:16px; font-weight:600; }
 .activeDot { position:relative; width:7px; height:7px; flex-shrink:0; border-radius:50%; background:#10b981; }
@@ -37,4 +37,4 @@
 .credit { color:#047857; font-weight:600; }
 .debit { color:#b61f4b; font-weight:600; }
 .empty { padding:50px 20px; text-align:center; font-size:13px; color:#64748b; }
-@media(max-width:700px) { .headerBilling { gap:6px; margin-right:8px; } .walletBadge { height:28px; padding:0 8px; gap:6px; } .walletBadge > strong { font-size:11px; } .planChip { height:28px; max-width:120px; padding:0 8px; font-size:10px; } .body { padding:16px; } .intro h2 { font-size:23px; } }
+@media(max-width:700px) { .headerBilling { gap:6px; margin-right:8px; } .walletBadge { height:28px; padding:0 8px; gap:6px; } .walletBadge > strong { font-size:11px; } .planChip { height:28px; max-width:120px; padding:0 8px; font-size:10px; } .body { padding:16px; } .intro h2 { font-size:20px; } }

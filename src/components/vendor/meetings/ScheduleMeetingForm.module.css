@@ -1,0 +1,9 @@
+.form { display: grid; gap: 16px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 20px; align-items: start; }
+.calendar { min-width: 0; overflow: hidden; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; }
+.calendar h3 { padding: 12px 16px 0; color: #334155; font-size: 12px; font-weight: 600; }
+.error { padding: 0 16px 12px; color: #b91c1c; font-size: 11px; }
+.timePanel { display: grid; gap: 16px; padding-left: 20px; border-left: 1px solid #e2e8f0; }
+.timePanel h3 { color: #0f172a; font-size: 13px; font-weight: 600; }
+.actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+@media (max-width: 640px) { .layout { grid-template-columns: minmax(0, 1fr); } .timePanel { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 16px 0 0; border-left: 0; border-top: 1px solid #e2e8f0; } .timePanel h3, .note, .actions { grid-column: 1 / -1; } }

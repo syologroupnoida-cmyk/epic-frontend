@@ -1,0 +1,6 @@
+simulation: imported-businesses
+routing: path
+mocks:
+  - name: Admin imported businesses
+    routeKey: business-admin
+    path: postman/mocks/imported-businesses

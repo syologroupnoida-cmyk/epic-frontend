@@ -58,6 +58,22 @@ test('KYC routes require a vendor session and preserve the intended destination'
     if (role !== 'VENDOR') assert.equal(new URL(result.redirect).searchParams.get('next'), '/kyc?steps=company-details');
   }
 });
+test('password change sends authenticated payload and exposes API validation errors', { skip: !process.env.AUTH_SIMULATION_URL }, async () => {
+  browser();
+  const { changePassword, getApiErrorMessage } = load('src/util/authApi.js');
+  for (const role of ['VENDOR', 'SUPER_ADMIN']) {
+    auth.setAuthTokens({ accessToken: 'cookie-access', refreshToken: 'valid-refresh' });
+    auth.setAuthUser({ role });
+    const response = await changePassword({ currentPassword: ' CurrentPassword123! ', newPassword: ' NewPassword456! ', confirmPassword: 'must-not-be-sent' });
+    assert.equal(response.data.success, true);
+    await assert.rejects(changePassword({ currentPassword: 'wrong', newPassword: ' NewPassword456! ' }), error => {
+      assert.equal(error.response.status, 400);
+      assert.equal(getApiErrorMessage(error), 'Current password is incorrect.');
+      return true;
+    });
+  }
+});
+
 test('real HTTP uses cookie tokens and shares one refresh for concurrent expired requests', { skip: !process.env.AUTH_SIMULATION_URL }, async () => {
   const { cookies } = browser(); const api = load('src/util/MainApi.js').default;
   cookies.set('epic_access_token', 'cookie-access'); cookies.set('epic_refresh_token', 'valid-refresh');

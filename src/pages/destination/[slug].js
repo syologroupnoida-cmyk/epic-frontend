@@ -80,7 +80,7 @@ export default function DestinationPage({ destination }) {
             <div className="overflow-hidden rounded-3xl border border-rose-100 bg-white shadow-sm">
               <div className="mx-auto max-w-3xl px-6 pb-8 pt-10 text-center sm:px-10">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#b61f4b]">Curated Experience</p>
-                <h2 className="mt-3 font-serif text-3xl font-semibold text-stone-950 sm:text-4xl">Build a celebration guests remember</h2>
+                <h2 className="portal-section-heading mt-3 font-serif font-semibold text-stone-950">Build a celebration guests remember</h2>
                 <p className="mt-4 text-sm leading-7 text-stone-600">{copy.lead}</p>
               </div>
               <div className="grid items-stretch gap-6 p-4 pt-0 sm:p-6 sm:pt-0 lg:grid-cols-2 lg:gap-10">
@@ -105,7 +105,7 @@ export default function DestinationPage({ destination }) {
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#b61f4b]">
                 {circleCopy.eyebrow}
               </p>
-              <h2 className="mt-3 font-serif text-4xl font-bold text-stone-950">
+              <h2 className="portal-section-heading mt-3 font-serif font-bold text-stone-950">
                 {circleCopy.title}
               </h2>
               <p className="mt-4 text-base leading-7 text-stone-600">
@@ -159,7 +159,7 @@ export default function DestinationPage({ destination }) {
                 <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#b61f4b]">
                   Sample Plan
                 </p>
-                <h2 className="mt-3 font-serif text-4xl font-bold text-stone-950">
+                <h2 className="portal-section-heading mt-3 font-serif font-bold text-stone-950">
                   A destination wedding flow
                 </h2>
                 <div className="mt-7 space-y-3">

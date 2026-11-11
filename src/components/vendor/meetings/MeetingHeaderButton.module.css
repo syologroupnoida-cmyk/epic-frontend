@@ -1,0 +1,23 @@
+.trigger { position: relative; display: grid; place-items: center; flex-shrink: 0; width: 38px; height: 38px; margin-right: 14px; border: 1px solid #86d7ad; border-radius: 50%; background: #ecfdf5; color: #15803d; cursor: pointer; }
+.trigger::before { content: ''; position: absolute; inset: -4px; border: 1px solid #4ade80; border-radius: 50%; animation: meetingPulse 2s ease-out infinite; pointer-events: none; }
+.trigger::after { content: ''; position: absolute; top: 0; right: 0; width: 8px; height: 8px; border: 2px solid white; border-radius: 50%; background: #16a34a; }
+.trigger:hover { background: #dcfce7; }
+.actions { display: inline-grid; grid-template-columns: 32px 32px; align-items: center; gap: 12px; vertical-align: middle; }
+.actions > :global(.MuiIconButton-root) { grid-column: 2; grid-row: 1; width: 32px; height: 32px; }
+.actions > .joinTrigger { grid-column: 1; grid-row: 1; }
+.joinTrigger { position: relative; isolation: isolate; overflow: hidden; display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border: 1px solid #86d7ad; border-radius: 50%; background: linear-gradient(135deg, #dcfce7, #a7f3d0); color: #15803d; text-decoration: none; animation: joinGlow 2.4s ease-in-out infinite; transition: background .2s, transform .2s, box-shadow .2s; }
+.joinTrigger::before { content: ''; position: absolute; z-index: -1; inset: -50%; background: linear-gradient(110deg, transparent 35%, #ffffffb3 50%, transparent 65%); animation: joinShine 3s ease-in-out infinite; pointer-events: none; }
+.joinTrigger > svg { animation: joinNudge 2.4s ease-in-out infinite; }
+.joinTrigger:hover { background: #86efac; transform: translateY(-2px) scale(1.08); }
+.joinTrigger:focus-visible { outline: 2px solid #15803d; outline-offset: 2px; }
+@keyframes joinShine { 0%, 35% { transform: translateX(-100%); } 70%, 100% { transform: translateX(100%); } }
+@keyframes joinGlow { 0%, 100% { box-shadow: 0 0 0 0 #22c55e66, 0 2px 5px #15803d1a; } 60% { box-shadow: 0 0 0 7px #22c55e00, 0 0 10px #22c55e4d; } }
+@keyframes joinNudge { 0%, 55%, 100% { transform: translateY(0) rotate(0) scale(1); } 65% { transform: translateY(-2px) rotate(-12deg) scale(1.1); } 75% { transform: translateY(0) rotate(12deg) scale(1.1); } 85% { transform: translateY(-1px) rotate(-6deg) scale(1.05); } }
+.trigger:focus-visible { outline: 2px solid #15803d; outline-offset: 5px; }
+.dialogHeader { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.dialogHeader h2 { font-size: 16px; font-weight: 600; color: #0f172a; }
+.closeButton { width: 32px; height: 32px; border-radius: 50%; color: #64748b; transition: background-color .15s, color .15s; }
+.dialogHeader .closeButton:hover { background-color: #fce7ef; color: #b61f4b; }
+@keyframes meetingPulse { 0% { transform: scale(.95); opacity: .7; } 80%, 100% { transform: scale(1.17); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .trigger::before { animation: none; opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .joinTrigger, .joinTrigger::before, .joinTrigger > svg { animation: none; } .joinTrigger::before { display: none; } .joinTrigger { transition: none; } }

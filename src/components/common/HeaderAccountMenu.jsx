@@ -33,7 +33,7 @@ function Avatar({ src, name }) {
   </span>;
 }
 
-export default function HeaderAccountMenu({ variant = "user" }) {
+export default function HeaderAccountMenu({ variant = "user", guestFallback = null }) {
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const user = useMemo(() => snapshot ? JSON.parse(snapshot) : null, [snapshot]);
   const [vendorData, setVendorData] = useState(null);
@@ -87,6 +87,8 @@ export default function HeaderAccountMenu({ variant = "user" }) {
       document.removeEventListener("keydown", escape);
     };
   }, [open]);
+
+  if (!user && guestFallback) return guestFallback;
 
   return <>
     <div ref={wrapperRef} className={`${variant === "partner" ? "partner-login-wrap" : "header-login-wrap"} relative flex shrink-0 items-center gap-2`} onMouseLeave={() => { if (!user) setOpen(false); }}>

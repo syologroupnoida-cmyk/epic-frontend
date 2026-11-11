@@ -39,7 +39,7 @@ export default function BlogPage() {
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#b61f4b]">
                     {post.category}
                   </p>
-                  <h2 className="mt-3 font-serif text-2xl font-bold text-stone-950">
+                  <h2 className="portal-section-heading mt-3 font-serif font-bold text-stone-950">
                     {post.title}
                   </h2>
                   <p className="mt-3 text-sm leading-6 text-stone-600">

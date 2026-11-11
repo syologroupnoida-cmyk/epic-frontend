@@ -1,0 +1,30 @@
+purpose:
+  stands_in_for: Admin sales-meeting list, detail and decision updates.
+  unblocks: Local verification of super-admin meeting confirmation and rejection without creating live updates.
+assumptions:
+  - id: supplied-decision-contract
+    status: supported
+    claim: The requested admin UI lists sales meetings with page, limit and status PENDING, retrieves a meeting by ID, and sends CONFIRMED or REJECTED decision payloads to the same resource path.
+    reason: The paths and decision fields were provided by the user on 2026-11-06. Confirmation includes scheduledStartAt, scheduledEndAt, vendorMessage and adminNote. Rejection includes only status, vendorMessage and adminNote.
+    verification: Implementation uses PATCH following the other admin update APIs; the HTTP method was not explicitly stated in this user request. Tests assert exact field sets and explicit India offsets for scheduled times. Confirmation input dates are shown in India time and table/detail timestamps use 24-hour India time.
+    source: User request on 2026-11-06; src/util/adminSalesMeetings.mjs; tests/adminSalesMeetings.test.mjs
+    updated_at: '2026-11-06'
+  - id: local-admin-http
+    status: supported
+    claim: The admin client filters and paginates pending meetings, reads encoded IDs, confirms and rejects meetings, and observes changed status and notes against the local model.
+    reason: Seven API, React-compiled rendering and route-access checks passed. Logs confirmed both list pages, encoded ID retrieval, successful PATCH decisions, follow-up details, removal from PENDING, and CONFIRMED/REJECTED filtered reads. No member was silent.
+    verification: On 2026-11-06 ran postman simulation run postman/simulations/admin-sales-meetings.sim.yaml --port 4916 --output ndjson --no-history and tests/adminSalesMeetings.test.mjs plus tests/vendorMeetings.ui.test.cjs with ADMIN_MEETINGS_SIMULATION_URL=http://127.0.0.1:4916/admin-meetings-api/api/v1. Also checked empty results, 401/403/404/409/503, invalid envelopes, success-false errors, cancellation, malformed schedules and exact PATCH fields. Targeted lint and production build passed. Browser modal interactions were not exercised.
+    source: tests/adminSalesMeetings.test.mjs; tests/vendorMeetings.ui.test.cjs; postman/mocks/admin-sales-meetings/default.js; local run on 2026-11-06
+    updated_at: '2026-11-06'
+  - id: live-admin-contract
+    status: unknown
+    claim: The live admin API accepts PATCH decisions, supports the modeled list/detail envelopes and status filters, and enforces scheduling and note visibility as modeled.
+    reason: No authenticated admin responses or complete transition rules were supplied. Fixtures are synthetic, and the published owner mock search was skipped because installed CLI 1.76.0 does not support postman status.
+    verification: No live admin GET or PATCH calls were made. The UI keeps adminNote in admin views and excludes it from vendor meeting details, but server-side exclusion remains the backend's responsibility. Confirm actual response shapes, PATCH method, optional message validation and allowed status transitions with a real admin session.
+    source: src/util/adminSalesMeetings.mjs; src/components/superadmin/SalesMeetings.jsx; src/components/vendor/meetings/MeetingList.jsx; postman/mocks/admin-sales-meetings/default.js
+    updated_at: '2026-11-06'
+fingerprints:
+  - id: local-2026-11-06
+    date: '2026-11-06'
+    commit: 9653bac9c24a15ae15e3a3ffe1a8c651ac7078ba (dirty working tree, including existing user changes)
+    cli: Postman 1.76.0

@@ -1,0 +1,9 @@
+.compact :global(.mui-field) input {
+  height: 38px;
+  font-size: 13px;
+}
+
+.compact :global(.mui-field) input:placeholder-shown:not(:focus) + span {
+  top: 10px;
+  font-size: 12px;
+}

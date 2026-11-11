@@ -1,3 +1,5 @@
+import Portal from '@mui/material/Portal';
+
 export default function ApiStatusModal({ status, title, text, okLabel, onOk }) {
   if (!status) return null;
 
@@ -5,8 +7,9 @@ export default function ApiStatusModal({ status, title, text, okLabel, onOk }) {
   const isError = status === "error";
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
-      <div className="grid w-full max-w-sm justify-items-center rounded-2xl bg-white px-8 py-9 text-center text-stone-900 shadow-2xl">
+      <div role="dialog" aria-modal="true" aria-label={title || 'Request status'} className="grid w-full max-w-sm justify-items-center rounded-2xl bg-white px-8 py-9 text-center text-stone-900 shadow-2xl">
         {isLoading ? (
           <span className="api-bubble-spinner" aria-hidden="true">
             <span />
@@ -35,5 +38,6 @@ export default function ApiStatusModal({ status, title, text, okLabel, onOk }) {
         ) : null}
       </div>
     </div>
+    </Portal>
   );
 }

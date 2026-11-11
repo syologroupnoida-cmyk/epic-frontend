@@ -1,0 +1,37 @@
+purpose:
+  stands_in_for: Vendor sales-meeting request, list and detail APIs.
+  unblocks: Local verification of scheduling and meeting retrieval without creating live sales requests.
+assumptions:
+  - id: requested-contract
+    status: supported
+    claim: Vendors request meetings through POST /vendor/sales-meetings with requestedStartAt, requestedEndAt and vendorNote, list through GET with page and limit, and retrieve details through GET /vendor/sales-meetings/{salesMeetingId}.
+    reason: These endpoints and fields were supplied by the user on 2026-11-06. The supplied example uses the India time offset +05:30.
+    verification: The implementation sends only the three supplied fields and explicitly adds +05:30 to the local date/time inputs. The user confirmed response examples are not yet available.
+    source: User request on 2026-11-06; src/util/vendorMeetings.mjs; src/components/vendor/meetings/ScheduleMeetingForm.jsx
+    updated_at: '2026-11-06'
+  - id: local-client-checks
+    status: supported
+    claim: The client validates future date ranges, preserves India time, paginates, encodes meeting IDs and reads a newly created meeting against this stand-in.
+    reason: Seven validation, HTTP, rendering and access checks passed. Simulation logs showed list pages 1 and 2, encoded detail ID, create 201, subsequent detail and refreshed total, plus 401/403/404/409/503 and success-false failures. No member was silent.
+    verification: On 2026-11-06 ran postman simulation run postman/simulations/vendor-meetings.sim.yaml --port 4914 --output ndjson --no-history and node --test tests/vendorMeetings.test.mjs tests/vendorMeetings.ui.test.cjs with VENDOR_MEETINGS_SIMULATION_URL=http://127.0.0.1:4914/meetings-api/api/v1. Tests covered invalid calendar dates, past starts, reversed/equal ends, cross-midnight range, exact payload fields, empty lists, cancellation and secure links. Production build and targeted lint passed. React-compiled components rendered; hover, native calendar interaction and keyboard focus were not browser-tested.
+    source: tests/vendorMeetings.test.mjs; tests/vendorMeetings.ui.test.cjs; postman/mocks/vendor-meetings/default.js; local run on 2026-11-06
+    updated_at: '2026-11-06'
+  - id: live-response-contract
+    status: unknown
+    claim: The live APIs return the modeled list/detail envelopes, pagination, statuses and video meeting URLs.
+    reason: The user said response samples are unavailable. Local records, envelopes, statuses and meeting links are synthetic. Published owner mock discovery was skipped because CLI 1.76.0 does not support postman status.
+    verification: No live meeting requests or authenticated API calls were made. The client accepts common envelope keys and only offers Join meeting for a valid HTTPS joinUrl, meetingUrl, meetingLink or videoCallUrl. This integrates scheduling and external meeting links; no in-app video service or room creation endpoint was supplied. Confirm the actual link field and provider behavior when available.
+    source: User reply on 2026-11-06; src/util/vendorMeetings.mjs; postman/mocks/vendor-meetings/default.js
+    updated_at: '2026-11-06'
+  - id: partner-hero-calendar
+    status: supported
+    claim: The partner hero replaces registration inputs with a calendar and reuses the existing authenticated meeting scheduler with the selected date.
+    reason: Public visitors are prompted to sign in before requesting a meeting; no public booking API is assumed.
+    verification: On 2026-11-10, the compiled calendar and preselected scheduler rendered successfully. All ten meeting-model and HTTP checks passed against the existing local simulation at port 4914. Request logs confirmed POST 201 followed by GET of the created meeting, plus conflict and service-failure responses. Production build passed. Browser interactions were not tested and no live bookings were created.
+    source: src/components/templates/PartnerExpertCalendar.jsx; src/components/vendor/meetings/ScheduleMeetingForm.jsx; tests/vendorMeetings.ui.test.cjs; tests/vendorMeetings.test.mjs
+    updated_at: '2026-11-10'
+fingerprints:
+  - id: local-2026-11-06
+    date: '2026-11-06'
+    commit: 9653bac9c24a15ae15e3a3ffe1a8c651ac7078ba (dirty tree, including existing user changes)
+    cli: Postman 1.76.0

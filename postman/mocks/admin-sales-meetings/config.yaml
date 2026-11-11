@@ -1,0 +1,10 @@
+version: 1
+name: Admin sales meetings
+slug: admin-sales-meetings
+protocol: http
+port: 4516
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

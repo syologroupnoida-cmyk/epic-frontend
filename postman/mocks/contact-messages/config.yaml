@@ -1,0 +1,10 @@
+version: 1
+name: Contact enquiries
+slug: contact-messages
+protocol: http
+port: 4510
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

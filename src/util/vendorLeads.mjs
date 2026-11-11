@@ -7,10 +7,10 @@ function responseData(response) {
   return payload?.data ?? payload;
 }
 
-export async function fetchVendorLeads(api, { page = 1, limit = 20, signal, shared = false, search = '' } = {}) {
-  const response = await api.get(shared ? '/vendor/leads/shared' : '/vendor/leads', { params: { page, limit, ...(search.trim() ? { search: search.trim() } : {}) }, signal });
+export async function fetchVendorLeads(api, { page = 1, limit = 20, signal, shared = false, purchased = false, leadType, search = '' } = {}) {
+  const response = await api.get(purchased ? '/vendor/leads/purchased' : shared ? '/vendor/leads/shared' : '/vendor/leads', { params: { page, limit, ...(purchased && leadType ? { leadType } : {}), ...(search.trim() ? { search: search.trim() } : {}) }, signal });
   const data = responseData(response);
-  const items = Array.isArray(data) ? data : data?.sharedLeads ?? data?.leads ?? data?.items ?? data?.results ?? data?.content;
+  const items = Array.isArray(data) ? data : data?.purchasedLeads ?? data?.sharedLeads ?? data?.leads ?? data?.items ?? data?.results ?? data?.content;
   if (!Array.isArray(items) || items.some((item) => !record(item))) throw new Error('The server returned an invalid lead list.');
   const pagination = data?.pagination ?? data?.meta?.pagination ?? data?.meta ?? response.data?.pagination ?? data ?? {};
   const totalValue = pagination.total ?? pagination.totalCount ?? pagination.totalItems ?? pagination.totalElements ?? data?.total ?? data?.totalCount ?? data?.totalItems ?? data?.totalElements;

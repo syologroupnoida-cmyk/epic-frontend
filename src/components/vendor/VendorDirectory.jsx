@@ -14,8 +14,9 @@ import OwnVendorCard from "@/components/vendor/OwnVendorCard";
 import VendorImage from "@/components/vendor/VendorImage";
 import VendorActions from "@/components/vendor/VendorActions";
 import VendorServiceChips from "@/components/vendor/VendorServiceChips";
-import { formatVendorPrice, vendorHref } from "@/data/vendorDirectory";
+import { formatVendorPrice, vendorCardName, vendorHref } from "@/data/vendorDirectory";
 import useCities from "@/util/useCities";
+import { vendorDirectoryCount } from "@/util/marketplaceVendors.mjs";
 import { getPublicCatalog } from "@/util/publicCatalog.mjs";
 import { loadPublicServiceCategories, loadPublicServiceSubcategories } from "@/util/serviceCategories.mjs";
 
@@ -38,18 +39,20 @@ export function VendorRequestState({ loading, error, notFound, retry }) {
 
 export default function VendorDirectory({ category, contentKey = "vendors" }) {
   const pageContent = websiteContent[contentKey];
+  const defaultOfferingKind = contentKey === "vendors" ? "" : "SERVICE";
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
   const searchBoxRef = useRef(null);
+  const resultsRef = useRef(null);
   const deferredSearch = useDeferredValue(search.trim());
   const [cityId, setCityId] = useState("");
   const [citySearch, setCitySearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [expandedCategoryId, setExpandedCategoryId] = useState("");
   const [subcategoryId, setSubcategoryId] = useState("");
-  const [offeringKind, setOfferingKind] = useState("SERVICE");
+  const [offeringKind, setOfferingKind] = useState(defaultOfferingKind);
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [catalogLoading, setCatalogLoading] = useState(true);
@@ -66,17 +69,17 @@ export default function VendorDirectory({ category, contentKey = "vendors" }) {
     queueMicrotask(() => {
       if (!active) return;
       setSearch(queryValue(router.query.search));
-      setCityId(queryValue(router.query.cityId));
+      setCityId(queryValue(router.query.cityId) || cities.find((item) => item.name.toLowerCase() === queryValue(router.query.city).trim().toLowerCase())?.id || "");
       setCategoryId(queryValue(router.query.serviceCategoryId));
       setExpandedCategoryId(queryValue(router.query.serviceCategoryId));
       setSubcategoryLoading(Boolean(queryValue(router.query.serviceCategoryId)));
       setSubcategoryId(queryValue(router.query.serviceSubcategoryId));
-      setOfferingKind(queryValue(router.query.offeringKind) || "SERVICE");
+      setOfferingKind(queryValue(router.query.offeringKind) || defaultOfferingKind);
       const requestedPage = Number(router.query.page);
       setPage(Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1);
     });
     return () => { active = false; };
-  }, [router.isReady, router.query.cityId, router.query.offeringKind, router.query.page, router.query.search, router.query.serviceCategoryId, router.query.serviceSubcategoryId]);
+  }, [cities, defaultOfferingKind, router.isReady, router.query.city, router.query.cityId, router.query.offeringKind, router.query.page, router.query.search, router.query.serviceCategoryId, router.query.serviceSubcategoryId]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -97,17 +100,17 @@ export default function VendorDirectory({ category, contentKey = "vendors" }) {
     return () => controller.abort();
   }, [expandedCategoryId]);
 
-  const apiFilters = useMemo(() => ({ search: deferredSearch, cityId, serviceCategoryId: categoryId, serviceSubcategoryId: subcategoryId, offeringKind }), [categoryId, cityId, deferredSearch, offeringKind, subcategoryId]);
-  const { vendors = [], pagination, loading, error, retry } = useMarketplaceVendors(category, { page, filters: apiFilters, enabled: router.isReady });
   const selectedCity = cities.find((item) => item.id === cityId);
-  const selectedCityName = selectedCity?.name || (cityId ? queryValue(router.query.city) : "");
+  const selectedCityName = selectedCity?.name || queryValue(router.query.city);
+  const apiFilters = useMemo(() => ({ search: deferredSearch, cityId, city: selectedCityName, serviceCategoryId: categoryId, serviceSubcategoryId: subcategoryId, offeringKind }), [categoryId, cityId, selectedCityName, deferredSearch, offeringKind, subcategoryId]);
+  const { vendors = [], pagination, sourceTotals = {}, loading, error, warning, retry } = useMarketplaceVendors(category, { page, filters: apiFilters, enabled: router.isReady, includeBusinesses: contentKey === "vendors" });
   const selectedCategory = categories.find((item) => item.id === categoryId);
   const selectedSubcategory = subcategories.find((item) => item.id === subcategoryId);
   const visibleCities = cities.filter((item) => !citySearch.trim() || `${item.name} ${item.stateName || ""} ${item.countryCode || ""}`.toLowerCase().includes(citySearch.trim().toLowerCase()));
-  const offeringCategories = categories.filter((item) => (item.offeringKind || "SERVICE") === offeringKind);
+  const offeringCategories = categories.filter((item) => (!offeringKind || (item.offeringKind || "SERVICE") === offeringKind));
   const searchCategoryOptions = offeringCategories.filter((item) => !search.trim() || `${item.name} ${item.description || ""}`.toLowerCase().includes(search.trim().toLowerCase()));
   const filtered = vendors;
-  const hasApiFilters = Boolean(deferredSearch || cityId || categoryId || subcategoryId);
+  const hasApiFilters = Boolean(deferredSearch || cityId || selectedCityName || categoryId || subcategoryId);
 
   useEffect(() => {
     if (!searchDropdownOpen) return undefined;
@@ -122,6 +125,7 @@ export default function VendorDirectory({ category, contentKey = "vendors" }) {
     const params = new URLSearchParams();
     if (next.search) params.set("search", next.search);
     if (next.cityId) { params.set("cityId", next.cityId); const item = cities.find((entry) => entry.id === next.cityId); if (item?.name) params.set("city", item.name); }
+    else if (next.city !== "" && selectedCityName) params.set("city", selectedCityName);
     if (next.categoryId) { params.set("serviceCategoryId", next.categoryId); const item = categories.find((entry) => entry.id === next.categoryId); if (item?.name) params.set("categoryName", item.name); }
     if (next.subcategoryId) { params.set("serviceSubcategoryId", next.subcategoryId); const item = subcategories.find((entry) => entry.id === next.subcategoryId); if (item?.name) params.set("serviceName", item.name); }
     if (next.offeringKind) params.set("offeringKind", next.offeringKind);
@@ -133,7 +137,7 @@ export default function VendorDirectory({ category, contentKey = "vendors" }) {
   function changeFilter(name, value) {
     const next = { search, cityId, categoryId, subcategoryId, offeringKind, page: 1, [name]: value };
     if (name === "categoryId") { const item = categories.find((entry) => entry.id === value); next.subcategoryId = ""; setCategoryId(value); setSubcategoryId(""); if (value) { if (expandedCategoryId !== value) { setSubcategories([]); setSubcategoryLoading(true); } setExpandedCategoryId(value); } if (item?.offeringKind) { next.offeringKind = item.offeringKind; setOfferingKind(item.offeringKind); } }
-    if (name === "cityId") setCityId(value);
+    if (name === "cityId") { setCityId(value); next.city = value ? cities.find((item) => item.id === value)?.name : ""; }
     if (name === "subcategoryId") setSubcategoryId(value);
     if (name === "offeringKind") { setOfferingKind(value); setCategoryId(""); setSubcategoryId(""); setSubcategories([]); next.categoryId = ""; next.subcategoryId = ""; }
     setPage(1); replaceUrl(next);
@@ -157,11 +161,12 @@ export default function VendorDirectory({ category, contentKey = "vendors" }) {
   }
 
   function clearFilters() {
-    setSearch(""); setCitySearch(""); setCityId(""); setCategoryId(""); setSubcategoryId(""); setExpandedCategoryId(""); setSubcategories([]); setOfferingKind("SERVICE"); setPage(1);
-    replaceUrl({ search: "", cityId: "", categoryId: "", subcategoryId: "", offeringKind: "SERVICE", page: 1 });
+    setSearch(""); setCitySearch(""); setCityId(""); setCategoryId(""); setSubcategoryId(""); setExpandedCategoryId(""); setSubcategories([]); setOfferingKind(defaultOfferingKind); setPage(1);
+    replaceUrl({ search: "", cityId: "", city: "", categoryId: "", subcategoryId: "", offeringKind: defaultOfferingKind, page: 1 });
   }
 
   function changePage(nextPage) {
+    resultsRef.current?.scrollTo({ top: 0, behavior: "instant" });
     setPage(nextPage); replaceUrl({ search, cityId, categoryId, subcategoryId, offeringKind, page: nextPage });
     window.scrollTo({ top: 620, behavior: "smooth" });
   }
@@ -169,8 +174,8 @@ export default function VendorDirectory({ category, contentKey = "vendors" }) {
   const heading = selectedSubcategory?.name || selectedCategory?.name || queryValue(router.query.serviceName) || queryValue(router.query.categoryName) || category.title;
   const activeFilterChips = [
     search.trim() ? { key: "search", label: `Search: ${search.trim()}` } : null,
-    offeringKind === "VENUE_PROPERTY" ? { key: "offeringKind", label: "Property" } : null,
-    cityId ? { key: "cityId", label: selectedCityName || "Selected city" } : null,
+    offeringKind && offeringKind !== defaultOfferingKind ? { key: "offeringKind", label: offeringKind === "VENUE_PROPERTY" ? "Property" : "Services" } : null,
+    cityId || selectedCityName ? { key: "cityId", label: selectedCityName || "Selected city" } : null,
     categoryId ? { key: "categoryId", label: selectedCategory?.name || queryValue(router.query.categoryName) || "Selected category" } : null,
     subcategoryId ? { key: "subcategoryId", label: selectedSubcategory?.name || queryValue(router.query.serviceName) || "Selected service" } : null,
   ].filter(Boolean);
@@ -182,7 +187,7 @@ export default function VendorDirectory({ category, contentKey = "vendors" }) {
       replaceUrl({ search: "", cityId, categoryId, subcategoryId, offeringKind, page: 1 });
       return;
     }
-    changeFilter(key, key === "offeringKind" ? "SERVICE" : "");
+    changeFilter(key, key === "offeringKind" ? defaultOfferingKind : "");
   }
 
   return <div className="vendor-directory vendor-directory--listing"><WebsiteSeo pageKey={contentKey} /><Header /><main className="vd-main" id="marketplace-results">
@@ -192,8 +197,9 @@ export default function VendorDirectory({ category, contentKey = "vendors" }) {
     <div className="vd-search"><div><span className="vd-eyebrow">LET’S FIND YOUR PEOPLE</span><h2>Who’s on your dream team?</h2></div><div ref={searchBoxRef} className="vd-search-category-box"><div className="vd-search-input"><label htmlFor="vd-vendor-search" className="sr-only">Search vendors or choose a category</label><input id="vd-vendor-search" type="search" role="combobox" aria-expanded={searchDropdownOpen} aria-controls="vd-search-categories" aria-autocomplete="list" placeholder="Search categories or vendors…" value={search} onFocus={() => setSearchDropdownOpen(true)} onClick={() => setSearchDropdownOpen(true)} onChange={(event) => { setSearch(event.target.value); setPage(1); setSearchDropdownOpen(true); }} onBlur={() => replaceUrl({ search: search.trim(), cityId, categoryId, subcategoryId, offeringKind, page: 1 })} /><button type="button" className="vd-search-submit" aria-label="Search vendors" onMouseDown={(event) => event.preventDefault()} onClick={() => { setSearchDropdownOpen(false); replaceUrl({ search: search.trim(), cityId, categoryId, subcategoryId, offeringKind, page: 1 }); }}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg></button></div>{searchDropdownOpen ? <div id="vd-search-categories" role="listbox" className="vd-search-category-menu"><div className="vd-search-category-caption">Service categories</div>{catalogLoading ? <p>Loading categories…</p> : searchCategoryOptions.length ? searchCategoryOptions.map((item) => <button key={item.id} type="button" role="option" aria-selected={categoryId === item.id} onMouseDown={(event) => event.preventDefault()} onClick={() => selectSearchCategory(item)}>{item.name}</button>) : <p>No matching categories</p>}</div> : null}</div></div>
     </div>
     <nav className="vd-breadcrumb" aria-label="Breadcrumb"><Link href="/">Home</Link><span>›</span><Link href="/vendors">Wedding Vendors</Link><span>›</span><span>{heading}</span></nav>
-    <div className="vd-layout"><div className="vd-results"><div className="vd-results-meta vd-results-meta--cards" role="status"><span>{loading ? "Loading businesses…" : error ? "Vendor directory unavailable" : `${filtered.length} businesses shown${pagination?.total !== null && pagination?.total !== undefined ? ` · ${pagination.total} total` : ""}`}</span>{activeFilterChips.length ? <div className="vd-active-filters" aria-label="Applied filters">{activeFilterChips.map((filter) => <span key={filter.key} className="vd-filter-chip">{filter.label}<button type="button" onClick={() => removeAppliedFilter(filter.key)} aria-label={`Remove ${filter.label} filter`}>×</button></span>)}</div> : null}</div>{!hasApiFilters && <OwnVendorCard category={category} publicVendors={vendors} fallback={!loading && !error && !vendors.length ? <div className="vd-empty"><h3>No vendors available yet</h3><p>Please check back soon for business profiles.</p></div> : null} />}{loading || error ? <VendorRequestState loading={loading} error={error} retry={retry} /> : <>{filtered.map((vendor, index) => { const href = vendorHref(vendor); return <article key={vendor.slug || vendor.id || index} className="vd-card"><div className="vd-card-image"><VendorImage key={vendor.image?.src || vendor.image} vendor={vendor} category={category} fill sizes="(max-width: 600px) 104px, 180px" priority={index === 0} /></div><div className="vd-card-body"><h3>{href ? <Link className="vd-card-link" href={href} aria-label={`View ${vendor.name} business profile`}>{vendor.name}</Link> : vendor.name}</h3><VendorRating vendor={vendor} />{vendor.about && <p className="vd-service vd-card-description whitespace-pre-line">{vendor.about}</p>}<p className="vd-location">{[vendor.area, vendor.city].filter(Boolean).join(", ") || "Location not provided"}</p><VendorServiceChips services={vendor.services} />{vendor.years !== null && <p className="vd-service">{vendor.years} years of experience</p>}{vendor.verified && <div className="vd-tags"><span className="vd-verified">✓ Verified profile</span></div>}<p className="vd-price">{formatVendorPrice(vendor.price)}{vendor.price !== null && <span> onwards</span>}</p><VendorActions vendor={vendor} onEnquire={() => setEnquiryVendor(vendor)} /></div></article>; })}{filtered.length === 0 && <div className="vd-empty"><h3>No businesses match these filters</h3><p>Try another city, service, or a wider price range.</p><button type="button" onClick={clearFilters}>Clear all filters</button></div>}{pagination && (pagination.hasPrevPage || pagination.hasNextPage) && <nav className="vd-pagination" aria-label="Vendor pages"><button type="button" disabled={!pagination.hasPrevPage} onClick={() => changePage(Math.max(1, page - 1))}>Previous</button><span>Page {pagination.page}{pagination.totalPages > 0 ? ` of ${pagination.totalPages}` : ""}</span><button type="button" disabled={!pagination.hasNextPage} onClick={() => changePage(page + 1)}>Next</button></nav>}</>}</div>
-      <aside className="vd-marketplace-sidebar" aria-label="Filter wedding vendors"><div className="vd-marketplace-filter"><div className="vd-filter-heading"><h2>Find your perfect match</h2></div><div className="vd-offering-filter"><div className="vd-category-filter-title"><span>Service type</span></div><div className="vd-checkbox-list"><label><Checkbox checked={offeringKind === "SERVICE"} onChange={() => changeFilter("offeringKind", "SERVICE")} size="small" disableRipple /><span>Services</span></label><label><Checkbox checked={offeringKind === "VENUE_PROPERTY"} onChange={() => changeFilter("offeringKind", "VENUE_PROPERTY")} size="small" disableRipple /><span>Property</span></label></div></div><div className="vd-city-filter"><button type="button" className="vd-filter-section-trigger" aria-expanded={cityOpen} onClick={() => setCityOpen((open) => !open)}><span>{selectedCityName || "All cities"}</span><FilterChevron open={cityOpen} /></button>{cityOpen ? <><label className="vd-city-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg><span className="sr-only">Search cities</span><input type="search" value={citySearch} onChange={(event) => setCitySearch(event.target.value)} placeholder="Search city or state…" /></label><div className="vd-checkbox-list">{citiesLoading ? <p>Loading cities…</p> : <><label><Checkbox checked={!cityId} onChange={() => changeFilter("cityId", "")} size="small" disableRipple /><span>All cities</span></label>{visibleCities.map((item) => <label key={item.id}><Checkbox checked={cityId === item.id} onChange={() => changeFilter("cityId", item.id)} size="small" disableRipple /><span>{item.label}</span></label>)}{!visibleCities.length ? <p>No matching cities</p> : null}</>}</div></> : null}</div><div className="vd-category-filter"><div className="vd-category-filter-title"><span>All categories</span>{categoryId ? <button type="button" onClick={() => changeFilter("categoryId", "")}>Clear</button> : null}</div>{catalogLoading ? <p className="vd-category-message">Loading categories…</p> : <div className="vd-category-accordion">{offeringCategories.map((item) => { const expanded = expandedCategoryId === item.id; const selected = categoryId === item.id; return <div key={item.id} className="vd-category-group"><div className="vd-category-trigger"><label><Checkbox checked={selected} onChange={() => changeFilter("categoryId", selected ? "" : item.id)} size="small" disableRipple /><span>{item.name}</span></label><button type="button" aria-label={`${expanded ? "Hide" : "Show"} ${item.name} subcategories`} aria-expanded={expanded} onClick={() => toggleCategory(item)}><FilterChevron open={expanded} /></button></div>{expanded ? <div className="vd-subcategory-filter">{subcategoryLoading ? <p>Loading subcategories…</p> : <div className="vd-subcategory-list"><label><Checkbox checked={selected && !subcategoryId} onChange={() => selectSubcategory(item, "")} size="small" disableRipple /><span>All subcategories</span></label>{subcategories.map((service) => <label key={service.id}><Checkbox checked={selected && subcategoryId === service.id} onChange={() => selectSubcategory(item, service.id)} size="small" disableRipple /><span>{service.name}</span></label>)}</div>}</div> : null}</div>; })}</div>}</div>{(citiesError || catalogError) && <p className="vd-filter-error">{citiesError || catalogError} <button type="button" onClick={() => { retryCities(); setCatalogLoading(true); setCatalogError(""); setCatalogAttempt((value) => value + 1); }}>Try again</button></p>}<button type="button" className="vd-filter-reset" onClick={clearFilters}>Reset all filters</button></div></aside>
+    {warning && <div className="mx-auto max-w-7xl px-4 py-3 text-sm text-amber-800" role="alert">{warning} <button type="button" onClick={retry} className="font-semibold underline">Try again</button></div>}
+    <div className="vd-layout"><div className="vd-results"><div ref={resultsRef} className="vd-card-scroll"><div className="vd-results-meta vd-results-meta--cards" role="status"><span>{loading ? "Loading businesses…" : error ? "Vendor directory unavailable" : contentKey === "vendors" ? vendorDirectoryCount(sourceTotals) : `${filtered.length} businesses shown${pagination?.total !== null && pagination?.total !== undefined ? ` \u00b7 ${pagination.total.toLocaleString("en-IN")} total` : ""}`}</span>{activeFilterChips.length ? <div className="vd-active-filters" aria-label="Applied filters">{activeFilterChips.map((filter) => <span key={filter.key} className="vd-filter-chip">{filter.label}<button type="button" onClick={() => removeAppliedFilter(filter.key)} aria-label={`Remove ${filter.label} filter`}>×</button></span>)}</div> : null}</div>{!hasApiFilters && <OwnVendorCard category={category} publicVendors={vendors} fallback={!loading && !error && !vendors.length ? <div className="vd-empty"><h3>No vendors available yet</h3><p>Please check back soon for business profiles.</p></div> : null} />}{loading || error ? <VendorRequestState loading={loading} error={error} retry={retry} /> : <>{filtered.map((vendor, index) => { const href = vendorHref(vendor); return <article key={vendor.slug || vendor.id || index} className="vd-card"><div className="vd-card-image"><VendorImage key={vendor.image?.src || vendor.image} vendor={vendor} category={category} fill sizes="(max-width: 600px) 104px, 180px" priority={index === 0} /></div><div className="vd-card-body"><h3 title={vendor.name}>{href ? <Link className="vd-card-link" href={href} aria-label={`View ${vendor.name} business profile`}>{vendorCardName(vendor.name)}</Link> : vendorCardName(vendor.name)}</h3><VendorRating vendor={vendor} />{vendor.about && <p className="vd-service vd-card-description whitespace-pre-line">{vendor.about}</p>}<p className="vd-location">{[vendor.area, vendor.city].filter(Boolean).join(", ") || "Location not provided"}</p><VendorServiceChips services={vendor.services} />{vendor.years !== null && <p className="vd-service">{vendor.years} years of experience</p>}{vendor.verified && <div className="vd-tags"><span className="vd-verified">✓ Verified profile</span></div>}<p className="vd-price">{formatVendorPrice(vendor.price)}{vendor.price !== null && <span> onwards</span>}</p><VendorActions vendor={vendor} onEnquire={() => setEnquiryVendor(vendor)} /></div></article>; })}{filtered.length === 0 && <div className="vd-empty"><h3>No businesses match these filters</h3><p>Try another city, service, or a wider price range.</p><button type="button" onClick={clearFilters}>Clear all filters</button></div>}</>}</div>{!loading && !error && pagination && (pagination.hasPrevPage || pagination.hasNextPage) && <nav className="vd-pagination" aria-label="Vendor pages"><button type="button" aria-label="Previous page" disabled={!pagination.hasPrevPage} onClick={() => changePage(Math.max(1, page - 1))}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m14 6-6 6 6 6" /></svg></button><span>Page {pagination.page}{pagination.totalPages > 0 ? ` of ${pagination.totalPages}` : ""}</span><button type="button" aria-label="Next page" disabled={!pagination.hasNextPage} onClick={() => changePage(page + 1)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m10 6 6 6-6 6" /></svg></button></nav>}</div>
+      <aside className="vd-marketplace-sidebar" aria-label="Filter wedding vendors"><div className="vd-marketplace-filter"><div className="vd-filter-heading"><h2>Find your perfect match</h2></div><div className="vd-offering-filter"><div className="vd-category-filter-title"><span>Service type</span></div><div className="vd-checkbox-list">{contentKey === "vendors" && <label><Checkbox checked={!offeringKind} onChange={() => changeFilter("offeringKind", "")} size="small" disableRipple /><span>All businesses</span></label>}<label><Checkbox checked={offeringKind === "SERVICE"} onChange={() => changeFilter("offeringKind", "SERVICE")} size="small" disableRipple /><span>Services</span></label><label><Checkbox checked={offeringKind === "VENUE_PROPERTY"} onChange={() => changeFilter("offeringKind", "VENUE_PROPERTY")} size="small" disableRipple /><span>Property</span></label></div></div><div className="vd-city-filter"><button type="button" className="vd-filter-section-trigger" aria-expanded={cityOpen} onClick={() => setCityOpen((open) => !open)}><span>{selectedCityName || "All cities"}</span><FilterChevron open={cityOpen} /></button>{cityOpen ? <><label className="vd-city-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg><span className="sr-only">Search cities</span><input type="search" value={citySearch} onChange={(event) => setCitySearch(event.target.value)} placeholder="Search city or state…" /></label><div className="vd-checkbox-list">{citiesLoading ? <p>Loading cities…</p> : <><label><Checkbox checked={!cityId} onChange={() => changeFilter("cityId", "")} size="small" disableRipple /><span>All cities</span></label>{visibleCities.map((item) => <label key={item.id}><Checkbox checked={cityId === item.id} onChange={() => changeFilter("cityId", item.id)} size="small" disableRipple /><span>{item.label}</span></label>)}{!visibleCities.length ? <p>No matching cities</p> : null}</>}</div></> : null}</div><div className="vd-category-filter"><div className="vd-category-filter-title"><span>All categories</span>{categoryId ? <button type="button" onClick={() => changeFilter("categoryId", "")}>Clear</button> : null}</div>{catalogLoading ? <p className="vd-category-message">Loading categories…</p> : <div className="vd-category-accordion">{offeringCategories.map((item) => { const expanded = expandedCategoryId === item.id; const selected = categoryId === item.id; return <div key={item.id} className="vd-category-group"><div className="vd-category-trigger"><label><Checkbox checked={selected} onChange={() => changeFilter("categoryId", selected ? "" : item.id)} size="small" disableRipple /><span>{item.name}</span></label><button type="button" aria-label={`${expanded ? "Hide" : "Show"} ${item.name} subcategories`} aria-expanded={expanded} onClick={() => toggleCategory(item)}><FilterChevron open={expanded} /></button></div>{expanded ? <div className="vd-subcategory-filter">{subcategoryLoading ? <p>Loading subcategories…</p> : <div className="vd-subcategory-list"><label><Checkbox checked={selected && !subcategoryId} onChange={() => selectSubcategory(item, "")} size="small" disableRipple /><span>All subcategories</span></label>{subcategories.map((service) => <label key={service.id}><Checkbox checked={selected && subcategoryId === service.id} onChange={() => selectSubcategory(item, service.id)} size="small" disableRipple /><span>{service.name}</span></label>)}</div>}</div> : null}</div>; })}</div>}</div>{(citiesError || catalogError) && <p className="vd-filter-error">{citiesError || catalogError} <button type="button" onClick={() => { retryCities(); setCatalogLoading(true); setCatalogError(""); setCatalogAttempt((value) => value + 1); }}>Try again</button></p>}<button type="button" className="vd-filter-reset" onClick={clearFilters}>Reset all filters</button></div></aside>
     </div>
   <WebsiteSections pageKey={contentKey} /><p className="mx-auto max-w-4xl px-4 text-center text-sm leading-7 text-stone-600">{pageContent.intro[0]}</p><WebsiteActions pageKey={contentKey} /></main><Footer /><VendorEnquiryModal vendor={enquiryVendor} isOpen={Boolean(enquiryVendor)} onClose={() => setEnquiryVendor(null)} /></div>;
 }

@@ -1,0 +1,5 @@
+.fieldGrid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) 180px 90px 36px; gap: 12px; align-items: start; }
+.fieldGrid :global(.MuiInputBase-root),.compact :global(.MuiInputBase-root) { font-size: 12px; }
+.fieldGrid :global(.MuiInputLabel-root),.compact :global(.MuiInputLabel-root) { font-size: 12px; }
+@media(max-width:900px) { .fieldGrid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); } }
+@media(max-width:500px) { .fieldGrid { grid-template-columns: minmax(0,1fr); } }

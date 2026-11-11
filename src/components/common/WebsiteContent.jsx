@@ -23,7 +23,7 @@ export function WebsiteSections({ pageKey, titles, omit = [], className = '' }) 
   const sections = websiteContent[pageKey].sections.filter((section) => (!titles || titles.includes(section.title)) && !omit.includes(section.title));
   if (!sections.length) return null;
   return <div className={`${styles.sectionGrid} ${className}`}>{sections.map((section, index) => <section key={section.title} id={pageKey === 'partner' ? ({ 'Why Join?': 'benefits', 'How It Works': 'workflow' })[section.title] : undefined} className={styles.sectionCard}>
-    <div className={`${styles.sectionTitle} ${pageKey === 'luxury' ? styles.leftTitle : ''}`}><span aria-hidden="true" className={styles.sectionNumber}>{String(index + 1).padStart(2, '0')}</span><h2>{section.title}</h2></div>
+    <div className={`${styles.sectionTitle} ${pageKey === 'luxury' || pageKey === 'stories' ? styles.leftTitle : ''}`}><span aria-hidden="true" className={styles.sectionNumber}>{String(index + 1).padStart(2, '0')}</span><h2>{section.title}</h2></div>
     {section.paragraphs.map((paragraph) => paragraph.includes(';') ? <ul key={paragraph}>{paragraph.split(';').map((item) => <li key={item}><span aria-hidden="true" className={styles.bullet}>&bull;</span><span>{item.trim()}</span></li>)}</ul> : <p key={paragraph}>{paragraph}</p>)}
   </section>)}</div>;
 }

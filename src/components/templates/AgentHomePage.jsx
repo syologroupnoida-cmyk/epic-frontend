@@ -262,7 +262,7 @@ export default function AgentHomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#b61f4b]">How it works</p>
-              <h2 className="mt-3 font-serif text-4xl font-bold text-stone-950">A cleaner flow for every inquiry</h2>
+              <h2 className="portal-section-heading mt-3 font-serif font-bold text-stone-950">A cleaner flow for every inquiry</h2>
               <p className="mt-4 text-base leading-7 text-stone-600">
                 Move each wedding lead through a simple model that keeps client
                 needs, vendor fit, visits, and booking follow-ups easy to track.
@@ -283,7 +283,7 @@ export default function AgentHomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#b61f4b]">Agent benefits</p>
-              <h2 className="mt-3 font-serif text-4xl font-bold text-stone-950">Built for wedding sales teams</h2>
+              <h2 className="portal-section-heading mt-3 font-serif font-bold text-stone-950">Built for wedding sales teams</h2>
             </div>
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {benefits.map((benefit) => (
@@ -300,7 +300,7 @@ export default function AgentHomePage() {
           <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:px-8">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#b61f4b]">Vendor network</p>
-              <h2 className="mt-3 font-serif text-4xl font-bold text-stone-950">Coordinate trusted vendors faster</h2>
+              <h2 className="portal-section-heading mt-3 font-serif font-bold text-stone-950">Coordinate trusted vendors faster</h2>
               <p className="mt-4 text-lg leading-8 text-stone-600">
                 Help couples compare venues, decorators, caterers, makeup
                 artists, photographers, and destination specialists with a clear
@@ -322,7 +322,7 @@ export default function AgentHomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#b61f4b]">Our trusted clients</p>
-              <h2 className="mt-3 font-serif text-4xl font-bold text-stone-950">Partners who trust the agent network</h2>
+              <h2 className="portal-section-heading mt-3 font-serif font-bold text-stone-950">Partners who trust the agent network</h2>
             </div>
             <div className="agent-slider mt-10 overflow-hidden">
               <div className="agent-slider-track">
@@ -344,7 +344,7 @@ export default function AgentHomePage() {
             <div>
               <div className="mx-auto max-w-3xl text-center">
                 <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#b61f4b]">Testimonials</p>
-                <h2 className="mt-3 font-serif text-4xl font-bold text-stone-950">Agents planning with more clarity</h2>
+                <h2 className="portal-section-heading mt-3 font-serif font-bold text-stone-950">Agents planning with more clarity</h2>
               </div>
               <div className="agent-slider mt-10 overflow-hidden">
                 <div className="agent-slider-track agent-testimonial-track">
@@ -372,7 +372,7 @@ export default function AgentHomePage() {
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-[#b61f4b]">FAQ</p>
-              <h2 className="mt-3 font-serif text-4xl font-bold text-stone-950">Agent questions answered</h2>
+              <h2 className="portal-section-heading mt-3 font-serif font-bold text-stone-950">Agent questions answered</h2>
             </div>
             <div className="mt-10 grid gap-3">
               {faqs.map((item) => (
@@ -392,7 +392,7 @@ export default function AgentHomePage() {
           <div className="mx-auto flex max-w-7xl flex-col gap-6 rounded bg-[#2a1119] px-6 py-12 text-white sm:px-8 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-white/75">Start today</p>
-              <h2 className="mt-2 font-serif text-4xl font-bold">Create your agent account</h2>
+              <h2 className="portal-section-heading mt-2 font-serif font-bold">Create your agent account</h2>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link href="/partner/sign-up" className="rounded-full bg-white px-7 py-3 text-sm font-bold text-[#b61f4b]">Sign up</Link>
