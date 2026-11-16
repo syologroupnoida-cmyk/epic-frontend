@@ -1,8 +1,7 @@
-import SuperAdminDashboard from '@/components/dashboard/SuperAdminDashboard';
 import { shopPanelPath, shopPanelSlugs, shopSlugFromSegments } from '@/util/shopDashboardRoutes.mjs';
 
-export default function ShopDashboardPage({ initialPanelSlug }) {
-  return <SuperAdminDashboard initialPanelSlug={initialPanelSlug} />;
+export default function LegacyShopPanelPage() {
+  return null;
 }
 
 export function getServerSideProps({ params }) {
@@ -11,5 +10,5 @@ export function getServerSideProps({ params }) {
     const panel = Object.keys(shopPanelSlugs).find((label) => shopPanelSlugs[label] === initialPanelSlug);
     return { redirect: { destination: shopPanelPath(panel), permanent: false } };
   }
-  return initialPanelSlug ? { props: { initialPanelSlug } } : { notFound: true };
+  return { notFound: true };
 }

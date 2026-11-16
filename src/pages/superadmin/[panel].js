@@ -6,6 +6,9 @@ export default function SuperAdminPanelPage({ initialPanelSlug }) {
 }
 
 export function getServerSideProps({ params }) {
+  if (params?.panel === 'all-orders') {
+    return { redirect: { destination: '/orders', permanent: false } };
+  }
   if (isShopPanelSlug(params?.panel)) {
     const panel = Object.keys(shopPanelSlugs).find((key) => shopPanelSlugs[key] === params.panel);
     return { redirect: { destination: shopPanelPath(panel), permanent: false } };

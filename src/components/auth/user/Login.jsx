@@ -6,6 +6,7 @@ import PasswordToggle from "@/components/auth/PasswordToggle";
 import ApiStatusModal from "@/components/common/ApiStatusModal";
 import { getApiErrorMessage, googleLogin, loginAccount } from "@/util/authApi";
 import { getPostLoginAction } from "@/util/authRedirect";
+import { shopLoginReturnPath } from '@/util/shopAccount.mjs';
 import {
   extractAuthPayload,
   setAuthTokens,
@@ -70,7 +71,7 @@ export default function UserLogin() {
       title: "Logging...",
       text: getResponseMessage(response, fallbackMessage),
     });
-    await router.push(action.route);
+    await router.push(action.route === '/kyc' ? action.route : shopLoginReturnPath(router.query?.next) || action.route);
   }
 
   async function handleSubmit(event) {

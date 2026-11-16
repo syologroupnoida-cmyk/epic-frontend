@@ -1,4 +1,4 @@
-.dashboard { max-width: 1440px; margin: auto; padding: 24px; color: #252129; }
+.dashboard { max-width: 1600px; margin: auto; color: #252129; }
 .heading { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 24px; }
 .eyebrow { color: #a11b43; font-size: 10px; font-weight: 700; letter-spacing: 1.8px; }
 .heading h1 { font-size: 25px; line-height: 1.4; font-weight: 600; margin: 4px 0; }
@@ -10,8 +10,9 @@
 .navigation button:hover { background: #fff0f4; color: #a11b43; }
 .navigation button[aria-pressed='true']:hover { background: #96173e; color: #fff; }
 .sampleNote { font-size: 11px; color: #8a727c; margin: 14px 0 22px; }
-.stats { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; }
-.stat { display: flex; align-items: center; text-align: left; gap: 16px; padding: 20px; background: #fff; border: 1px solid #ecdee3; border-radius: 10px; cursor: pointer; }
+.dashboard .welcomeBanner { min-height: 269px; margin-bottom: 0; }
+.stats { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; margin: -56px 24px 0; }
+.stat { display: flex; align-items: center; text-align: left; gap: 16px; height: 112px; padding: 20px; background: #fff; border: 1px solid #ecdee3; border-radius: 10px; box-shadow: 0 6px 20px #38202a0a; cursor: pointer; }
 .statIcon { width: 48px; height: 48px; display: grid; place-items: center; background: #fbedf2; border-radius: 10px; color: #b61f4b; }
 .stat small { display: block; font-size: 11px; color: #7c6971; }
 .stat strong { display: block; font-size: 27px; font-weight: 600; margin-top: 4px; }
@@ -94,3 +95,5 @@
 @media (max-width:1000px) { .shell { grid-template-columns:220px minmax(0,1fr); } .shellCollapsed { grid-template-columns:78px minmax(0,1fr); } .shell .dashboard { padding:22px; } .topbar { padding-inline:20px; } }
 @media (max-width:760px) { .shell { grid-template-columns:64px minmax(0,1fr); } .sidebar { padding-inline:7px; } .sidebarLabel,.activeDot { display:none; } .shopBrand { justify-content:center; padding-inline:0; } .shopBrandIcon { height:37px; width:37px; } .sidebarNavigation { padding-top:22px; } .sidebarNavigation button,.sidebarBottom a { justify-content:center; padding-inline:8px; } .topbar { height:64px; padding-inline:14px; } .collapseButton { display:none; } .topbarBreadcrumb { font-size:10px; } .topbarBreadcrumb > span { margin-inline:5px; } .shopAccount > span:last-child { display:none; } .shell .dashboard { padding:16px; } .shell .heading h1 { font-size:23px; } }
 @media (max-width:420px) { .shell .stats,.shell .preview,.shell .categoryGrid { grid-template-columns:1fr; } }
+
+@media (max-width: 600px) { .dashboard .welcomeBanner { min-height: 213px; } .stats { margin: -46px 12px 0; gap: 10px; } .stat { height: 92px; } }

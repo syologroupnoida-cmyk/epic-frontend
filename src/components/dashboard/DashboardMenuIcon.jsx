@@ -36,7 +36,7 @@ const menuIcons = {
   Services: 'services', 'Service Listing': 'list', Property: 'house', Cities: 'city', Vendor: 'people',
   Lead: 'lead', Meetings: 'calendar', 'My Meeting': 'calendar', Contact: 'mail', Subscriptions: 'card',
   Wallet: 'wallet', 'Business Profile': 'store', Profile: 'profile', Settings: 'settings',
-  Categories: 'dashboard', 'Shop Products': 'box', 'Shop Orders': 'cart',
+  Categories: 'dashboard', Products: 'box', 'Inventory Management': 'box', 'Inventory List': 'list', 'Low-stock Variants': 'box', 'Shop Orders': 'cart', Order: 'cart', 'My Orders': 'cart',
   'Services List': 'list', 'Service List': 'list', 'Property List': 'house', 'City List': 'city',
   'Vendor Kyc List': 'shield', 'Vendor Businesses': 'store', 'Business Import Batches': 'import',
   'Lead List': 'lead', 'Shared Lead List': 'share', 'Purchased Leads': 'bag',

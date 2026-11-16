@@ -22,7 +22,10 @@ test('shop navigation has its own sections and category routes', () => {
   assert.equal(isShopPanelSlug('shop-management'), true);
   assert.equal(isShopPanelSlug('shop-categories'), true);
   assert.equal(isShopPanelSlug('vendor-businesses'), false);
-  assert.deepEqual(shopDashboardMenu.map((item) => item.label), ['Shop Overview', 'Categories', 'Shop Products', 'Shop Orders']);
+  assert.deepEqual(shopDashboardMenu.map((item) => item.label), ['Shop Overview', 'Categories', 'Products', 'Inventory Management', 'Order']);
+  assert.deepEqual(shopDashboardMenu[2].sub, ['Add Product', 'Product List']);
+  assert.equal(shopPanelPath('Add Product'), '/add-product');
+  assert.equal(shopPanelPath('Product List'), '/product-list');
   assert.deepEqual(shopDashboardMenu[1].sub, ['Add Category', 'Category List', 'Add Subcategory', 'Subcategory List']);
 });
 

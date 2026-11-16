@@ -61,3 +61,10 @@ export function filterEcommerceSubcategories(items, search, categories = []) {
     return words.every((word) => text.includes(word));
   });
 }
+
+export async function updateEcommerceSubcategory(api, id, values, signal) {
+  if (typeof id !== 'string' || !id.trim()) throw new Error('A subcategory ID is required.');
+  const response = await api.patch(`${endpoint}/${encodeURIComponent(id)}`, ecommerceSubcategoryPayload(values), { signal });
+  const data = unwrap(response);
+  return { subcategory: data?.subcategory ?? data?.ecommerceSubcategory ?? data, message: response.data?.message || 'Subcategory updated successfully.' };
+}

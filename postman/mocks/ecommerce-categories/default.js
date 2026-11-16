@@ -40,6 +40,34 @@ http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     if (url.pathname === '/__reset' && req.method === 'POST') { await writeRows(seed()); await writeSubcategories(seedSubcategories()); return send(200, { success: true }); }
     const rows = await readRows();
+    const catalogEdit = url.pathname.match(/^\/api\/v1\/admin\/ecommerce\/(categories|subcategories)\/([^/]+)$/);
+    if (catalogEdit && ['PATCH', 'DELETE'].includes(req.method)) {
+      const sub = catalogEdit[1] === 'subcategories';
+      const all = sub ? await readSubcategories() : rows;
+      const id = decodeURIComponent(catalogEdit[2]);
+      const row = all.find(item => (sub ? item.ecommerceSubcategoryId : item.ecommerceCategoryId) === id);
+      if (!row) return send(404, { message: 'Catalog entry not found.' });
+      if (req.headers['x-test-catalog'] === 'unavailable') return send(503, { message: 'Catalog service unavailable.' });
+      if (req.method === 'DELETE') {
+        if (sub) return send(501, { message: 'Subcategory delete not modeled.' });
+        const products = state ? (await state.get('ecommerce-products:rows')) || [] : [];
+        if ((await readSubcategories()).some(item => item.categoryId === id) || products.some(item => item.categoryId === id)) return send(409, { message: 'Only empty categories can be deleted.' });
+        await writeRows(rows.filter(item => item !== row));
+      } else {
+        let body = req.body;
+        if (body == null) { const chunks = []; for await (const chunk of req) chunks.push(chunk); body = JSON.parse(Buffer.concat(chunks).toString()); }
+        else if (typeof body === 'string') body = JSON.parse(body);
+        const expected = sub ? 'categoryId,name,specificationTemplate' : 'description,name,sortOrder';
+        if (!body || Object.keys(body).sort().join(',') !== expected || typeof body.name !== 'string' || !body.name.trim()) return send(400, { message: 'Invalid catalog update payload.' });
+        if (sub && (!rows.some(item => item.ecommerceCategoryId === body.categoryId) || !Array.isArray(body.specificationTemplate?.fields))) return send(400, { message: 'Invalid subcategory update.' });
+        if (!sub && (typeof body.description !== 'string' || !Number.isSafeInteger(body.sortOrder) || body.sortOrder < 0)) return send(400, { message: 'Invalid category update.' });
+        if (all.some(item => item !== row && item.name.toLowerCase() === body.name.toLowerCase() && (!sub || item.categoryId === body.categoryId))) return send(409, { message: 'This name already exists.' });
+        Object.assign(row, body);
+        if (sub) await writeSubcategories(all); else await writeRows(all);
+      }
+      if (req.headers['x-test-catalog'] === 'after-write') return send(503, { message: 'Response lost after catalog update.' });
+      return send(200, { success: true, message: req.method === 'DELETE' ? 'Category deleted.' : sub ? 'Subcategory updated.' : 'Category updated.', data: req.method === 'DELETE' ? {} : { [sub ? 'subcategory' : 'category']: row } });
+    }
     if (url.pathname === '/api/v1/admin/ecommerce/subcategories') {
       const subcategories = await readSubcategories();
       if (req.method === 'GET') {

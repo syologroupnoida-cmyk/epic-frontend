@@ -65,3 +65,14 @@ export async function fetchAllEcommerceCategories(api, { signal } = {}) {
     if (!added) throw new Error('Unable to load all category options. Please try again.');
   }
 }
+
+export async function updateEcommerceCategory(api, id, values, signal) {
+  if (typeof id !== 'string' || !id.trim()) throw new Error('A category ID is required.');
+  const response = await api.patch(`${endpoint}/${encodeURIComponent(id)}`, ecommerceCategoryPayload(values), { signal });
+  const data = unwrap(response);
+  return { category: data?.ecommerceCategory ?? data?.category ?? data, message: response.data?.message || 'Category updated successfully.' };
+}
+export async function deleteEcommerceCategory(api, id, signal) {
+  if (typeof id !== 'string' || !id.trim()) throw new Error('A category ID is required.');
+  return unwrap(await api.delete(`${endpoint}/${encodeURIComponent(id)}`, { signal }));
+}

@@ -1,4 +1,15 @@
 .shop { --wine: #a4002b; --dark-wine: #71051c; --blush: #fae5eb; background: #fff; min-height: 100vh; color: #141414; font-family: Arial, Helvetica, sans-serif; }
+.imagePlaceholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: #f5f3f3; color: #aaa0a4; font-size: 11px; }
+.filterTitle { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+.filterHint { font-size: 11px; color: #87767d; margin-top: 6px; line-height: 1.6; }
+.subcategory { margin: 2px 0 10px 14px; padding: 2px 0 2px 13px; border-left: 1px solid #e4c8d1; }
+.categoryLabel > span:nth-child(2) { flex: 1; }
+.categoryChevron { font-size: 18px; color: #92707d; }
+.priceSlider { padding: 0 7px; }
+.priceLabels { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: #80616d; }
+.filterGroup input[type='radio'] { accent-color: var(--wine); }
+.pagination { display: flex; justify-content: center; align-items: center; gap: 20px; padding-top: 28px; font-size: 12px; }
+.pagination button { border: 1px solid #e4d4da; border-radius: 7px; padding: 9px 16px; }
 .shop button, .shop a, .shop input, .shop select { -webkit-tap-highlight-color: transparent; }
 .shop button { cursor: pointer; }
 .shop button:disabled { cursor: default; opacity: .5; }
@@ -144,12 +155,12 @@
 @media (prefers-reduced-motion:reduce) { .productPreview img { transition:none; } }
 
 /* Compact category navigation directly below the hero. */
-.categories { margin: 14px 10px 4px; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+.categories { margin: 14px 10px 4px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
 .categories button { min-height: 65px; gap: 7px; padding: 9px 6px; }
 .categories button > svg { width: 20px; height: 20px; margin: 0; color: var(--wine); }
 .categories button span { font-size: 11px; }
 @media (max-width: 1100px) { .categories { display: grid; } .categories button { min-width: 0; } }
-@media (max-width: 760px) { .categories { display: flex; overflow-x: auto; margin: 12px 0 3px; gap: 8px; } .categories button { min-width: 105px; min-height: 62px; flex-shrink: 0; } }
+@media (max-width: 760px) { .categories { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 12px 0 3px; gap: 8px; } .categories button { min-width: 0; min-height: 62px; } }
 
 .diwaliOffer { position: relative; isolation: isolate; min-height: 160px; overflow: hidden; border: 1px solid #d6ae68; border-radius: 12px; margin: 18px 10px 0; background: #4b1020; }
 .diwaliOfferImage { object-fit: cover; object-position: center 55%; z-index: -2; }

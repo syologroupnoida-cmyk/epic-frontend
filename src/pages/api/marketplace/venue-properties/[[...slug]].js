@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   if (!Array.isArray(segments) || segments.length > 1 || segments.some((segment) => typeof segment !== 'string' || !segment.trim())) {
     return res.status(400).json({ success: false, message: 'Invalid venue slug.' });
   }
-  const base = process.env.MARKETPLACE_VENUES_API_URL || 'https://api.wedplanners.in/api/v1/marketplace/venue-properties';
+  const base = process.env.MARKETPLACE_VENUES_API_URL || 'https://api.epicwedplanner.com/api/v1/marketplace/venue-properties';
   const url = new URL(base.replace(/\/$/, '') + (segments.length ? `/${encodeURIComponent(segments[0])}` : ''));
   if (!segments.length) {
     const page = Number(req.query.page ?? 1);

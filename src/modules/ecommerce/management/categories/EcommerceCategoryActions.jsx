@@ -1,8 +1,8 @@
 import { useId, useState } from 'react';
-import { IconButton, ListItemIcon, Menu, MenuItem } from '@mui/material';
+import { IconButton, ListItemIcon, Menu, MenuItem, SvgIcon } from '@mui/material';
 import { MoreVert, ViewOutlined } from '@/components/vendor/listings/ServiceIcons';
 
-export default function EcommerceCategoryActions({ name, disabled, onView }) {
+export default function EcommerceCategoryActions({ name, disabled, onView, onEdit, onDelete }) {
   const [anchor, setAnchor] = useState(null);
   const id = useId();
   const open = Boolean(anchor);
@@ -35,10 +35,12 @@ export default function EcommerceCategoryActions({ name, disabled, onView }) {
         paper: { sx: { mt: 0.5, minWidth: 172, borderRadius: 2, border: '1px solid #e2e8f0', boxShadow: '0 8px 28px rgb(15 23 42 / 12%)' } },
       }}
     >
-      <MenuItem onClick={() => { close(); onView(); }} sx={{ borderRadius: 1, py: 1, fontSize: 13, color: '#334155', '&:hover': { bgcolor: '#fff1f5', color: '#b61f4b' } }}>
+      {onView && <MenuItem onClick={() => { close(); onView(); }} sx={{ borderRadius: 1, py: 1, fontSize: 13, color: '#334155', '&:hover': { bgcolor: '#fff1f5', color: '#b61f4b' } }}>
         <ListItemIcon sx={{ color: 'inherit', minWidth: 30 }}><ViewOutlined sx={{ fontSize: 18 }} /></ListItemIcon>
         View details
-      </MenuItem>
+      </MenuItem>}
+      {onEdit && <MenuItem sx={{ fontSize: 13 }} onClick={() => { close(); onEdit(); }}><ListItemIcon><SvgIcon fontSize="small"><path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-4-4L5 15l-1 5Z" fill="none" stroke="currentColor" strokeWidth="1.6" /></SvgIcon></ListItemIcon>Edit</MenuItem>}
+      {onDelete && <MenuItem sx={{ fontSize: 13, color: 'error.main' }} onClick={() => { close(); onDelete(); }}><ListItemIcon><SvgIcon fontSize="small"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7" fill="none" stroke="currentColor" strokeWidth="1.6" /></SvgIcon></ListItemIcon>Delete empty category</MenuItem>}
     </Menu>
   </>;
 }
