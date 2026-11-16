@@ -1,6 +1,6 @@
 import DashboardMenuIcon from './DashboardMenuIcon';
 import shopLauncherStyles from "./DashboardShopLauncher.module.css";
-import { ShopOverviewPanel, ShopProductsPanel, ShopOrdersPanel } from "@/modules/ecommerce/management/ShopWorkspacePanels";
+import { ShopOverviewPanel, ShopProductsPanel, ShopAddProductPanel, ShopOrdersPanel, ShopInventoryPanel, ShopLowStockPanel } from "@/modules/ecommerce/management/ShopWorkspacePanels";
 import EcommerceCategoryForm from "@/modules/ecommerce/management/categories/EcommerceCategoryForm";
 import EcommerceCategoryList from "@/modules/ecommerce/management/categories/EcommerceCategoryList";
 import EcommerceSubcategoryForm from "@/modules/ecommerce/management/subcategories/EcommerceSubcategoryForm";
@@ -79,7 +79,10 @@ const menu = [
 
 const dashboardPanels = {
   "Shop Overview": ShopOverviewPanel,
-  "Shop Products": ShopProductsPanel,
+  "Product List": ShopProductsPanel,
+  "Add Product": ShopAddProductPanel,
+  "Inventory List": ShopInventoryPanel,
+  "Low-stock Variants": ShopLowStockPanel,
   "Shop Orders": ShopOrdersPanel,
   "Add Category": EcommerceCategoryForm,
   "Category List": EcommerceCategoryList,
@@ -155,7 +158,7 @@ function DashboardPlaceholder({ title }) {
   );
 }
 
-export default function SuperAdminDashboard({ initialPanelSlug = null }) {
+export default function SuperAdminDashboard({ initialPanelSlug = null, productId = null, children }) {
   const authUser = useAuthUser();
   const displayName = accountName(authUser, "Admin");
   const router = useRouter();
@@ -185,7 +188,7 @@ export default function SuperAdminDashboard({ initialPanelSlug = null }) {
   }
 
   return (
-    <div className={`wp-dashboard ${expanded ? "wp-expanded" : "wp-collapsed"} h-screen overflow-hidden bg-[#f7f2ef] text-stone-900`}>
+    <div className={`wp-dashboard ${shopWorkspace ? shopLauncherStyles.viewport : ""} ${expanded ? "wp-expanded" : "wp-collapsed"} h-screen overflow-hidden bg-[#f7f2ef] text-stone-900`}>
       <aside onMouseEnter={() => collapsed && setHovered(true)} onMouseLeave={() => setHovered(false)} className={`${shopLauncherStyles.sidebar} wp-sidebar fixed inset-y-0 left-0 z-40 border-r border-rose-100 bg-white shadow-sm transition-all duration-200 ${expanded ? "w-72" : "w-20"}`}>
         <Link href="/" className="wp-brand flex h-16 items-center justify-center border-b border-rose-100 px-4" aria-label="Epic Portal home">
           <Image src="/images/epic-logo-new.png" alt="Epic Wedz" width={200} height={76} priority className="wp-site-logo" />
@@ -199,8 +202,8 @@ export default function SuperAdminDashboard({ initialPanelSlug = null }) {
             return (
             <div key={item.label}>
               <button type="button" onClick={() => hasSubmenu ? setOpenMenu((current) => (current === null ? activeParentMenu : current) === item.label ? "" : item.label) : selectPanel(item.label)} className={`flex h-12 w-full items-center rounded px-3 text-sm font-semibold transition hover:bg-rose-50 hover:text-[#b61f4b] ${activePanel === item.label || activeParentMenu === item.label ? "bg-rose-50 text-[#b61f4b]" : "text-stone-700"} ${expanded ? "justify-between gap-3" : "justify-center"}`} title={menuLabel(item.label)}>
-                <span className="flex items-center gap-3"><DashboardMenuIcon label={item.label} />{expanded ? menuLabel(item.label) : null}</span>
-                {expanded && hasSubmenu ? <span className={`${submenuOpen ? "rotate-180" : ""} transition duration-500`}><Icon name="arrow" /></span> : null}
+                <span className="flex min-w-0 items-center gap-3 text-left"><DashboardMenuIcon label={item.label} />{expanded ? <span className="min-w-0 text-left">{menuLabel(item.label)}</span> : null}</span>
+                {expanded && hasSubmenu ? <span className={`${submenuOpen ? "rotate-180" : ""} shrink-0 transition duration-500`}><Icon name="arrow" /></span> : null}
               </button>
               {expanded && hasSubmenu ? (
                 <div className={`dashboard-submenu ml-8 grid gap-1 ${submenuOpen ? "mt-1 max-h-56 pb-2 opacity-100" : "mt-0 max-h-0 pb-0 opacity-0"}`}>
@@ -212,7 +215,7 @@ export default function SuperAdminDashboard({ initialPanelSlug = null }) {
                       className={`flex items-center gap-2 rounded px-3 py-2 text-left text-xs font-semibold hover:bg-rose-50 hover:text-[#b61f4b] ${activePanel === sub ? "bg-rose-50 text-[#b61f4b]" : "text-stone-500"}`}
                     >
                       <span className="h-1.5 w-1.5 shrink-0 rounded-full border border-current" aria-hidden="true" />
-                      <span>{sub}</span>
+                      <span>{menuLabel(sub)}</span>
                     </button>
                   ))}
                 </div>
@@ -228,7 +231,7 @@ export default function SuperAdminDashboard({ initialPanelSlug = null }) {
           </Link>
         </div>
       </aside>
-      <div className={`h-screen overflow-hidden transition-all duration-200 ${expanded ? "pl-72" : "pl-20"}`}>
+      <div className={`${shopWorkspace ? shopLauncherStyles.workspace : ""} h-screen overflow-hidden transition-all duration-200 ${expanded ? "pl-72" : "pl-20"}`}>
         <header className="wp-topbar relative z-30 flex h-16 items-center justify-between border-b border-rose-100 bg-white/95 px-5 shadow-sm backdrop-blur">
           <div className="flex items-center gap-4">
             <button type="button" onClick={() => setCollapsed((value) => !value)} className="grid h-9 w-9 place-items-center rounded-full border border-rose-100 text-stone-700 hover:border-[#b61f4b] hover:text-[#b61f4b]" aria-label="Toggle sidebar">
@@ -249,11 +252,11 @@ export default function SuperAdminDashboard({ initialPanelSlug = null }) {
             </div>
           </div>
         </header>
-        <main className="wp-main h-[calc(100vh-4rem)] overflow-y-auto p-2">
-          {activePanel === null ? (
+        <main className={`wp-main p-2 ${shopWorkspace && ["Product List", "Inventory List", "Low-stock Variants", "Shop Orders"].includes(activePanel) ? shopLauncherStyles.productMain : "h-[calc(100vh-4rem)] overflow-y-auto"}`}>
+          {children ? children : activePanel === null ? (
             <div role="status" className="rounded border border-rose-100 bg-white p-10 text-center text-sm text-stone-500">Loading dashboard...</div>
           ) : ActivePanel ? (
-            <ActivePanel embedded onNavigate={selectPanel} />
+            <ActivePanel embedded onNavigate={selectPanel} productId={productId} />
           ) : activePanel === "Overview" ? (
             <WeddingAdminOverview onNavigate={selectPanel} />
           ) : (

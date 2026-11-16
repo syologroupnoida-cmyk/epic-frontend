@@ -1,0 +1,193 @@
+purpose:
+  stands_in_for: Admin ecommerce product creation, paginated listing, detail, stock received and publishing APIs; existing category and subcategory APIs.
+  unblocks: Local frontend client verification without production writes or credentials.
+assumptions:
+  - id: supplied-product-request-contract
+    status: supported
+    claim: Product creation sends the supplied fields including typed specifications, optionDefinitions, images and variants with integer paise prices and initialStock. Listing sends page, limit and status; detail reads a product ID; stock received sends quantity, type and note to a variant ID.
+    reason: The user supplied paths, list query and create/adjustment payloads on 2026-11-12.
+    verification: Real Axios client HTTP tests passed through the local simulation. Logs recorded POST create, GET list/detail, POST inventory adjustment and POST publish. The created product was read back, stock rose from 5 to 15, and a published-status list contained the product. Mock validates exact create and adjustment field sets.
+    source: User request; src/util/ecommerceProducts.mjs; tests/ecommerceProducts.test.mjs; postman/mocks/ecommerce-products/default.js
+    updated_at: '2026-11-12'
+  - id: response-shapes-and-publish-semantics
+    status: unknown
+    claim: Publishing uses POST and yields PUBLISHED; live responses use the modeled product/variant/pagination wrappers and stockQuantity field.
+    reason: No response examples, full validation rules, publishing method or published status value were supplied. Mock responses and error messages are synthetic. At the original run images were intentionally empty; the later media contract and verification are recorded separately below.
+    verification: Client supports raw/product/ecommerceProduct detail wrappers and products/ecommerceProducts/items/results list wrappers. Tests establish behavior against the stand-in only. Confirm live responses, status vocabulary, inventory fields and publish method with an authenticated backend session.
+    source: src/util/ecommerceProducts.mjs; src/modules/ecommerce/management/products/EcommerceProductDetail.jsx; postman/mocks/ecommerce-products/default.js
+    updated_at: '2026-11-12'
+  - id: local-regressions
+    status: supported
+    claim: Local client validation, HTTP lifecycle and compiled initial UI rendering passed alongside category and subcategory regressions.
+    reason: All 23 focused tests passed without skips against the local simulation, and the production build completed.
+    verification: Ran node --test --test-concurrency=1 with ecommerceProducts.test.mjs, ecommerceCategories.test.mjs, ecommerceSubcategories.test.mjs and ecommerceCategories.ui.test.cjs. Verified errors for unauthorized, forbidden, missing, conflict, service unavailable, application-level failure, malformed responses and cancellation. Compiled UI checks cover initial loading, form controls, shop navigation and admin access. Interactive browser flows and live APIs were not tested.
+    source: tests/ecommerceProducts.test.mjs; tests/ecommerceCategories.ui.test.cjs; local simulation at port 4920 on 2026-11-12; npm.cmd run build
+    updated_at: '2026-11-12'
+  - id: owner-mock-discovery
+    status: unknown
+    claim: An owning-team published product mock exists.
+    reason: postman status is unsupported by the installed CLI, so owner mock discovery was skipped. No cloud changes were made.
+    verification: CLI 1.76.0 reported unknown command status. A local mock was written from user-supplied request fields and paths; the existing category mock was reused.
+    source: Local CLI output; postman/simulations/ecommerce-products.sim.yaml
+    updated_at: '2026-11-12'
+  - id: supplied-media-and-live-variant-contract
+    status: supported
+    claim: Multipart image uploads send purpose ecommerce-product-media and file. Product image attachment sends url, publicId, altText and numeric sortOrder. Additional variant creation sends sku, optionValues, paise prices and initialStock without isDefault.
+    reason: User supplied these paths and payloads on 2026-11-12. Product ID is returned by initial create before product-scoped requests can run.
+    verification: Real Axios HTTP tests passed through the local Postman simulation. Logs showed multipart POST /api/v1/uploads/image, image POST 503 then 201 using the same uploaded URL/publicId, and variant POST 201. Follow-up detail reads showed one attached image and a second variant with stock 3. Malformed upload responses, 503 upload/attachment/variant responses, duplicate SKU 409 and cancellation were exercised. Sixteen focused client/UI checks and the production build passed; no production writes were made.
+    source: User request; src/util/ecommerceProducts.mjs; tests/ecommerceProducts.test.mjs; postman/mocks/ecommerce-products/default.js; local simulation port 4920
+    updated_at: '2026-11-12'
+  - id: live-upload-response-and-limits
+    status: unknown
+    claim: The live upload service returns the modeled image/raw/cloudinary wrappers and accepts the product-media purpose; live image and variant responses use the modeled envelopes.
+    reason: Request schema was supplied but no live response, supported file types/sizes, or retry/idempotency guarantees were provided. Response parsing reuses the existing application's upload conventions. Synthetic fixture responses cannot establish production limits or duplicate behavior after an ambiguous write failure.
+    verification: Multipart purpose/file fields and exact JSON field sets are validated by the local mock; an upload missing publicId is rejected by the client. No authenticated live upload or product write was attempted. Browser interaction with a real upload still requires verification.
+    source: src/components/vendor/BusinessProfileUpdate.jsx; src/modules/ecommerce/management/products/ProductImageUpload.jsx; postman/mocks/ecommerce-products/default.js
+    updated_at: '2026-11-12'
+  - id: edit-prefill-presentation
+    status: supported
+    claim: Edit Product reads the existing GET detail contract and maps returned base fields and options into editable controls; image descriptions derive from filenames, and table summary data preserves missing values as unavailable.
+    reason: The user requested a prefilled edit page, more list columns, a color panel and compact automatic image descriptions. The update mutation method and payload remain unspecified; Save changes is disabled and a clarification is pending.
+    verification: Twenty focused tests passed, including the existing HTTP lifecycle against the simulation, protected edit-page rendering, zero/false edit-value preservation, table summaries, filename descriptions and named/hex colors. The production build includes /product-list/edit/[productId]. No update mutation was implemented or sent. Interactive live backend editing remains unverified.
+    source: src/modules/ecommerce/management/products/EcommerceProductEditor.jsx; src/util/productPresentation.mjs; tests/productPresentation.test.mjs; tests/ecommerceCategories.ui.test.cjs
+    updated_at: '2026-11-12'
+  - id: variant-update-contract
+    status: supported
+    claim: Variant edit requests send only numeric saleAmountPaise and boolean isActive to the variant ID endpoint.
+    reason: User supplied this endpoint and two-field payload on 2026-11-13. Base product fields have no supplied update contract and are read-only.
+    verification: Local HTTP PATCH followed by GET persisted sale 1249000 and active false while preserving SKU and stock. Exact field validation excludes additional input fields. UI checks cover prefilled sale price, availability control, native color input and removable queued-image previews. No authenticated live mutation was performed.
+    source: User request; src/util/ecommerceProducts.mjs; tests/ecommerceProducts.test.mjs; tests/ecommerceCategories.ui.test.cjs
+    updated_at: '2026-11-13'
+  - id: variant-update-method
+    status: unknown
+    claim: The live variant update endpoint supports PATCH and returns the modeled variant envelope.
+    reason: User supplied the path and payload but omitted the HTTP method and response example. PATCH is inferred for the partial update; local simulation success cannot establish backend support.
+    verification: PATCH and common variant response wrappers work against the local stand-in only. Requires an authenticated live edit to verify.
+    source: src/util/ecommerceProducts.mjs; postman/mocks/ecommerce-products/default.js
+    updated_at: '2026-11-13'
+  - id: public-catalog-live-read
+    status: supported
+    claim: Public product listing and category/subcategory browsing endpoints are accessible without admin authentication.
+    reason: Read-only live requests on 2026-11-12 returned HTTP 200, success/data envelopes, five categories and three bridal subcategories. Product listing returned products empty with pagination total zero.
+    verification: Requests targeted api.wedplanners.in/api/v1/shop/products?page=1&limit=2, /shop/categories and /shop/subcategories with the returned Bridal Wear category ID. No live published product was available for detail verification.
+    source: Live read-only API responses; src/util/shopCatalog.mjs
+    updated_at: '2026-11-13'
+  - id: public-catalog-populated-response
+    status: unknown
+    claim: Populated live products and slug details expose the modeled variant, image and price fields; minPrice/maxPrice use paise.
+    reason: Listing was empty. Detail fixtures and paise filtering were inferred from the supplied admin product fields and public query contract.
+    verification: Local Axios tests exercised category/subcategory/price filtering, pagination, slug detail, clearing filters, missing products, malformed list, service error and cancellation. These establish caller behavior against fixtures only. Twenty-seven focused checks passed and the production build completed on 2026-11-13. Interactive browser behavior remains unverified.
+    source: postman/mocks/ecommerce-products/shop.js; tests/shopCatalog.test.mjs; tests/ecommerceCategories.ui.test.cjs
+    updated_at: '2026-11-13'
+  - id: supplied-inventory-read-contract
+    status: supported
+    claim: Inventory browsing uses GET with page and limit, low-stock browsing adds lowStockOnly true, and movement history supplies the selected variantId with independent pagination.
+    reason: User supplied these three read paths and query parameters on 2026-11-13. All calls reuse the authenticated MainApi client; the frontend performs no inventory mutations.
+    verification: Local Axios HTTP tests and simulation request logs showed 20 inventory rows followed by 5 rows, 5 low-stock fixtures, and 20 then 5 movements restricted to an encoded variant ID. Empty history, 401, 403, 404, 503, application failure, malformed data and cancellation were checked. All 23 focused inventory/category/UI tests, targeted lint and the production build passed. UI rendering verifies menu entries, table controls and admin guards; browser interactions and live authenticated reads remain unverified.
+    source: User request; src/util/ecommerceInventory.mjs; tests/ecommerceInventory.test.mjs; tests/ecommerceCategories.ui.test.cjs; local simulation port 4922
+    updated_at: '2026-11-13'
+  - id: live-inventory-response-fields
+    status: unknown
+    claim: The live inventory and movement endpoints expose the modeled list wrappers, variant IDs, stock quantities, timestamps and movement fields.
+    reason: No response examples or authenticated live inventory session were supplied. Inventory fixtures are synthetic; the mock low-stock predicate is a fixture choice and does not establish the backend threshold.
+    verification: Client accepts common inventory/variants/items and movements/inventoryMovements/items envelopes, supports nested variant/product records and displays omitted stock as unavailable. Requires a live authenticated response to confirm the mapping and backend low-stock behavior. No production stock was changed.
+    source: src/util/ecommerceInventory.mjs; postman/mocks/ecommerce-products/inventory.js; src/modules/ecommerce/management/inventory
+    updated_at: '2026-11-13'
+  - id: supplied-variant-inventory-settings
+    status: supported
+    claim: Threshold edits target the selected variant and send only numeric lowStockThreshold; successful edits refresh the server-filtered inventory list.
+    reason: User supplied the inventory-settings path and one-field payload. The row action is available in both inventory tables so variants outside the low-stock result can also be configured.
+    verification: Real Axios requests through the local simulation saved 20 then zero for one encoded variant ID, preserved another variant threshold and stock, and changed low-stock membership on subsequent GETs. A 503 retained the saved threshold and missing variants returned 404. Validation preserves zero and rejects blank, negative, fractional and unsafe values. All 33 focused client/HTTP/UI checks passed with no skips, targeted lint passed and the production build completed. No live threshold was changed.
+    source: User request; src/util/ecommerceInventory.mjs; tests/ecommerceInventory.test.mjs; src/modules/ecommerce/management/inventory/InventoryThresholdDialog.jsx
+    updated_at: '2026-11-13'
+  - id: inventory-settings-method-and-membership
+    status: unknown
+    claim: The live inventory-settings endpoint uses PATCH, returns the modeled success envelope and considers stock less than or equal to the configured threshold low-stock.
+    reason: User supplied the path and body but no method, response or boundary rules. PATCH follows the existing partial variant-update convention. The mock comparison is a fixture assumption; UI membership always comes from the backend.
+    verification: PATCH, payload shape, persistence and re-filtering passed against the local stand-in only. An authenticated live response is still needed to verify method, threshold bounds and comparison behavior. No automatic retries or production writes were performed.
+    source: postman/mocks/ecommerce-products/inventory.js; src/util/ecommerceInventory.mjs
+    updated_at: '2026-11-13'
+  - id: public-available-quantity-field
+    status: supported
+    claim: The live public product list returns availableQuantity on variants, and the storefront must use that field to enable quantity and local cart actions.
+    reason: A read-only GET to the configured public API on 2026-11-13 returned one populated ACTIVE product with a default variant containing availableQuantity 4 and inStock true. Earlier parsing omitted this field and treated stock as unknown, disabling both controls.
+    verification: Added field precedence with zero preservation and nested inventory support. Twenty-one focused tests passed without skips: real Axios HTTP catalog requests against the local simulation, cart quantity/stock limits, persistence and compiled rendering that checks Increase quantity and Add to Cart are enabled for the observed field shape. Targeted lint and production build passed. No cart or inventory API writes were made; browser interaction remains unverified.
+    source: https://api.epicwedplanner.com/api/v1/shop/products?page=1&limit=1; src/util/shopCatalog.mjs; tests/shopCatalog.test.mjs; tests/shopCollections.test.mjs; tests/ecommerceCategories.ui.test.cjs
+    updated_at: '2026-11-13'
+  - id: customer-shopping-contracts
+    status: supported
+    claim: Signed-in cart, wishlist, addresses, checkout and order requests use the supplied customer shop endpoints and exact request fields. Address updates use PATCH /shop/addresses/{addressId}.
+    reason: User supplied the paths, address/cart/checkout payloads and wishlist removal operation; the user confirmed the proposed address PATCH path in response to clarification. Header Home now points to /shop and the profile Dashboard points to /dashboard/shop while existing access guards remain in place.
+    verification: All 33 focused client/HTTP/compiled UI/store checks passed without skips. Real Axios requests through the local simulation covered cart add/get, wishlist add/get/delete, address create/get/edit with encoded IDs, checkout, paginated order history and detail. Lint and production build passed. Built route checks rendered login gates for /shop/checkout, /shop/orders and dynamic order details. No live customer data or orders were written.
+    source: User requests and address-edit confirmation; src/util/shopAccount.mjs; tests/shopAccount.test.mjs; tests/ecommerceCategories.ui.test.cjs
+    updated_at: '2026-11-13'
+  - id: customer-state-and-ambiguous-checkout
+    status: supported
+    claim: Browser state follows server cart/wishlist responses, is isolated by signed-in account, ignores late responses from another account and blocks repeated writes until unconfirmed changes can be refreshed. Checkout does not retry automatically after an uncertain reservation response.
+    reason: Local browser-only shopping state was replaced with the authenticated client and a shared account-scoped store. The server remains the source of quantities, membership, order status and totals.
+    verification: Store checks deduplicated concurrent reads, blocked a second concurrent mutation, retained save-success after a failed refresh, rejected subsequent writes until refreshed, and ignored a late response after switching accounts. HTTP fixtures modeled an insufficient-stock 409 and a 503 after a reservation was committed; a follow-up order read showed exactly one new pending-payment order and an empty cart. Customer fixture ownership checks rejected another account's address edit, checkout and order detail. These results establish local caller behavior only.
+    source: src/modules/ecommerce/components/shopAccountStore.js; src/modules/ecommerce/ShopCheckout.jsx; postman/mocks/ecommerce-products/customer.js
+    updated_at: '2026-11-13'
+  - id: live-customer-contract-details
+    status: unknown
+    claim: Live customer response envelopes, authorization policy, POST cart quantity semantics, checkout reservation lifetime/idempotency and order fields match the synthetic fixture.
+    reason: No live authenticated customer session or response examples were supplied. The mock uses additive cart quantities and pending-payment orders for verification; the UI always reloads server state and does not infer payment success. Cart quantity-edit and removal endpoints have since been supplied; PATCH uses an inferred quantity-only absolute update body.
+    verification: Requests were tested against synthetic authenticated fixtures only. Browser interactions, production customer APIs, payment completion and cross-reload checkout idempotency remain unverified. No production checkout calls were made. The existing CLI owner-discovery limitation remains as recorded earlier.
+    source: postman/mocks/ecommerce-products/customer.js; src/modules/ecommerce/README.md; supplied user contract
+    updated_at: '2026-11-13'
+  - id: customer-cart-and-address-removal
+    status: supported
+    claim: Cart quantity updates PATCH the cart item ID with only quantity, cart removal DELETEs that ID, and delivery address deletion DELETEs the address ID before refreshing server state.
+    reason: User explicitly supplied PATCH and DELETE cart-item paths and DELETE address path. The quantity-only absolute PATCH body is inferred from the requested quantity update.
+    verification: All 36 focused client, HTTP, compiled UI and shared-store checks passed without skips. Real Axios requests exercised quantity changes, stock conflicts, item deletion, encoded address deletion, deletion of the last address, ownership rejection and 503 failures that preserve state in the synthetic fixture. Targeted lint passed. These establish local caller behavior, not live backend compatibility.
+    source: User supplied endpoints; src/util/shopAccount.mjs; src/modules/ecommerce/ShopCheckout.jsx; tests/shopAccount.test.mjs; postman/mocks/ecommerce-products/customer.js
+    updated_at: '2026-11-13'
+  - id: browser-shopping-regression-and-independent-reads
+    status: supported
+    claim: Buy Now reuses or updates the selected cart variant before opening the address page, and initial collection GET failures or an unrelated slow collection read do not permanently block explicit shopping actions.
+    reason: Browser clicks reproduced a 409 when Buy Now POSTed an already-added variant at the stock limit, leaving the customer on the detail page. Store reads also gated all writes on both collections and treated initial read errors as unconfirmed writes. The implementation now separates collection reads and distinguishes initial read failures from uncertain writes.
+    verification: The original production build failed the browser Buy Now test with a stock conflict and no navigation. After the fix, 38 focused HTTP, unit, compiled rendering and store checks passed, plus a headless Chrome interaction test against the real production app and synthetic API. Browser actions covered wishlist save/drawer removal, cart add/increase/decrease/removal, Buy Now quantity update and address navigation, address create/edit/autofill/delete/remaining selection, checkout order navigation, and recovery from initial cart and wishlist 503 reads. Auth headers were asserted for customer calls. Lint and production build passed. Live read-only product details confirmed IDs and stock fields; localhost preflight responses allowed the required methods and authorization header. No production customer writes were performed.
+    source: tests/shopBrowser.test.mjs; tests/shopAccount.test.mjs; tests/ecommerceCategories.ui.test.cjs; src/modules/ecommerce/components/shopAccountStore.js; src/util/shopAccount.mjs
+    updated_at: '2026-11-13'
+  - id: customer-order-actions-dashboard
+    status: supported
+    claim: The user dashboard lists and opens customer orders, and submits cancellation and return reasons using customer order action paths with an exact reason-only payload.
+    reason: The user supplied GET list/detail paths and cancellation/return-request paths and payloads on 2026-11-14. POST methods are inferred for the two action endpoints. Server eligibility flags override the pending cancellation and delivered return status fallbacks.
+    verification: All 29 focused client, HTTP, compiled UI/store and guard checks passed without skips. Real Axios simulation requests exercised pending cancellation, delivered return requests, duplicate/status rejection, ownership rejection, pre-write 503 and a 503 after a committed return. A production Chrome browser flow opened My Orders inside the user dashboard, cancelled a pending order, acknowledged the success popup, submitted a return from the three-dot menu, refreshed status, opened user order details and paged to the second result page. Targeted lint and production build passed. Simulation request logs confirmed both POST action paths and follow-up GETs. No production customer orders were changed.
+    source: User request; src/pages/user/orders; src/modules/ecommerce/components/ShopOrderActions.jsx; tests/shopAccount.test.mjs; tests/shopBrowser.test.mjs; postman/mocks/ecommerce-products/customer.js
+    updated_at: '2026-11-14'
+  - id: live-customer-order-action-policy
+    status: unknown
+    claim: Production cancellation and return-request endpoints accept POST, use the modeled pending/delivered eligibility rules and return the same status names as the synthetic fixture.
+    reason: No live authenticated order examples or explicit action HTTP methods, cancellation policy, return window or eligibility field schema were provided. The fixture models CANCELLED and RETURN_REQUESTED transitions solely to exercise the caller.
+    verification: Only local synthetic writes were performed. The frontend displays server-returned status and errors, honors returned canCancel/canReturn/canRequestReturn flags and does not assume refunds or stock compensation.
+    source: Supplied user contract; postman/mocks/ecommerce-products/customer.js; src/util/shopAccount.mjs
+    updated_at: '2026-11-14'
+  - id: admin-order-lifecycle
+    status: supported
+    claim: Admin Orders lists and opens orders and sends the supplied test-payment, cancellation and fulfilment action payloads through the authenticated admin client.
+    reason: The user supplied admin list/detail/action endpoints and explicit PATCH fulfilment payloads. Test-payment and cancellation use inferred POST methods. Synthetic status transitions exercise the frontend without modifying production orders, payments, inventory or refunds.
+    verification: All 34 focused HTTP, unit, compiled UI/store and guard checks passed without skips. A production Chrome test used the real admin shell and Axios client against the local simulation to mark a pending order paid for testing, process, pack, ship with all tracking fields, deliver, accept a return, record a refund, cancel a separate payment-pending order, open details and paginate. Shipping tracking appeared as a usable link. Unit/HTTP checks covered exact payloads, encoded IDs, unknown statuses, invalid shipping URLs, unauthorized access, 409 transitions, malformed responses and 503 before/after a write. Targeted lint and production build passed. Simulation logs confirmed each mutation and follow-up read. No live admin writes were made.
+    source: User supplied admin order contract; src/util/ecommerceOrders.mjs; src/modules/ecommerce/management/orders; tests/ecommerceOrders.test.mjs; tests/ecommerceOrdersBrowser.test.mjs; postman/mocks/ecommerce-products/orders.js
+    updated_at: '2026-11-14'
+  - id: live-admin-order-methods-and-transitions
+    status: unknown
+    claim: Live admin test-payment and cancellation endpoints accept POST and the backend order status fields and allowed transitions match the synthetic lifecycle.
+    reason: The user explicitly supplied PATCH for fulfilment but did not specify methods for test-payment and cancellation, response envelopes, allowed transitions or separate fulfilment-status fields. The fixture uses one order status field plus paymentStatus, while the frontend also reads fulfilmentStatus or fulfillmentStatus when supplied.
+    verification: Local synthetic behavior only; authenticated live admin order mutations and backend payment/refund/restock effects remain unverified. The UI displays server results and exposes test marking explicitly as a testing action.
+    source: User request; postman/mocks/ecommerce-products/orders.js; src/util/ecommerceOrders.mjs
+    updated_at: '2026-11-14'
+  - id: shop-catalog-update-delete-archive
+    status: supported
+    claim: Shop category/subcategory/product updates use the explicitly supplied PATCH methods and encoded IDs; category deletion uses DELETE and product archival uses the explicitly supplied POST method.
+    reason: The user supplied update/delete/archive paths and update/archive methods on 2026-11-15. Update payloads reuse existing create-form schemas for categories and subcategories, and base product fields only for products. Images and variants remain on separate endpoints.
+    verification: All 42 focused HTTP, unit and compiled UI checks passed without skips; a production Chrome interaction test against the local simulation also passed. Browser actions prefilled and saved a category, rejected deletion of a category with children, deleted an empty category, prefilled/saved a subcategory template, enabled/saved base product fields, archived the product, acknowledged success popups and observed refreshed table values. HTTP checks covered exact payload fields, encoded IDs, typed booleans and zero sort order, preserved product images/variants, nonempty 409 rejection, a 503 before archive and a 503 after a committed category update. Targeted lint and production build passed. Simulation logs recorded the mutation paths and follow-up reads. No production writes were made.
+    source: User update contract; src/util/ecommerceCategories.mjs; src/util/ecommerceSubcategories.mjs; src/util/ecommerceProducts.mjs; tests/ecommerceCatalogUpdates.test.mjs; tests/ecommerceCatalogUpdatesBrowser.test.mjs
+    updated_at: '2026-11-15'
+  - id: live-catalog-update-fields-and-empty-category-policy
+    status: unknown
+    claim: The live backend accepts the reused category/subcategory create-field schemas and the selected base product update fields, and enforces the same category emptiness policy as the synthetic fixture.
+    reason: The user supplied paths and methods without update payloads or authenticated response examples. DELETE is inferred from the category deletion operation. The synthetic fixture rejects categories containing subcategories or referenced products; the frontend delegates emptiness decisions to the API.
+    verification: Synthetic writes only. Live update DTO fields, active-product edit restrictions, option-definition changes and empty-category validation still require authenticated backend verification. Backend errors remain visible and user input is preserved after rejected edits.
+    source: User request; postman/mocks/ecommerce-categories/default.js; postman/mocks/ecommerce-products/default.js
+    updated_at: '2026-11-15'

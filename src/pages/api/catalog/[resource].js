@@ -1,7 +1,7 @@
 const endpoints = {
-  cities: "https://api.wedplanners.in/api/v1/cities",
-  "service-categories": "https://api.wedplanners.in/api/v1/service-categories",
-  "service-subcategories": "https://api.wedplanners.in/api/v1/service-subcategories",
+  cities: "https://api.epicwedplanner.com/api/v1/cities",
+  "service-categories": "https://api.epicwedplanner.com/api/v1/service-categories",
+  "service-subcategories": "https://api.epicwedplanner.com/api/v1/service-subcategories",
 };
 
 export default async function handler(req, res) {

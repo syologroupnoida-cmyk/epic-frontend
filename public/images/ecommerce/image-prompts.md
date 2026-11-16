@@ -17,3 +17,12 @@ Generated with the built-in imagegen tool. The files below are WebP copies of th
 - **wedding-essentials-banner.webp:** Photorealistic wide Indian wedding ecommerce hero background, 4:1 aspect ratio. Left half clean warm ivory blush paper with very subtle gold floral linework at far left edge, no text, no lettering. Right half opulent wedding mandap with blush drapes, ivory and pink flowers, green backdrop with warm fairy lights, gold chairs and chandelier, realistic elegant wedding venue photography. Ivory pink burgundy gold palette, seamless soft transition from clean left negative space to richly detailed ceremony on right. No people, no logo, no watermark.
 
 - **lanterns.webp:** Luxury Indian wedding product photography of a set of three ornate brass gold decorative lanterns with glowing candles, arranged on ivory tabletop, pink roses, wedding flowers and warm gold bokeh lights behind. Centered product composition, close crop, landscape 4:3, realistic metal filigree texture, beautiful warm inviting studio lighting. No people, no text, no logo, no watermark.
+
+
+## Shop dashboard banner ? 2026-11-14
+
+Asset: `shop-dashboard-banner.png`. Generated using the built-in image_gen tool. No text or logos are baked into the artwork.
+
+Final prompt:
+
+Use case: ads-marketing. Asset type: a wide photographic welcome banner for the Epic Indian wedding ecommerce shop management dashboard, matching an elegant super-admin wedding dashboard. Generate a brand-new premium editorial photograph, panoramic landscape around 3:1. Scene: a refined Indian bridal boutique with a deep burgundy silk bridal lehenga with delicate gold embroidery on a mannequin, ivory and blush fabrics, a small display of wedding jewellery, and carefully wrapped ivory gift boxes on a pale stone console. Soft rose flowers and warm palace-like arched details in the background. Warm cream, champagne gold, dusty rose and burgundy palette; natural diffused daylight, realistic fabrics and understated luxury. Composition: keep the left third open and airy with softly lit warm ivory wall and faint floral shadows, concentrate the merchandise in the middle and right, all key details inside a central horizontal band so it can be cropped as a 220px-tall website banner. No people. No words, no lettering, no logos, no watermark, no UI, no labels. The result should be calm, welcoming and photorealistic, not a collage.

@@ -1,0 +1,10 @@
+version: 1
+name: Admin ecommerce products
+slug: ecommerce-products
+protocol: http
+port: 4520
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

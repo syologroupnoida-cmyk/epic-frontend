@@ -6,6 +6,7 @@ const REFRESH_TOKEN_KEY = "epic_refresh_token";
 const AUTH_ROLE_KEY = "epic_auth_role";
 
 const protectedRoutes = [
+  ...['/edit-category', '/edit-subcategory'].map(prefix => ({ prefix, loginPath: '/superadmin/login', roles: ['SUPER_ADMIN', 'ADMIN'] })),
   ...Object.keys(shopPanelSlugs).map((panel) => ({
     prefix: shopPanelPath(panel),
     loginPath: '/superadmin/login',
@@ -17,7 +18,8 @@ const protectedRoutes = [
     roles: ["VENDOR"],
   },
   {
-    prefix: "/user/dashboard",
+    prefix: "/user",
+    publicPaths: ["/user/login", "/user/sign-up"],
     loginPath: "/user/login",
     roles: ["CLIENT"],
   },
@@ -74,14 +76,21 @@ export function proxy(request) {
 
 export const config = {
   matcher: [
+    '/edit-category/:path*',
+    '/edit-subcategory/:path*',
     '/add-category/:path*',
     '/categories/:path*',
     '/add-subcategory/:path*',
     '/subcategories/:path*',
     '/products/:path*',
+    '/product-list/:path*',
+    '/add-product/:path*',
+    '/inventory/:path*',
+    '/low-stock-variants/:path*',
     '/orders/:path*',
     "/dashboard/shop/:path*",
     "/user/dashboard/:path*",
+    "/user/orders/:path*",
     "/partner/:path*",
     "/superadmin/:path*",
     "/kyc/:path*",

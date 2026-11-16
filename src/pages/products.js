@@ -1,5 +1,7 @@
-import SuperAdminDashboard from '@/components/dashboard/SuperAdminDashboard';
+export default function LegacyShopProductsPage() {
+  return null;
+}
 
-export default function ShopPanelPage() {
-  return <SuperAdminDashboard initialPanelSlug="shop-products" />;
+export function getServerSideProps() {
+  return { redirect: { destination: '/product-list', permanent: false } };
 }

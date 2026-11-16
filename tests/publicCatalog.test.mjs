@@ -16,7 +16,7 @@ test("public dropdowns load all 22 categories and both cities directly from the 
   globalThis.fetch = async (input, options) => {
     const url = new URL(input, "http://localhost");
     assert.equal(options?.headers, undefined);
-    assert.equal(url.origin, "https://api.wedplanners.in");
+    assert.equal(url.origin, "https://api.epicwedplanner.com");
     const page = Number(url.searchParams.get("page"));
     const city = url.pathname.endsWith("/cities");
     const records = city ? [{ id: "bijnor", name: "Bijnor", stateName: "UP" }, { id: "agra", name: "Agra", stateName: "Uttar Pradesh" }] : Array.from({ length: page === 1 ? 20 : 2 }, (_, index) => ({ id: `${page}-${index}`, name: `Category ${page}-${index}`, slug: `category-${page}-${index}` }));

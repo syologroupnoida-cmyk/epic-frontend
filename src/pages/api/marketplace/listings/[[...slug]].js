@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   if (!Array.isArray(segments) || segments.length > 1 || segments.some((segment) => !segment.trim())) {
     return res.status(400).json({ success: false, message: 'Invalid listing slug.' });
   }
-  const url = new URL('https://api.wedplanners.in/api/v1/marketplace/listings' + (segments.length ? `/${encodeURIComponent(segments[0])}` : ''));
+  const url = new URL('https://api.epicwedplanner.com/api/v1/marketplace/listings' + (segments.length ? `/${encodeURIComponent(segments[0])}` : ''));
   if (!segments.length) {
     const page = Number(req.query.page ?? 1);
     const limit = Number(req.query.limit ?? 20);
