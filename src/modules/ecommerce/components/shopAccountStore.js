@@ -3,8 +3,9 @@ import { getAccessToken, getAuthUser } from '@/util/authSession';
 import { fetchShopCart, fetchShopWishlist } from '@/util/shopAccount.mjs';
 import { shopError } from '@/util/shopCatalog.mjs';
 
-export const emptyAccount = { session: '', cart: [], wishlist: [], cartError: '', wishlistError: '', cartLoaded: false, wishlistLoaded: false, cartLoading: false, wishlistLoading: false, cartNeedsRefresh: false, wishlistNeedsRefresh: false, loading: false, loaded: false, busy: false };
+export const emptyAccount = { session: '', cart: [], wishlist: [], cartError: '', wishlistError: '', cartLoaded: false, wishlistLoaded: false, cartLoading: false, wishlistLoading: false, cartNeedsRefresh: false, wishlistNeedsRefresh: false, loading: false, loaded: false, busy: false, notice: null };
 let snapshot = emptyAccount;
+let noticeId = 0;
 const reads = new Map();
 const listeners = new Set();
 export const subscribeShopAccount = (callback) => { listeners.add(callback); return () => listeners.delete(callback); };
@@ -21,6 +22,13 @@ function emit(changes) {
   snapshot.loading = snapshot.cartLoading || snapshot.wishlistLoading;
   snapshot.loaded = snapshot.cartLoaded && snapshot.wishlistLoaded;
   listeners.forEach((callback) => callback());
+}
+export function showShopCollectionNotice(session, kind, refreshError) {
+  if (snapshot.session !== session || session !== currentShopSession()) return;
+  emit({ notice: { id: ++noticeId, kind, refreshError: Boolean(refreshError) } });
+}
+export function dismissShopCollectionNotice(id) {
+  if (snapshot.notice?.id === id) emit({ notice: null });
 }
 export function resetShopAccount() {
   reads.forEach((request) => request.controller.abort()); reads.clear();

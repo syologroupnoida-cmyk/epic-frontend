@@ -6,7 +6,7 @@ import { shopError, shopMoney } from '@/util/shopCatalog.mjs';
 import ShopIcon from './ShopIcon';
 import styles from './ShopCollectionsDrawer.module.css';
 
-export default function ShopCollectionsDrawer({ type, onClose, collections }) {
+export default function ShopCollectionsDrawer({ type, open = Boolean(type), onClose, collections }) {
   const [error, setError] = useState('');
   const wishlist = type === 'wishlist';
   const [pending, setPending] = useState('');
@@ -22,7 +22,7 @@ export default function ShopCollectionsDrawer({ type, onClose, collections }) {
   const items = wishlist ? collections.wishlist : collections.cart;
   const total = collections.cart.reduce((sum, row) => sum + (row.sale || 0) * row.quantity, 0);
   const knownPrices = collections.cart.every((row) => row.sale != null);
-  return <Drawer anchor="right" open={Boolean(type)} onClose={onClose} disableScrollLock slotProps={{ paper: { className: styles.drawer, role: 'dialog', 'aria-modal': true, 'aria-label': wishlist ? 'Wishlist' : 'Shopping cart' } }}>
+  return <Drawer anchor="right" open={open} onClose={onClose} disableScrollLock transitionDuration={{ enter: 380, exit: 280 }} slotProps={{ transition: { easing: { enter: 'cubic-bezier(0.22, 1, 0.36, 1)', exit: 'cubic-bezier(0.4, 0, 0.2, 1)' } }, paper: { className: styles.drawer, role: 'dialog', 'aria-modal': true, 'aria-label': wishlist ? 'Wishlist' : 'Shopping cart' } }}>
     <div className={styles.heading}><h2>{wishlist ? 'My Wishlist' : 'Shopping Cart'} <span>({items.length})</span></h2><IconButton aria-label="Close drawer" onClick={onClose}><ShopIcon name="close" size={20} /></IconButton></div>
     <div className={styles.content}>{!collections.loggedIn ? <div className={styles.empty}><ShopIcon name={wishlist ? 'heart' : 'cart'} size={40} /><h3>Sign in to view your {wishlist ? 'wishlist' : 'cart'}</h3><Link href="/user/login?next=%2Fshop" onClick={onClose}>Login</Link></div> : loading ? <p role="status" className={styles.empty}>Loading {wishlist ? 'wishlist' : 'cart'}...</p> : loadError ? <Alert severity="error" sx={{ mt: 2 }}>{loadError}<Button onClick={collections.refresh}>Try again</Button></Alert> : !items.length ? <div className={styles.empty}><ShopIcon name={wishlist ? 'heart' : 'cart'} size={40} /><h3>{wishlist ? 'Your wishlist is empty' : 'Your cart is empty'}</h3><p>{wishlist ? 'Save products using the heart icon.' : 'Add your favourite products to get started.'}</p><Link href="/shop" onClick={onClose}>Continue shopping</Link></div> : <ul className={styles.items}>{items.map((item) => <li key={wishlist ? item.id : item.key}>
       <Link href={item.slug ? `/shop/${encodeURIComponent(item.slug)}` : '/shop'} onClick={onClose} className={styles.image}>{item.image?.url ? <Image src={item.image.url} alt={item.image.alt || item.title || 'Product'} width={76} height={92} unoptimized /> : <ShopIcon name="box" size={28} />}</Link>

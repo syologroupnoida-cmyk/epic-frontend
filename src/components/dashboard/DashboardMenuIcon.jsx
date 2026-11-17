@@ -4,6 +4,7 @@ const paths = {
   list: 'M9 5h12 M9 12h12 M9 19h12 M3 5h1 M3 12h1 M3 19h1',
   add: 'M12 4v16 M4 12h16',
   house: 'm3 10 9-7 9 7 M5 9v12h14V9 M9 21v-7h6v7',
+  location: 'M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0z M15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
   city: 'M3 21V8h6 M9 21V3h7v18 M16 11h5v10 M2 21h20 M12 7h1 M12 11h1 M12 15h1 M5 12h1 M5 16h1 M18 15h1 M18 18h1',
   people: 'M9 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M3 21v-3a6 6 0 0 1 12 0v3 M16 4a3 3 0 0 1 0 6 M18 13a5 5 0 0 1 3 5v3',
   lead: 'M21 12a9 9 0 1 1-9-9 M17 12a5 5 0 1 1-5-5 M12 12l8-8 M16 4h4v4',
@@ -33,6 +34,7 @@ const paths = {
 
 const menuIcons = {
   Overview: 'dashboard', Dashboard: 'dashboard', 'Shop Overview': 'dashboard',
+  'My orders': 'box', 'Delivery addresses': 'location',
   Services: 'services', 'Service Listing': 'list', Property: 'house', Cities: 'city', Vendor: 'people',
   Lead: 'lead', Meetings: 'calendar', 'My Meeting': 'calendar', Contact: 'mail', Subscriptions: 'card',
   Wallet: 'wallet', 'Business Profile': 'store', Profile: 'profile', Settings: 'settings',

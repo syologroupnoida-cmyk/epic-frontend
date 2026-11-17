@@ -273,6 +273,42 @@ test('customer address, checkout and order pages render safe loading and guest s
   const { ShopOrderContent } = load('src/modules/ecommerce/ShopOrderDetails.jsx');
   const details = renderToStaticMarkup(React.createElement(ShopOrderContent, { order: { id: 'order-one', status: 'PENDING_PAYMENT', paymentStatus: 'UNPAID', totalAmountPaise: 1299000, items: [{ id: 'item', productTitle: 'Royal Lehenga', quantity: 1, unitSaleAmountPaise: 1299000 }], address: { fullName: 'Ravi Sharma', line1: '123 Main Street', city: 'Noida', state: 'Uttar Pradesh', pincode: '201301', phone: '9876543210' } } }));
   for (const text of ['PENDING PAYMENT', 'UNPAID', 'Royal Lehenga', 'Ravi Sharma', '123 Main Street']) assert.ok(details.includes(text), text);
+  const awaitingPayment = { id: 'pending-order', status: 'PENDING_PAYMENT', paymentStatus: 'UNPAID', totalAmountPaise: 1299000 };
+  const paymentDetails = renderToStaticMarkup(React.createElement(ShopOrderContent, { order: awaitingPayment, onRefresh: async () => awaitingPayment }));
+  for (const text of ['Order payment', 'Payment method', 'Razorpay', 'Cash on Delivery', 'Proceed to payment']) assert.ok(paymentDetails.includes(text), text);
+  for (const status of ['CREATED', 'CONFIRMED', 'RESERVED']) {
+    const active = renderToStaticMarkup(React.createElement(ShopOrderContent, { order: { ...awaitingPayment, status }, onRefresh: async () => awaitingPayment }));
+    assert.ok(active.includes('Proceed to payment'), `${status} unpaid order offers payment`);
+    assert.ok(!active.includes('Payment is unavailable for the current order status'));
+  }
+  for (const patch of [{ status: 'CANCELLED' }, { paymentStatus: 'PAID' }]) {
+    const closed = renderToStaticMarkup(React.createElement(ShopOrderContent, { order: { ...awaitingPayment, ...patch }, onRefresh: async () => awaitingPayment }));
+    assert.ok(!closed.includes('Proceed to payment'));
+    assert.ok(closed.includes('Order payment') && closed.includes('Payment method') && closed.includes('Razorpay'), 'Keep payment options visible with payment disabled');
+  }
+  const expired = renderToStaticMarkup(React.createElement(ShopOrderContent, { order: { ...awaitingPayment, reservationExpiresAt: '2000-01-01T00:00:00Z' }, onRefresh: async () => awaitingPayment }));
+  assert.ok(expired.includes('Payment method') && expired.includes('reservation for this order has expired'));
+  for (const item of [
+    { product: { images: [{ url: 'https://example.test/product.jpg' }] } },
+    { variant: { images: [{ url: 'https://example.test/product.jpg' }] } },
+    { productSnapshot: { imageUrl: 'https://example.test/product.jpg' } },
+    { imageUrl: 'https://example.test/product.jpg' },
+  ]) {
+    const images = renderToStaticMarkup(React.createElement(ShopOrderContent, { order: { ...awaitingPayment, items: [{ ...item, productTitle: 'Order product', quantity: 1 }] } }));
+    assert.ok(images.includes('src="https://example.test/product.jpg"') && images.includes('alt="Order product"'));
+    assert.ok(images.includes('width="58"') && images.includes('height="72"'));
+  }
+  const placeholder = renderToStaticMarkup(React.createElement(ShopOrderContent, { order: { ...awaitingPayment, items: [{ productTitle: 'Missing photo' }] } }));
+  assert.ok(placeholder.includes('No image available for Missing photo'));
+  const { PaymentSuccessCard } = load('src/modules/ecommerce/ShopPaymentSuccess.jsx');
+  const success = renderToStaticMarkup(React.createElement(PaymentSuccessCard, { order: { ...awaitingPayment, paymentStatus: 'PAID' }, orderId: 'order & one' }));
+  assert.ok(success.includes('Congratulations!') && success.includes('My Order'));
+  assert.ok(success.includes('href="/shop/orders/order%20%26%20one"'));
+  const unconfirmed = renderToStaticMarkup(React.createElement(PaymentSuccessCard, { order: awaitingPayment, orderId: awaitingPayment.id }));
+  assert.ok(!unconfirmed.includes('Congratulations!') && unconfirmed.includes('not confirmed a successful payment'));
+  const SuccessPage = load('src/pages/shop/orders/[orderId]/success.js');
+  assert.deepEqual(SuccessPage.getServerSideProps({ params: { orderId: 'order-one' } }), { props: { orderId: 'order-one' } });
+  assert.deepEqual(SuccessPage.getServerSideProps({ params: { orderId: '' } }), { notFound: true });
   const Header = load('src/modules/ecommerce/components/ShopPublicHeader.jsx').default;
   const header = renderToStaticMarkup(React.createElement(Header));
   assert.ok(header.includes('href="/shop">Home'));
@@ -290,6 +326,20 @@ test('API collection store isolates accounts, deduplicates reads and blocks dupl
   assert.equal(reads, 2);
   releaseCart({ data: { data: { cart: { items: [] } } } }); releaseWishlist({ data: { data: { products: [] } } }); await Promise.all([first, second]);
   assert.equal(store.shopAccountSnapshot().loaded, true);
+  store.showShopCollectionNotice('customer-a', 'cart');
+  const firstNotice = store.shopAccountSnapshot().notice;
+  assert.equal(firstNotice.kind, 'cart');
+  store.showShopCollectionNotice('customer-a', 'wishlist', 'Refresh failed');
+  const latestNotice = store.shopAccountSnapshot().notice;
+  assert.equal(latestNotice.kind, 'wishlist');
+  assert.equal(latestNotice.refreshError, true);
+  store.dismissShopCollectionNotice(firstNotice.id);
+  assert.equal(store.shopAccountSnapshot().notice.id, latestNotice.id, 'An old timeout must not dismiss a newer notification');
+  store.showShopCollectionNotice('another-customer', 'cart');
+  assert.equal(store.shopAccountSnapshot().notice.id, latestNotice.id, 'Ignore another account notification');
+  store.dismissShopCollectionNotice(latestNotice.id);
+  assert.equal(store.shopAccountSnapshot().notice, null);
+  store.showShopCollectionNotice('customer-a', 'cart');
   mainApiOverride.get = async (path) => ({ data: { data: path === '/shop/cart' ? { items: [] } : { products: [] } } });
   let releaseWrite; let writes = 0;
   const mutation = store.mutateShopAccount('customer-a', () => { writes++; return new Promise((resolve) => { releaseWrite = resolve; }); }, 'cart');
@@ -307,6 +357,9 @@ test('API collection store isolates accounts, deduplicates reads and blocks dupl
   data.set('epic_access_token', 'token-b'); data.set('epic_auth_user', JSON.stringify({ id: 'customer-b' }));
   mainApiOverride.get = async (path) => ({ data: { data: path === '/shop/cart' ? { items: [] } : { products: [{ id: 'product-b', title: 'B', slug: 'b' }] } } });
   await store.refreshShopAccount('customer-b'); assert.equal(store.shopAccountSnapshot().session, 'customer-b'); assert.equal(store.shopAccountSnapshot().wishlist[0].id, 'product-b');
+  assert.equal(store.shopAccountSnapshot().notice, null, 'Account changes clear notifications');
+  store.showShopCollectionNotice('customer-a', 'cart');
+  assert.equal(store.shopAccountSnapshot().notice, null, 'Late additions from the old account cannot show notifications');
   lateCart({ data: { data: { items: [] } } }); lateWishlist({ data: { data: { products: [{ id: 'old-private-product', slug: 'old', title: 'Old' }] } } });
   await staleRead; assert.equal(store.shopAccountSnapshot().wishlist[0].id, 'product-b');
 
