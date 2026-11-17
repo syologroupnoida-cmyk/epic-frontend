@@ -5,6 +5,18 @@ export function productColorHex(value) {
   return Object.entries(productColorPalette).find(([name]) => name.toLowerCase() === String(value).toLowerCase())?.[1] || '#94a3b8';
 }
 export const imageDescriptionFromFilename = (filename = '') => String(filename).replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim() || 'Product image';
+export function productEditorImages(product) {
+  const images = [product?.images, product?.productImages, product?.ecommerceProductImages].find(value => Array.isArray(value) && value.length) || [];
+  return images.flatMap((value, index) => {
+    const row = typeof value === 'string' ? { url: value } : value;
+    if (!row || typeof row !== 'object') return [];
+    const asset = row.image && typeof row.image === 'object' ? row.image : {};
+    const url = [row.url, row.imageUrl, row.secureUrl, row.secure_url, asset.url, asset.secure_url].find(value => typeof value === 'string' && (/^https?:\/\//i.test(value) || /^\/(?!\/)/.test(value)));
+    if (!url) return [];
+    const filename = url.split('/').at(-1).split('?')[0] || 'Product image';
+    return [{ ...asset, ...row, url, publicId: row.publicId || row.public_id || asset.publicId || asset.public_id || '', key: `saved-${row.id || row.ecommerceProductImageId || index}`, filename, altText: row.altText || row.alt || asset.altText || imageDescriptionFromFilename(filename), sortOrder: row.sortOrder ?? index + 1, attached: true, status: 'attached' }];
+  });
+}
 export function hslToHex(hue, saturation, lightness) {
   const s = saturation / 100; const l = lightness / 100;
   const a = s * Math.min(l, 1 - l);

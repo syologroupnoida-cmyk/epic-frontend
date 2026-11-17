@@ -25,10 +25,17 @@ test('subcategory payload keeps the exact supplied nested schema and excludes UI
     [{ key: 'fabric', label: 'Fabric', type: 'SELECT', required: true, options: ['Silk', ' silk '] }],
     [{ key: 'fabric', label: '', type: 'BOOLEAN', required: true }],
     [{ key: 'fabric', label: 'Fabric', type: 'BOOLEAN', required: 'true' }],
-    [{ key: 'fabric', label: 'Fabric', type: 'TEXT', required: true }],
+    [{ key: 'fabric', label: 'Fabric', type: 'UNKNOWN', required: true }],
     [values.specificationTemplate.fields[0], { ...values.specificationTemplate.fields[1], key: 'fabric' }],
   ];
   for (const fields of invalid) assert.ok(validateEcommerceSubcategory({ ...values, specificationTemplate: { fields } }).specificationTemplate);
+});
+
+test('text specifications save without dropdown options for create and edit', () => {
+  const text = { key: 'careInstructions', label: 'Care instructions', type: 'TEXT', required: true, options: ['old dropdown option'] };
+  const result = ecommerceSubcategoryPayload({ ...values, specificationTemplate: { fields: [text] } });
+  assert.deepEqual(result.specificationTemplate.fields, [{ key: text.key, label: text.label, type: 'TEXT', required: true }]);
+  assert.deepEqual(validateEcommerceSubcategory({ ...values, specificationTemplate: { fields: [{ ...text, required: false }] } }), {});
 });
 
 test('category options follow all pages, remove duplicates and reject pagination that makes no progress', async () => {

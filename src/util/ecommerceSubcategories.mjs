@@ -17,7 +17,7 @@ export function validateEcommerceSubcategory(values) {
       if (keys.has(field.key.trim().toLowerCase())) { errors.specificationTemplate = `${prefix}use a unique field key.`; break; }
       keys.add(field.key.trim().toLowerCase());
       if (typeof field.label !== 'string' || !field.label.trim()) { errors.specificationTemplate = `${prefix}enter a display label.`; break; }
-      if (!['SELECT', 'BOOLEAN'].includes(field.type)) { errors.specificationTemplate = `${prefix}choose Select or Boolean.`; break; }
+      if (!['SELECT', 'BOOLEAN', 'TEXT'].includes(field.type)) { errors.specificationTemplate = `${prefix}choose Select, Boolean or Text.`; break; }
       if (typeof field.required !== 'boolean') { errors.specificationTemplate = `${prefix}choose whether this field is required.`; break; }
       if (field.type === 'SELECT' && (!Array.isArray(field.options) || !field.options.length || field.options.some((option) => typeof option !== 'string' || !option.trim()) || new Set(field.options.map((option) => option.trim().toLowerCase())).size !== field.options.length)) { errors.specificationTemplate = `${prefix}add at least one option and remove empty or duplicate options.`; break; }
     }

@@ -14,6 +14,7 @@ function harness({ verificationFails = false, pending = false } = {}) {
   const cache = new Map();
   function load(relative) {
     let filename = path.resolve(__dirname, '..', relative);
+    if (filename.endsWith('.module.css')) return { __esModule: true, default: new Proxy({}, { get: (_, key) => String(key) }) };
     if (!path.extname(filename)) filename = ['.js', '.jsx', '.mjs'].map(ext => filename + ext).find(fs.existsSync);
     if (cache.has(filename)) return cache.get(filename).exports;
     const mod = new Module(filename); cache.set(filename, mod);

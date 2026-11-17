@@ -1,7 +1,29 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import axios from 'axios';
-import { adjustEcommerceStock, attachEcommerceProductImage, createEcommerceProduct, createEcommerceVariant, ecommerceLiveVariantPayload, ecommerceProductId, ecommerceProductImagePayload, ecommerceProductPayload, ecommerceVariantId, fetchEcommerceProduct, fetchEcommerceProducts, publishEcommerceProduct, uploadEcommerceProductImage, ecommerceVariantUpdatePayload, updateEcommerceVariant } from '../src/util/ecommerceProducts.mjs';
+import { adjustEcommerceStock, attachEcommerceProductImage, createEcommerceProduct, createEcommerceVariant, ecommerceLiveVariantPayload, ecommerceProductId, ecommerceProductImagePayload, ecommerceProductPayload, ecommerceVariantId, fetchEcommerceProduct, fetchEcommerceProducts, publishEcommerceProduct, removeEcommerceProductImage, uploadEcommerceProductImage, ecommerceVariantUpdatePayload, updateEcommerceVariant } from '../src/util/ecommerceProducts.mjs';
+
+test('saved image removal scopes and encodes product and image IDs without sending a body', async () => {
+  const calls = [];
+  const api = { delete: async (...args) => { calls.push(args); return { status: 204 }; } };
+  await removeEcommerceProductImage(api, 'product & one', { ecommerceProductImageId: 'image/one' });
+  assert.deepEqual(calls, [['/admin/ecommerce/products/product%20%26%20one/images/image%2Fone', { signal: undefined }]]);
+  const failure = Object.assign(new Error('Removal rejected.'), { response: { status: 409 } });
+  await assert.rejects(removeEcommerceProductImage({ delete: async () => { throw failure; } }, 'one', { id: 'image' }), error => error === failure);
+});
+
+test('images with only upload references resolve their saved image ID before deletion', async () => {
+  const removed = [];
+  const api = {
+    get: async () => ({ data: { data: { product: { id: 'product', title: 'Product', images: [{ imageId: 'saved-image', url: 'https://example.test/image.jpg', publicId: 'products/image' }] } } } }),
+    delete: async path => { removed.push(path); return { status: 200, data: { success: true } }; },
+  };
+  await removeEcommerceProductImage(api, 'product', { publicId: 'products/image' });
+  assert.deepEqual(removed, ['/admin/ecommerce/products/product/images/saved-image']);
+  await assert.rejects(removeEcommerceProductImage(api, 'product', { url: 'https://example.test/other.jpg' }), /no image ID/);
+  assert.equal(removed.length, 1);
+  await assert.rejects(removeEcommerceProductImage(api, 'product', null), /saved product image/);
+});
 
 const values = { categoryId: 'category & one', subcategoryId: 'subcategory & one', title: 'Royal Bridal Lehenga', description: 'A detailed product description for the royal bridal lehenga.', brandName: 'Epic Collection', gstPercentage: 5, specifications: { fabric: 'Silk', blouseIncluded: true }, optionDefinitions: [{ name: 'Color', values: ['Red', 'Maroon'] }, { name: 'Size', values: ['M', 'L'] }], images: [], variants: [{ sku: 'LEH-RED-M', optionValues: { Color: 'Red', Size: 'M' }, mrpAmountPaise: 1599000, saleAmountPaise: 1299000, initialStock: 5, isDefault: true }] };
 test('product payload preserves the supplied schema, booleans, paise and numeric stock', () => {

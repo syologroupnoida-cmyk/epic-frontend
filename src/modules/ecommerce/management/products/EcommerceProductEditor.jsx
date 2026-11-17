@@ -4,8 +4,8 @@ import ApiStatusModal from '@/components/common/ApiStatusModal';
 import MainApi from '@/util/MainApi';
 import { fetchAllEcommerceCategories, ecommerceCategoryId } from '@/util/ecommerceCategories.mjs';
 import { fetchEcommerceSubcategories, ecommerceSubcategoryId } from '@/util/ecommerceSubcategories.mjs';
-import { ecommerceProductError, fetchEcommerceProduct, updateEcommerceProduct, ecommerceProductUpdatePayload } from '@/util/ecommerceProducts.mjs';
-import { isColorOption, productEditorValues } from '@/util/productPresentation.mjs';
+import { ecommerceProductError, fetchEcommerceProduct, removeEcommerceProductImage, updateEcommerceProduct, ecommerceProductUpdatePayload } from '@/util/ecommerceProducts.mjs';
+import { isColorOption, productEditorImages, productEditorValues } from '@/util/productPresentation.mjs';
 import ShopTableState from '../ShopTableState';
 import ProductColorPicker from './ProductColorPicker';
 import ProductImageUpload from './ProductImageUpload';
@@ -41,7 +41,7 @@ export default function EcommerceProductEditor({ id, onBack }) {
         const row = details.value;
         setProduct(row);
         setForm(productEditorValues(row));
-        setImages((row.images || []).filter((image) => image && typeof image === 'object' && image.url).map((image, index) => ({ ...image, key: `saved-${index}`, filename: image.url.split('/').at(-1).split('?')[0], sortOrder: image.sortOrder ?? index + 1, attached: true, status: 'attached' })));
+        setImages(productEditorImages(row));
         setSubLoading(true);
       }
       if (options.status === 'fulfilled') { setCategories(options.value); setCategoryError(''); } else setCategoryError(ecommerceProductError(options.reason));
@@ -92,7 +92,7 @@ export default function EcommerceProductEditor({ id, onBack }) {
       {form.optionDefinitions.length > 0 && <div className="space-y-3"><h2 className="font-semibold">Product options</h2>{form.optionDefinitions.map((option, index) => <div className="grid gap-4 md:grid-cols-3" key={index}><TextField size="small" label="Option name" value={option.name} disabled={busy} onChange={(event) => update('optionDefinitions', form.optionDefinitions.map((item, i) => i === index ? { ...item, name: event.target.value } : item))} />{isColorOption(option.name) ? <ProductColorPicker multiple label="Colors" values={option.values} disabled={busy} onChange={(values) => update('optionDefinitions', form.optionDefinitions.map((item, i) => i === index ? { ...item, values } : item))} /> : <TextField size="small" label="Values (comma separated)" value={option.values.join(',')} disabled={busy} onChange={(event) => update('optionDefinitions', form.optionDefinitions.map((item, i) => i === index ? { ...item, values: event.target.value.split(',') } : item))} />}</div>)}</div>}
 </fieldset><div className="mt-5 flex justify-end"><Button type="submit" variant="contained" disabled={busy || subLoading || Boolean(subError) || Boolean(categoryError)} startIcon={saving ? <CircularProgress size={15} color="inherit" /> : undefined}>{saving ? 'Saving...' : 'Save product'}</Button></div></form>
       <section className="space-y-3 border-t border-rose-100 pt-5"><h2 className="font-semibold">Edit variants</h2>{(product.variants || []).map((variant) => <ProductVariantEditor key={variant.ecommerceVariantId || variant.id || variant._id} variant={variant} disabled={busy} onBusyChange={setVariantBusy} onSaved={(updated) => setProduct((current) => ({ ...current, variants: current.variants.map((row) => row === variant ? { ...row, ...updated } : row) }))} />)}</section>
-      <ProductImageUpload productId={id} images={images} onImagesChange={setImages} disabled={variantBusy || saving || needsRefresh} onBusyChange={setMediaBusy} />
+      <ProductImageUpload productId={id} images={images} onImagesChange={setImages} disabled={variantBusy || saving || needsRefresh} onBusyChange={setMediaBusy} onRemoveSavedImage={(image, signal) => removeEcommerceProductImage(MainApi, id, image, signal)} />
       <LiveProductVariantForm product={product} disabled={mediaBusy || saving || needsRefresh} onBusyChange={setVariantBusy} onAdded={(variant) => setProduct((current) => ({ ...current, variants: [...(current.variants || []), variant] }))} />
     </>}
     <ApiStatusModal status={feedback?.status} title={feedback?.title} text={feedback?.text} onOk={() => { setFeedback(null); if (needsRefresh) { setNeedsRefresh(false); setLoading(true); setError(''); setRetry(value => value + 1); } }} />

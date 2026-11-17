@@ -86,7 +86,7 @@ http.createServer(async (req, res) => {
         if (!body || Object.keys(body).sort().join(',') !== 'categoryId,name,specificationTemplate' || typeof body.categoryId !== 'string' || !body.name?.trim() || Object.keys(body.specificationTemplate || {}).join(',') !== 'fields' || !Array.isArray(body.specificationTemplate.fields)) return send(400, { message: 'Invalid subcategory payload.' });
         if (!rows.some((row) => row.ecommerceCategoryId === body.categoryId)) return send(400, { message: 'Parent category not found.' });
         for (const field of body.specificationTemplate.fields) {
-          if (!field.key || !field.label || !['SELECT', 'BOOLEAN'].includes(field.type) || typeof field.required !== 'boolean' || (field.type === 'SELECT' && (!Array.isArray(field.options) || !field.options.length)) || Object.keys(field).sort().join(',') !== (field.type === 'SELECT' ? 'key,label,options,required,type' : 'key,label,required,type')) return send(400, { message: 'Invalid specification field.' });
+          if (!field.key || !field.label || !['SELECT', 'BOOLEAN', 'TEXT'].includes(field.type) || typeof field.required !== 'boolean' || (field.type === 'SELECT' && (!Array.isArray(field.options) || !field.options.length)) || Object.keys(field).sort().join(',') !== (field.type === 'SELECT' ? 'key,label,options,required,type' : 'key,label,required,type')) return send(400, { message: 'Invalid specification field.' });
         }
         if (body.name === 'Unavailable') return send(503, { message: 'Subcategory service unavailable.' });
         if (body.name === 'Rejected') return send(200, { success: false, message: 'Subcategory request rejected.' });
