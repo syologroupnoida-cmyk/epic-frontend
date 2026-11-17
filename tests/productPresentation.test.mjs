@@ -1,6 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { hslToHex, imageDescriptionFromFilename, isColorOption, productColorHex, productEditorValues, productTableSummary } from '../src/util/productPresentation.mjs';
+import { hslToHex, imageDescriptionFromFilename, isColorOption, productColorHex, productEditorImages, productEditorValues, productTableSummary } from '../src/util/productPresentation.mjs';
+
+test('editor restores saved images from URL strings and asset objects without losing image references', () => {
+  const images = productEditorImages({ images: [
+    'https://example.test/front-view.jpg',
+    { id: 'image-one', imageUrl: 'https://example.test/back.jpg', publicId: 'products/back', sortOrder: 4, altText: 'Back' },
+    { ecommerceProductImageId: 'image-two', image: { secure_url: 'https://example.test/side.jpg', public_id: 'products/side' } },
+    { secureUrl: 'https://example.test/detail.jpg' },
+    { url: 'javascript:alert(1)' }, null,
+  ] });
+  assert.equal(images.length, 4);
+  assert.equal(images[0].url, 'https://example.test/front-view.jpg');
+  assert.equal(images[0].altText, 'front view');
+  assert.equal(images[1].id, 'image-one');
+  assert.equal(images[1].sortOrder, 4);
+  assert.equal(images[1].altText, 'Back');
+  assert.equal(images[2].ecommerceProductImageId, 'image-two');
+  assert.equal(images[2].publicId, 'products/side');
+  assert.ok(images.every(image => image.attached && image.status === 'attached'));
+  assert.equal(productEditorImages({ images: [], productImages: [{ imageUrl: '/saved.jpg' }] })[0].url, '/saved.jpg');
+});
 
 test('product list shows prices in rupees, accurate stock and creation date without inventing missing values', () => {
   const row = { createdAt: '2026-11-12T10:00:00Z', variants: [{ saleAmountPaise: 15000, stockQuantity: 0, isDefault: true }, { saleAmountPaise: 20000, stockQuantity: 3 }] };

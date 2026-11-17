@@ -1,3 +1,5 @@
+import { productEditorImages } from './productPresentation.mjs';
+
 const endpoint = '/admin/ecommerce/products';
 const record = (value) => value && typeof value === 'object' && !Array.isArray(value);
 const integer = (value) => ['string', 'number'].includes(typeof value) && String(value).trim() !== '' && Number.isSafeInteger(Number(value)) && Number(value) >= 0;
@@ -105,6 +107,22 @@ export function ecommerceProductImagePayload(values) {
 
 export async function attachEcommerceProductImage(api, id, values, signal) {
   return unwrap(await api.post(`${endpoint}/${requiredId(id)}/images`, ecommerceProductImagePayload(values), { signal }));
+}
+
+export const ecommerceProductImageId = (image) => String(image?.ecommerceProductImageId || image?.imageId || image?.id || image?._id || '');
+export async function removeEcommerceProductImage(api, productId, image, signal) {
+  const productPath = `${endpoint}/${requiredId(productId)}`;
+  if (!record(image)) throw new Error('Choose a saved product image to remove.');
+  let imageId = ecommerceProductImageId(image);
+  if (!imageId) {
+    const product = await fetchEcommerceProduct(api, productId, signal);
+    const matches = productEditorImages(product).filter(row => (image.publicId && row.publicId === image.publicId) || (image.url && row.url === image.url));
+    if (matches.length === 1) imageId = ecommerceProductImageId(matches[0]);
+  }
+  if (!imageId) throw new Error('This saved image has no image ID. Refresh the product before removing it.');
+  // Resource-scoped DELETE is inferred from the existing image attachment route.
+  const response = await api.delete(`${productPath}/images/${requiredId(imageId)}`, { signal });
+  return response.status === 204 ? null : unwrap(response);
 }
 
 export function ecommerceLiveVariantPayload(values, optionDefinitions = [], existingVariants = []) {
