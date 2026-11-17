@@ -46,14 +46,13 @@ export function ShopProductDetails({ product }) {
     if (action.current) return;
     action.current = true; setPendingAction(buyNow ? 'buy' : 'cart'); setCartNotice('');
     try {
-      const result = await (buyNow ? collections.buyNow(product, variant, quantity) : collections.addToCart(product, variant, quantity));
+      await (buyNow ? collections.buyNow(product, variant, quantity) : collections.addToCart(product, variant, quantity));
       if (buyNow) await router.push('/shop/checkout');
-      else setCartNotice(result.refreshError ? 'Added to cart. Refresh your cart to see the latest items.' : 'Added to cart');
     } catch (err) { setCartNotice(shopError(err)); }
     finally { action.current = false; setPendingAction(''); }
   }
   async function saveWishlist() {
-    try { const result = await collections.toggleWishlist(product); if (result.refreshError) setCartNotice('Wishlist updated. Open your wishlist to refresh it.'); }
+    try { await collections.toggleWishlist(product); }
     catch (err) { setCartNotice(shopError(err)); }
   }
   const unavailable = !variant || variant.isActive === false || !stock || prices.sale == null;

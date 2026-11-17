@@ -2,9 +2,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import EmailOtpModal from "@/components/auth/EmailOtpModal";
 import PasswordToggle from "@/components/auth/PasswordToggle";
 import ApiStatusModal from "@/components/common/ApiStatusModal";
-import { getApiErrorMessage, googleLogin, loginAccount } from "@/util/authApi";
+import {
+  getApiErrorMessage,
+  googleLogin,
+  loginAccount,
+  resendEmailOtp,
+  verifyEmailOtp,
+} from "@/util/authApi";
 import { getPostLoginAction } from "@/util/authRedirect";
 import { shopLoginReturnPath } from '@/util/shopAccount.mjs';
 import {
@@ -27,6 +34,11 @@ export default function UserLogin() {
   const [rememberMe, setRememberMe] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiFeedback, setApiFeedback] = useState(null);
+  const [pendingVerification, setPendingVerification] = useState(null);
+  const [otpMessage, setOtpMessage] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [isResending, setIsResending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -78,6 +90,13 @@ export default function UserLogin() {
     event.preventDefault();
     if (!validate()) return;
 
+    await signIn({
+      email: form.email.trim().toLowerCase(),
+      password: form.password,
+    });
+  }
+
+  async function signIn(credentials) {
     setIsSubmitting(true);
     setApiFeedback({
       status: "loading",
@@ -86,21 +105,78 @@ export default function UserLogin() {
     });
 
     try {
-      const response = await loginAccount({
-        email: form.email.trim().toLowerCase(),
-        password: form.password,
-      });
+      const response = await loginAccount(credentials);
       await completeLogin(response, "You are logged in successfully.");
     } catch (error) {
+      const message = getApiErrorMessage(error, "Login failed. Please try again.");
+      if (/\bemail\s+(?:is\s+)?not\s+verified\b/i.test(message)) {
+        setApiFeedback({
+          status: "error",
+          title: "Login Failed",
+          text: "Your email is not verified. Please verify your email.",
+          okLabel: "Verify Email",
+          onOk: () => {
+            setApiFeedback(null);
+            setOtpError("");
+            setOtpMessage(message);
+            setPendingVerification(credentials);
+          },
+        });
+        return;
+      }
+
       setApiFeedback({
         status: "error",
         title: "Login Failed",
-        text: getApiErrorMessage(error, "Login failed. Please try again."),
+        text: message,
         okLabel: "OK",
         onOk: () => setApiFeedback(null),
       });
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleVerifyOtp(otp) {
+    if (!pendingVerification || isVerifying || isResending) return;
+    if (!/^\d{6}$/.test(otp)) {
+      setOtpError("Enter a valid 6 digit OTP.");
+      return;
+    }
+
+    setIsVerifying(true);
+    setOtpError("");
+    setOtpMessage("");
+    try {
+      await verifyEmailOtp({ email: pendingVerification.email, otp });
+    } catch (error) {
+      setOtpError(getApiErrorMessage(error, "OTP verification failed. Please try again."));
+      setIsVerifying(false);
+      return;
+    }
+
+    setPendingVerification(null);
+    try {
+      await signIn(pendingVerification);
+    } finally {
+      setIsVerifying(false);
+    }
+  }
+
+  async function handleResendOtp() {
+    if (!pendingVerification || isResending || isVerifying) return false;
+    setIsResending(true);
+    setOtpError("");
+    setOtpMessage("");
+    try {
+      const response = await resendEmailOtp(pendingVerification.email);
+      setOtpMessage(getResponseMessage(response, "A new verification code has been sent to your email."));
+      return true;
+    } catch (error) {
+      setOtpError(getApiErrorMessage(error, "Could not resend OTP. Please try again."));
+      return false;
+    } finally {
+      setIsResending(false);
     }
   }
 
@@ -251,6 +327,21 @@ export default function UserLogin() {
           </p>
         </form>
       </section>
+      {pendingVerification ? (
+        <EmailOtpModal
+          email={pendingVerification.email}
+          isOpen
+          isResending={isResending}
+          isVerifying={isVerifying}
+          message={otpMessage}
+          error={otpError}
+          onClose={() => {
+            if (!isVerifying && !isResending) setPendingVerification(null);
+          }}
+          onResend={handleResendOtp}
+          onVerify={handleVerifyOtp}
+        />
+      ) : null}
       <ApiStatusModal
         status={apiFeedback?.status}
         title={apiFeedback?.title}

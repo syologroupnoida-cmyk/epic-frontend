@@ -191,3 +191,17 @@ assumptions:
     verification: Synthetic writes only. Live update DTO fields, active-product edit restrictions, option-definition changes and empty-category validation still require authenticated backend verification. Backend errors remain visible and user input is preserved after rejected edits.
     source: User request; postman/mocks/ecommerce-categories/default.js; postman/mocks/ecommerce-products/default.js
     updated_at: '2026-11-15'
+  - id: customer-order-razorpay-local-flow
+    status: supported
+    claim: The frontend displays payment controls on unpaid order details and can create a payment for the existing order, submit Razorpay callback fields, and reload order status against the synthetic customer fixture.
+    reason: The user supplied POST order-payment creation and the verification path and callback fields. The existing customer mock was extended and served directly over local HTTP because the installed Postman executable does not support status; owning workspace mock discovery and CLI simulation execution were unavailable.
+    verification: Seven payment checks passed, including actual Axios HTTP creation, SDK callback handling, verification and paid-status readback. Invalid signatures left the fixture unpaid, another account received 404, paid-order creation returned 409, and creation-after-write returned 503. Two compiled order and checkout rendering checks and targeted lint passed. No live charges or live customer writes were made.
+    source: src/util/shopPayment.mjs; src/modules/ecommerce/components/ShopOrderPayment.jsx; tests/shopPayment.test.mjs; tests/ecommerceCategories.ui.test.cjs; postman/mocks/ecommerce-products/customer.js
+    updated_at: '2026-11-16'
+  - id: live-customer-payment-creation-and-cod
+    status: unknown
+    claim: The live backend accepts an empty order-payment creation body and returns payment identifiers, server amount, currency and a public Razorpay key in a supported envelope.
+    reason: Only the creation POST method and path and verification callback body were supplied. Creation response fields, COD request schema, verification HTTP method and cross-reload idempotency remain unconfirmed. The frontend infers POST verification, never invents payment totals, and displays COD as unavailable until its contract is supplied.
+    verification: Synthetic response envelopes only. Razorpay Standard Checkout handler fields follow official provider documentation; no real provider checkout, live signature validation or capture was exercised.
+    source: User supplied paths and callback fields; https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps/; src/modules/ecommerce/README.md
+    updated_at: '2026-11-16'

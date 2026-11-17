@@ -1,0 +1,14 @@
+.card { max-width: 540px; margin: 48px auto; padding: 40px 32px 32px; border: 1px solid #eee2e7; border-radius: 20px; background: #fff; box-shadow: 0 16px 48px #5422360a; text-align: center; }
+.check { display: grid; place-items: center; width: 88px; height: 88px; margin: 0 auto 28px; border: 8px solid #f0faf4; border-radius: 50%; background: #dff3e8; color: #287c53; box-shadow: 0 0 0 1px #e1f1e7; }
+.check svg { width: 38px; height: 38px; }
+.eyebrow { margin-bottom: 10px; color: #287c53; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.card h2 { color: #35212a; font-family: Georgia, 'Times New Roman', serif; font-size: 34px; line-height: 1.2; }
+.description { max-width: 360px; margin: 16px auto 24px; color: #836b76; font-size: 14px; line-height: 1.8; }
+.summary { display: grid; gap: 14px; margin: 28px 0; padding: 20px; border-radius: 10px; background: #fcf7f9; font-size: 13px; text-align: left; }
+.summary > div { display: flex; justify-content: space-between; gap: 18px; }
+.summary dt { color: #836b76; }
+.summary dd { color: #35212a; font-weight: 600; overflow-wrap: anywhere; text-align: right; }
+.orderButton { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; margin-top: 24px; padding: 14px 20px; border-radius: 8px; background: #b61f4b; color: white; font-size: 14px; font-weight: 600; transition: background-color .2s; }
+.orderButton:hover { background: #981a3f; }
+.orderButton:focus-visible { outline: 2px solid #b61f4b; outline-offset: 4px; }
+@media (max-width: 480px) { .card { margin: 20px auto; padding: 28px 20px 24px; } .card h2 { font-size: 29px; } }

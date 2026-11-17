@@ -13,7 +13,7 @@ function cartItems(account) {
 module.exports = async function customer(req, res) {
   const url = new URL(req.url, 'http://localhost');
   const base = '/api/v1/shop';
-  if (url.pathname !== '/__shop_reset' && !['/addresses', '/cart', '/cart/items', '/wishlist', '/wishlist/products/', '/checkout', '/orders'].some((path) => path.endsWith('/') ? url.pathname.startsWith(base + path) : url.pathname === base + path || url.pathname.startsWith(base + path + '/'))) return false;
+  if (url.pathname !== '/__shop_reset' && !['/addresses', '/cart', '/cart/items', '/wishlist', '/wishlist/products/', '/checkout', '/orders', '/payments'].some((path) => path.endsWith('/') ? url.pathname.startsWith(base + path) : url.pathname === base + path || url.pathname.startsWith(base + path + '/'))) return false;
   const send = (status, data) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(data)); return true; };
   const ok = (data, status = 200) => send(status, { success: true, data });
   const token = req.headers.authorization;
@@ -109,6 +109,30 @@ module.exports = async function customer(req, res) {
     }
     if (req.headers['x-test-commerce'] === 'order-after-write') return send(503, { message: 'Response lost after order update.' });
     return ok({ order });
+  }
+  // Payment response envelopes are synthetic until a backend example is supplied.
+  const paymentOrder = url.pathname.match(/^\/api\/v1\/shop\/orders\/([^/]+)\/payment$/);
+  if (paymentOrder && req.method === 'POST') {
+    const order = account.orders.find(row => row.id === decodeURIComponent(paymentOrder[1]));
+    if (!order) return send(404, { message: 'Order not found.' });
+    if (!['PENDING', 'PENDING_PAYMENT'].includes(order.status) || order.paymentStatus === 'PAID') return send(409, { message: 'Order is not awaiting payment.' });
+    if (Object.keys(body || {}).length) return send(400, { message: 'Payment creation expects an empty body in this fixture.' });
+    account.payments ||= [];
+    const payment = { id: `payment & ${sequence++}`, orderId: order.id, razorpayOrderId: `order_synthetic_${sequence}`, amountPaise: order.totalAmountPaise, currency: 'INR' };
+    account.payments.push(payment);
+    if (req.headers['x-test-commerce'] === 'payment-after-write') return send(503, { message: 'Response lost after payment creation.' });
+    return ok({ payment, keyId: 'rzp_test_synthetic' }, 201);
+  }
+  const verify = url.pathname.match(/^\/api\/v1\/shop\/payments\/([^/]+)\/verify$/);
+  if (verify && req.method === 'POST') {
+    const payment = account.payments?.find(row => row.id === decodeURIComponent(verify[1]));
+    if (!payment) return send(404, { message: 'Payment not found.' });
+    if (Object.keys(body || {}).sort().join(',') !== 'razorpay_order_id,razorpay_payment_id,razorpay_signature' || body.razorpay_order_id !== payment.razorpayOrderId || body.razorpay_payment_id !== 'pay_synthetic' || body.razorpay_signature !== 'synthetic-signature') return send(400, { message: 'Payment signature verification failed.' });
+    const order = account.orders.find(row => row.id === payment.orderId);
+    if (order.status === 'CANCELLED') return send(409, { message: 'Order was cancelled.' });
+    order.paymentStatus = 'PAID'; order.status = 'PAID';
+    if (req.headers['x-test-commerce'] === 'verify-after-write') return send(503, { message: 'Response lost after verification.' });
+    return ok({ order, payment: { ...payment, status: 'CAPTURED' } });
   }
   const details = url.pathname.match(/^\/api\/v1\/shop\/orders\/([^/]+)$/);
   if (details && req.method === 'GET') {

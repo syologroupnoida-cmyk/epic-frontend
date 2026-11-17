@@ -1,6 +1,7 @@
 import DashboardMenuIcon from './DashboardMenuIcon';
 import useDismissibleDropdown from "@/util/useDismissibleDropdown";
 import AccountProfileInfo from "@/components/common/AccountProfileInfo";
+import { accountName } from "@/util/accountProfile.mjs";
 import Image from "next/image";
 import useAuthUser from "@/util/useAuthUser";
 import Link from "next/link";
@@ -26,13 +27,8 @@ const icons = {
 };
 
 const menu = [
-  { label: "Dashboard", icon: "dashboard", sub: [] },
-  { label: "My Orders", icon: "store", sub: [] },
-  { label: "My Wedding", icon: "leads", sub: ["Checklist", "Budget", "Guest list"] },
-  { label: "Shortlist", icon: "store", sub: ["Venues", "Vendors", "Favorites"] },
-  { label: "Bookings", icon: "calendar", sub: ["Visits", "Confirmed", "Pending"] },
-  { label: "Profile", icon: "profile", sub: ["Account", "Family details", "Preferences"] },
-  { label: "Settings", icon: "settings", sub: ["Notifications", "Privacy", "Support"] },
+  { label: "Dashboard", href: "/user/dashboard", sub: [] },
+  { label: "My Orders", sub: [{ label: "Order List", href: "/user/orders" }] },
 ];
 
 const overviewStats = [
@@ -169,22 +165,46 @@ export default function UserDashboard({ activePanel = "Dashboard", children }) {
   const authUser = useAuthUser();
   const [collapsed, setCollapsed] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const [openMenu, setOpenMenu] = useState("");
+  const [openMenu, setOpenMenu] = useState(activePanel === "My Orders" ? "My Orders" : "");
   const [profileOpen, setProfileOpen] = useState(false);
   const profileMenuRef = useDismissibleDropdown(profileOpen, setProfileOpen);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const { handleLogout, logoutFeedback } = useAuthLogout("/user/login");
   const expanded = !collapsed || hovered;
+  const userName = accountName(authUser);
 
   return (
     <div className="min-h-screen bg-[#f7f2ef] text-stone-900">
       <aside onMouseEnter={() => collapsed && setHovered(true)} onMouseLeave={() => setHovered(false)} className={`fixed inset-y-0 left-0 z-40 border-r border-rose-100 bg-white shadow-sm transition-all duration-200 ${expanded ? "w-72" : "w-20"}`}>
-        <Link href="/" className="flex h-20 items-center justify-center border-b border-rose-100 px-4"><Image src="/images/epic-logo-new.png" alt="Epic Wedz" width={142} height={50} priority className={`${expanded ? "h-12" : "h-10"} w-auto object-contain`} /></Link>
-        <nav className="space-y-1 px-3 py-5">{menu.map((item) => { const hasSubmenu = item.sub.length > 0; return <div key={item.label}><button type="button" onClick={() => hasSubmenu ? setOpenMenu((current) => current === item.label ? "" : item.label) : router.push(item.label === "My Orders" ? "/user/orders" : "/user/dashboard")} className={`flex h-12 w-full items-center rounded px-3 text-sm font-semibold transition hover:bg-rose-50 hover:text-[#b61f4b] ${activePanel === item.label ? "bg-rose-50 text-[#b61f4b]" : "text-stone-700"} ${expanded ? "justify-between gap-3" : "justify-center"}`} title={item.label}><span className="flex items-center gap-3"><DashboardMenuIcon label={item.label} />{expanded ? item.label : null}</span>{expanded && hasSubmenu ? <span className={`${openMenu === item.label ? "rotate-180" : ""} transition`}><Icon name="arrow" /></span> : null}</button>{expanded && hasSubmenu && openMenu === item.label ? <div className="dashboard-submenu ml-8 mt-1 grid gap-1 pb-2">{item.sub.map((sub) => <Link key={sub} href="#" className="flex items-center gap-2 rounded px-3 py-2 text-xs font-semibold text-stone-500 hover:bg-rose-50 hover:text-[#b61f4b]"><span className="h-1.5 w-1.5 shrink-0 rounded-full border border-current" aria-hidden="true" />{sub}</Link>)}</div> : null}</div>; })}</nav>
+        <Link href="/" className="flex h-16 items-center justify-center border-b border-rose-100 px-4"><Image src="/images/epic-logo-new.png" alt="Epic Wedz" width={142} height={50} priority className={`${expanded ? "h-12" : "h-10"} w-auto object-contain`} /></Link>
+        <nav aria-label="User dashboard navigation" className="space-y-1 px-3 py-5">
+          {menu.map((item) => {
+            const hasSubmenu = item.sub.length > 0;
+            const isOpen = expanded && openMenu === item.label;
+            const className = `flex h-12 w-full items-center rounded px-3 text-sm font-semibold transition hover:bg-rose-50 hover:text-[#b61f4b] ${activePanel === item.label ? "bg-rose-50 text-[#b61f4b]" : "text-stone-700"} ${expanded ? "justify-between gap-3" : "justify-center"}`;
+            const label = <span className="flex items-center gap-3"><DashboardMenuIcon label={item.label} />{expanded ? item.label : null}</span>;
+            return <div key={item.label}>
+              {hasSubmenu ? (
+                <button type="button" title={item.label} aria-label={item.label} aria-expanded={isOpen} aria-controls="user-orders-submenu" className={className} onClick={() => {
+                  if (!expanded) setCollapsed(false);
+                  setOpenMenu(isOpen ? "" : item.label);
+                }}>
+                  {label}
+                  {expanded ? <span className={`${isOpen ? "rotate-180" : ""} transition`}><Icon name="arrow" /></span> : null}
+                </button>
+              ) : <Link href={item.href} title={item.label} aria-label={item.label} aria-current={activePanel === item.label ? "page" : undefined} className={className}>{label}</Link>}
+              {hasSubmenu && isOpen ? (
+                <div id="user-orders-submenu" className="dashboard-submenu ml-8 mt-1 grid gap-1 pb-2">
+                  {item.sub.map((sub) => <Link key={sub.href} href={sub.href} aria-current={router.pathname === sub.href ? "page" : undefined} className={`flex items-center gap-2 rounded px-3 py-2 text-xs font-semibold hover:bg-rose-50 hover:text-[#b61f4b] ${router.pathname === sub.href ? "bg-rose-50 text-[#b61f4b]" : "text-stone-500"}`}><span className="h-1.5 w-1.5 shrink-0 rounded-full border border-current" aria-hidden="true" />{sub.label}</Link>)}
+                </div>
+              ) : null}
+            </div>;
+          })}
+        </nav>
       </aside>
       <div className={`transition-all duration-200 ${expanded ? "pl-72" : "pl-20"}`}>
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-rose-100 bg-white/95 px-6 shadow-sm backdrop-blur"><div className="flex items-center gap-4"><button type="button" onClick={() => setCollapsed((value) => !value)} className="grid h-10 w-10 place-items-center rounded-full border border-rose-100 text-stone-700 hover:border-[#b61f4b] hover:text-[#b61f4b]" aria-label="Toggle sidebar"><Icon name={collapsed ? "expand" : "collapse"} /></button><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b61f4b]">User</p><h1 className="mt-1 font-serif text-2xl font-bold text-stone-950">Dashboard</h1></div></div><div ref={profileMenuRef} className="relative"><button type="button" onClick={() => setProfileOpen((open) => !open)} className="grid h-11 w-11 place-items-center rounded-full border border-rose-100 text-[#b61f4b] hover:bg-rose-50" aria-label="Profile" aria-expanded={profileOpen}><Icon name="profile" /></button><div className={`absolute right-0 top-full mt-3 w-64 rounded border border-rose-100 bg-white p-3 shadow-xl transition duration-150 ${profileOpen ? "pointer-events-auto visible translate-y-0 opacity-100" : "pointer-events-none invisible translate-y-2 opacity-0"}`}><div className="flex items-center gap-3 border-b border-rose-100 pb-3"><span className="grid h-11 w-11 place-items-center rounded-full bg-rose-50 text-[#b61f4b]"><Icon name="profile" /></span><AccountProfileInfo user={authUser} /></div><Link href="#profile-settings" className="mt-2 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-normal text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="settings" /> Profile setting</Link><button type="button" onClick={() => { setProfileOpen(false); setLogoutConfirmOpen(true); }} className="mt-1 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-normal text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="logout" /> Logout</button></div></div></header>
-        <main className={activePanel === "My Orders" ? "h-[calc(100dvh-5rem)] overflow-hidden p-2" : "p-6"}>
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-rose-100 bg-white/95 px-6 shadow-sm backdrop-blur"><div className="flex min-w-0 items-center gap-4"><button type="button" onClick={() => setCollapsed((value) => !value)} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-rose-100 text-stone-700 hover:border-[#b61f4b] hover:text-[#b61f4b]" aria-label="Toggle sidebar"><Icon name={collapsed ? "expand" : "collapse"} /></button><div className="min-w-0">{activePanel !== "My Orders" ? <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#b61f4b]">Welcome back</p> : null}<h1 title={userName} className="mt-1 truncate font-serif text-2xl font-bold text-stone-950">{userName}</h1></div></div><div ref={profileMenuRef} className="relative shrink-0"><button type="button" onClick={() => setProfileOpen((open) => !open)} className="grid h-11 w-11 place-items-center rounded-full border border-rose-100 text-[#b61f4b] hover:bg-rose-50" aria-label="Profile" aria-expanded={profileOpen}><Icon name="profile" /></button><div className={`absolute right-0 top-full mt-3 w-64 rounded border border-rose-100 bg-white p-3 shadow-xl transition duration-150 ${profileOpen ? "pointer-events-auto visible translate-y-0 opacity-100" : "pointer-events-none invisible translate-y-2 opacity-0"}`}><div className="flex items-center gap-3 border-b border-rose-100 pb-3"><span className="grid h-11 w-11 place-items-center rounded-full bg-rose-50 text-[#b61f4b]"><Icon name="profile" /></span><AccountProfileInfo user={authUser} /></div><button type="button" onClick={() => { setProfileOpen(false); setLogoutConfirmOpen(true); }} className="mt-1 flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-normal text-stone-700 hover:bg-rose-50 hover:text-[#b61f4b]"><Icon name="logout" /> Logout</button></div></div></header>
+        <main className={activePanel === "My Orders" ? "h-[calc(100dvh-4rem)] overflow-hidden p-2" : "p-6"}>
           <div key={authUser?.id || authUser?.userId || "session"} className={activePanel === "My Orders" ? "h-full min-h-0" : undefined}>{children || <UserDashboardOverview />}</div>
         </main>
       </div>

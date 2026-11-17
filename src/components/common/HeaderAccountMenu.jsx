@@ -1,4 +1,5 @@
 import AccountProfileInfo from "@/components/common/AccountProfileInfo";
+import DashboardMenuIcon from "@/components/dashboard/DashboardMenuIcon";
 import { accountName } from "@/util/accountProfile.mjs";
 import Image from "next/image";
 import Link from "next/link";
@@ -102,9 +103,9 @@ export default function HeaderAccountMenu({ variant = "user", guestFallback = nu
           {user ? <AccountProfileInfo user={user} /> : <div className="min-w-0"><p className="truncate">Welcome to Epic Wedz</p><span className="truncate">Access your wedding account</span></div>}
         </div>
         {user ? <>
-          <Link href={dashboard} onClick={() => setOpen(false)} className="login-menu-link"><span className="login-menu-icon user-login-icon" aria-hidden="true" /><span><strong>Dashboard</strong></span></Link>
-          {accountLinks.map((item) => <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className="login-menu-link"><span className="login-menu-icon user-login-icon" aria-hidden="true" /><span><strong>{item.label}</strong></span></Link>)}
-          {isVendor && <Link href="/partner/update-profile" onClick={() => setOpen(false)} className="login-menu-link"><span className="login-menu-icon partner-icon" aria-hidden="true" /><span><strong>Update Profile</strong></span></Link>}
+          <Link href={dashboard} onClick={() => setOpen(false)} className="login-menu-link"><DashboardMenuIcon label="Dashboard" small /><span><strong>Dashboard</strong></span></Link>
+          {accountLinks.map((item) => <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className="login-menu-link"><DashboardMenuIcon label={item.icon || item.label} small /><span><strong>{item.label}</strong></span></Link>)}
+          {isVendor && <Link href="/partner/update-profile" onClick={() => setOpen(false)} className="login-menu-link"><DashboardMenuIcon label="Update Profile" small /><span><strong>Update Profile</strong></span></Link>}
           <button type="button" onClick={() => { setOpen(false); setConfirmLogout(true); }} className="login-menu-link w-full text-left"><svg className="h-4 w-4 shrink-0 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7 15.59 8.41 18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5-5-5ZM4 5h8V3H4C2.9 3 2 3.9 2 5v14c0 1.1.9 2 2 2h8v-2H4V5Z" /></svg><span><strong>Logout</strong></span></button>
         </> : guestLinks.map(([href, title, description, icon]) => <Link key={href} href={href} onClick={() => setOpen(false)} className="login-menu-link"><span className={`login-menu-icon ${icon}`} aria-hidden="true" /><span><strong>{title}</strong><small>{description}</small></span></Link>)}
       </div>
