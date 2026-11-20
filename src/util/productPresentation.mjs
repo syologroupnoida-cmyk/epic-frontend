@@ -1,5 +1,6 @@
 export const productColorPalette = { Red: '#dc2626', Maroon: '#800020', Pink: '#ec4899', Orange: '#f97316', Yellow: '#eab308', Green: '#16a34a', Teal: '#0d9488', Blue: '#2563eb', Purple: '#9333ea', Black: '#171717', White: '#ffffff', Ivory: '#fffff0', Beige: '#d6c5aa', Brown: '#92400e', Grey: '#94a3b8', Gold: '#d4af37' };
 export const isColorOption = (name) => /^(color|colour)$/i.test(String(name).trim());
+export const isSizeOption = (name) => /^size$/i.test(String(name).trim());
 export function productColorHex(value) {
   if (/^#[0-9a-f]{6}$/i.test(value)) return value;
   return Object.entries(productColorPalette).find(([name]) => name.toLowerCase() === String(value).toLowerCase())?.[1] || '#94a3b8';
