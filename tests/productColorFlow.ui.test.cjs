@@ -130,6 +130,35 @@ test('blank option values open the color picker and selecting colors names the o
   assert.equal(picker.props.label, 'Values (comma separated)');
   picker.props.onChange(['#800020']);
   const nodes = h.render(Form, {});
-  assert.equal(nodes.find(node => node.type === 'TextField' && node.props.label === 'Option name').props.value, 'Color');
-  assert.deepEqual(nodes.find(node => node.type === 'ProductColorPicker').props.values, ['#800020']);
+  assert.ok(nodes.some(node => node.type === 'h3' && node.props.children === 'Colors'));
+  assert.deepEqual(nodes.find(node => node.type === 'ProductColorPicker' && node.props.label === 'Available colors').props.values, ['#800020']);
+});
+
+test('adding a Size option exposes size values and variant selectors', () => {
+  const form = {
+    categoryId: 'category', subcategoryId: 'subcategory', title: 'Lehenga', description: 'Silk lehenga',
+    brandName: 'Epic', gstPercentage: '5', specifications: {},
+    optionDefinitions: [{ name: 'Color', values: ['Red'] }],
+    variants: [{ sku: 'RED-M', optionValues: { Color: 'Red' }, imageUrl: '', mrpAmountPaise: '200', saleAmountPaise: '100', initialStock: '5', isDefault: true }],
+  };
+  const h = harness([form, []]);
+  const Form = h.load('src/modules/ecommerce/management/products/EcommerceProductForm.jsx').default;
+  let nodes = h.render(Form, {});
+  const addSizes = nodes.find(node => node.type === 'button' && [].concat(node.props.children).join('') === 'Add sizes');
+  addSizes.props.onClick();
+  nodes = h.render(Form, {});
+  assert.ok(nodes.some(node => node.type === 'div' && node.props.className?.includes('md:grid-cols-2')));
+  assert.ok(nodes.some(node => node.type === 'h3' && node.props.children === 'Colors'));
+  assert.ok(nodes.some(node => node.type === 'h3' && node.props.children === 'Sizes'));
+  assert.ok(nodes.some(node => node.type === 'ProductColorPicker' && node.props.label === 'Available colors'));
+  const sizeValues = nodes.find(node => node.type === 'TextField' && node.props.label === 'Available sizes (comma separated)');
+  assert.equal(sizeValues.props.placeholder, 'XS, S, M, L, XL');
+  sizeValues.props.onChange({ target: { value: 'S, M' } });
+  nodes = h.render(Form, {});
+  const sizeSelector = nodes.find(node => node.type === 'ProductVariantOption' && node.props.option.name === 'Size');
+  assert.deepEqual(sizeSelector.props.option.values, ['S', ' M']);
+  sizeSelector.props.onChange('M');
+  nodes = h.render(Form, {});
+  assert.equal(nodes.find(node => node.type === 'ProductVariantOption' && node.props.option.name === 'Size').props.value, 'M');
+  assert.equal(nodes.some(node => node.type === 'button' && [].concat(node.props.children).join('') === 'Add sizes'), false);
 });
