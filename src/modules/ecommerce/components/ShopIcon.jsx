@@ -1,4 +1,5 @@
 const paths = {
+  chevronDown: <path d="m6 9 6 6 6-6" />,
   search: <><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></>,
   heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" />,
   cart: <><path d="M2 3h3l3 13h12l2-9H6M9 12h11" /><circle cx="9" cy="21" r="1" /><circle cx="19" cy="21" r="1" /></>,

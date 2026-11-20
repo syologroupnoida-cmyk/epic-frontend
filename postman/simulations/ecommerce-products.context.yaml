@@ -2,6 +2,13 @@ purpose:
   stands_in_for: Admin ecommerce product creation, paginated listing, detail, stock received and publishing APIs; existing category and subcategory APIs.
   unblocks: Local frontend client verification without production writes or credentials.
 assumptions:
+  - id: initial-product-gallery-and-color-variant-photos
+    status: supported
+    claim: Initial product creation includes uploaded gallery records and optional imageUrl on each variant. The creation color palette stores six-digit hex option values; the shop selects the matching variant image before the shared gallery.
+    reason: The user supplied the combined POST /admin/ecommerce/products payload including variants.imageUrl and requested hex color values on 2026-11-18.
+    verification: Real Axios HTTP upload/create/readback against the committed synthetic product mock preserved gallery images, hex option values and variant imageUrl. Compiled handler tests confirmed one initial create request without separate attachments, hex palette output, and a swatch click changing the storefront main image and SKU. Live backend responses and image delivery remain unverified.
+    source: User request; src/util/ecommerceProducts.mjs; src/util/shopCatalog.mjs; tests/ecommerceProducts.test.mjs; tests/productColorFlow.ui.test.cjs
+    updated_at: '2026-11-18'
   - id: supplied-product-request-contract
     status: supported
     claim: Product creation sends the supplied fields including typed specifications, optionDefinitions, images and variants with integer paise prices and initialStock. Listing sends page, limit and status; detail reads a product ID; stock received sends quantity, type and note to a variant ID.

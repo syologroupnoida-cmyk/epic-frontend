@@ -6,7 +6,7 @@ const REFRESH_TOKEN_KEY = "epic_refresh_token";
 const AUTH_ROLE_KEY = "epic_auth_role";
 
 const protectedRoutes = [
-  ...['/edit-category', '/edit-subcategory'].map(prefix => ({ prefix, loginPath: '/superadmin/login', roles: ['SUPER_ADMIN', 'ADMIN'] })),
+  ...['/edit-category', '/edit-subcategory', '/edit-product'].map(prefix => ({ prefix, loginPath: '/superadmin/login', roles: ['SUPER_ADMIN', 'ADMIN'] })),
   ...Object.keys(shopPanelSlugs).map((panel) => ({
     prefix: shopPanelPath(panel),
     loginPath: '/superadmin/login',
@@ -78,6 +78,7 @@ export const config = {
   matcher: [
     '/edit-category/:path*',
     '/edit-subcategory/:path*',
+    '/edit-product/:path*',
     '/add-category/:path*',
     '/categories/:path*',
     '/add-subcategory/:path*',

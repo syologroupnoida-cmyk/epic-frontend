@@ -16,6 +16,17 @@ test('shop price boundaries use integer paise and preserve unavailable data', ()
   assert.equal(ShopApi.defaults.withCredentials, false);
 });
 
+test('hex color selection chooses the matching variant photo before the shared gallery', () => {
+  const red = { id: 'red', optionValues: { Color: '#DC2626', Size: 'M' }, imageUrl: 'https://example.test/red.jpg' };
+  const maroon = { id: 'maroon', optionValues: { Color: '#800020', Size: 'M' }, imageUrl: 'https://example.test/maroon.jpg' };
+  const product = { title: 'Lehenga', images: [{ url: 'https://example.test/chart.jpg', altText: 'Size chart' }], variants: [red, maroon] };
+  assert.equal(shopProductImages(product, red)[0].url, red.imageUrl);
+  const next = chooseShopVariant(product.variants, red, 'Color', '#800020');
+  assert.equal(next.id, 'maroon');
+  assert.deepEqual(shopProductImages(product, next).map(image => image.url), [maroon.imageUrl, 'https://example.test/chart.jpg']);
+  assert.equal(shopProductImages(product, { ...maroon, imageUrl: 'javascript:bad' })[0].url, product.images[0].url);
+});
+
 test('variant selection preserves other options or chooses the matching available combination', () => {
   const variants = [{ optionValues: { Color: 'Red', Size: 'M' } }, { optionValues: { Color: 'Maroon', Size: 'M' } }, { optionValues: { Color: 'Red', Size: 'L' } }];
   assert.equal(chooseShopVariant(variants, variants[0], 'Color', 'Maroon'), variants[1]);

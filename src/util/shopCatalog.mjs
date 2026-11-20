@@ -16,10 +16,15 @@ export function shopImageUrl(image) {
   return typeof url === 'string' && (/^https?:\/\//i.test(url) || /^\/(?!\/)/.test(url)) ? url : null;
 }
 export function shopProductImages(product, variant) {
-  const images = variant?.images?.length ? variant.images : product.images;
-  const rows = Array.isArray(images) ? [...images].sort((a, b) => (Number(a?.sortOrder) || 0) - (Number(b?.sortOrder) || 0)) : [];
-  if (!rows.length && product.imageUrl) rows.push(product.imageUrl);
-  return rows.map((row) => ({ url: shopImageUrl(row), alt: row?.altText || product.title })).filter((row) => row.url);
+  const sorted = images => Array.isArray(images) ? [...images].sort((a, b) => (Number(a?.sortOrder) || 0) - (Number(b?.sortOrder) || 0)) : [];
+  const rows = [variant?.imageUrl, ...sorted(variant?.images), ...sorted(product?.images), product?.imageUrl];
+  const seen = new Set();
+  return rows.flatMap(row => {
+    const url = shopImageUrl(row);
+    if (!url || seen.has(url)) return [];
+    seen.add(url);
+    return [{ url, alt: row?.altText || product?.title }];
+  });
 }
 export const defaultShopVariant = (product) => product.defaultVariant || product.variants?.find((row) => row.isDefault) || product.variants?.[0] || null;
 export function shopStock(variant) {

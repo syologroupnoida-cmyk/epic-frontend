@@ -55,8 +55,57 @@ export function isCurrentVendorPlan(plan, subscription) {
 }
 export async function purchaseVendorPlan(api, planId, signal) {
   if (typeof planId !== 'string' || !planId.trim()) throw new Error('A subscription plan ID is required.');
-  const response = await api.post('/vendor/subscriptions/test-purchase', { planId }, { signal });
-  return { data: unwrap(response), message: response.data?.message || 'Subscription purchased successfully.' };
+  return createVendorSubscriptionPayment(api, planId, signal);
+}
+export async function createVendorSubscriptionPayment(api, planId, signal) {
+  if (typeof planId !== 'string' || !planId.trim()) throw new Error('A subscription plan ID is required.');
+  const response = await api.post(`/vendor/subscription-plans/${encodeURIComponent(planId)}/payment`, {}, { signal });
+  return { data: unwrap(response), message: response.data?.message || 'Subscription payment created successfully.' };
+}
+export function vendorSubscriptionRazorpayDetails(data, fallbackKey = '') {
+  const payment = data?.payment || data?.subscriptionPayment || data || {};
+  const checkout = data?.checkoutOptions || data?.razorpay || payment.checkoutOptions || payment.razorpay || {};
+  const providerOrder = data?.razorpayOrder || payment.razorpayOrder || {};
+  const paymentId = data?.vendorSubscriptionPaymentId || data?.subscriptionPaymentId || data?.paymentId
+    || payment.vendorSubscriptionPaymentId || payment.subscriptionPaymentId || payment.id || payment._id;
+  const orderId = checkout.order_id || checkout.orderId || data?.razorpayOrderId || data?.vendorSubscriptionRazorpayOrderId
+    || providerOrder.id || payment.razorpayOrderId || payment.vendorSubscriptionRazorpayOrderId || payment.providerOrderId;
+  const key = checkout.key || checkout.keyId || data?.razorpayKeyId || data?.keyId || data?.key || payment.razorpayKeyId || fallbackKey;
+  const paiseAmount = checkout.amount ?? providerOrder.amount ?? data?.amountPaise ?? payment.amountPaise;
+  const amount = paiseAmount != null
+    ? paiseAmount
+    : data?.amount != null
+      ? Number(data.amount) * 100
+      : payment.amount != null
+        ? Number(payment.amount) * 100
+        : null;
+  const currency = checkout.currency || providerOrder.currency || data?.currency || payment.currency || 'INR';
+  if (![paymentId, orderId, key, currency].every((value) => typeof value === 'string' && value.trim())
+    || !Number.isSafeInteger(Number(amount)) || Number(amount) <= 0 || !/^[A-Z]{3}$/.test(currency)) {
+    throw new Error('Payment details are incomplete. Refresh the subscription plans and try again.');
+  }
+  return { paymentId, orderId, options: { key, order_id: orderId, amount: Number(amount), currency } };
+}
+export function subscriptionPaymentVerificationPayload(values) {
+  const payload = {};
+  for (const field of ['razorpay_order_id', 'razorpay_payment_id', 'razorpay_signature']) {
+    if (typeof values?.[field] !== 'string' || !values[field].trim()) {
+      throw new Error('Payment confirmation is incomplete. Check your subscription payment status before paying again.');
+    }
+    payload[field] = values[field];
+  }
+  return payload;
+}
+export async function verifyVendorSubscriptionPayment(api, paymentId, values, signal) {
+  if (typeof paymentId !== 'string' || !paymentId.trim()) {
+    throw new Error('Subscription payment reference is missing.');
+  }
+  const response = await api.post(
+    `/vendor/subscription-payments/${encodeURIComponent(paymentId)}/verify`,
+    subscriptionPaymentVerificationPayload(values),
+    { signal },
+  );
+  return { data: unwrap(response), message: response.data?.message || 'Subscription payment verified successfully.' };
 }
 export async function fetchVendorWallet(api, signal) {
   const data = unwrap(await api.get('/vendor/wallet', { signal }));

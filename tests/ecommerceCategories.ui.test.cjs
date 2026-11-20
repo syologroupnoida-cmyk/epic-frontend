@@ -166,6 +166,22 @@ test('edit product page keeps the shop shell and loads protected product details
   assert.ok(proxy({ url: `http://localhost${pathname}`, nextUrl: { pathname, search: '' }, cookies: { get: () => undefined } }).redirect.includes('/superadmin/login'));
 });
 
+test('canonical edit product route preserves the ID and protects the prefilled editor', () => {
+  const { default: Page, getServerSideProps } = load('src/pages/edit-product/[productId].js');
+  const productId = 'product & one';
+  assert.deepEqual(getServerSideProps({ params: { productId } }), { props: { productId } });
+  assert.deepEqual(getServerSideProps({ params: {} }), { notFound: true });
+  const html = renderToStaticMarkup(React.createElement(Page, { productId }));
+  assert.ok(html.includes('Edit Product'));
+  assert.ok(html.includes('Loading product for editing...'));
+  const { proxy } = load('src/proxy.js');
+  const pathname = '/edit-product/product%20%26%20one';
+  const request = { url: `http://localhost${pathname}`, nextUrl: { pathname, search: '' }, cookies: { get: () => undefined } };
+  assert.ok(proxy(request).redirect.includes('/superadmin/login'));
+  const cookies = { epic_access_token: 'test', epic_refresh_token: 'test', epic_auth_role: 'ADMIN' };
+  assert.equal(proxy({ ...request, cookies: { get: key => ({ value: cookies[key] }) } }).allowed, true);
+});
+
 test('table error state renders its icon above the message and subcategory controls render safely', () => {
   const State = load('src/modules/ecommerce/management/ShopTableState.jsx').default;
   const error = renderToStaticMarkup(React.createElement(State, { title: 'Categories could not be loaded.', error: 'Service unavailable.', onRetry() {} }));
@@ -209,6 +225,18 @@ test('shop tables place search and filters in a separate toolbar below the main 
   }
 });
 
+
+test('shop category filters show every subcategory group before a category is selected', () => {
+  const { ShopCategoryFilter } = load('src/modules/ecommerce/ShopHome.jsx');
+  const filters = { categorySlug: '', subcategoryId: '' };
+  const html = renderToStaticMarkup(React.createElement(React.Fragment, null, ...[
+    { id: 'bridal', slug: 'bridal', name: 'Bridal wear' },
+    { id: 'groom', slug: 'groom', name: 'Groom wear' },
+  ].map(category => React.createElement(ShopCategoryFilter, { key: category.id, category, filters, onCategory() {}, onSubcategory() {} }))));
+  assert.ok(html.includes('aria-label="Bridal wear subcategories"'));
+  assert.ok(html.includes('aria-label="Groom wear subcategories"'));
+  assert.equal((html.match(/Loading subcategories\.\.\./g) || []).length, 2);
+});
 
 test('public shop renders API loading and dedicated product detail content without sample products', () => {
   const Home = load('src/modules/ecommerce/ShopHome.jsx').default;
