@@ -10,14 +10,32 @@ import useShopCollections from './components/useShopCollections';
 import { fetchShopCategories, fetchShopProducts, fetchShopSubcategories, ShopApi, shopCategoryId, shopError, shopPriceToPaise, shopProductId, shopProductParams, shopSubcategoryId, shopMoney } from '@/util/shopCatalog.mjs';
 import styles from './ShopHome.module.css';
 
+export function ShopCategoryFilter({ category, filters, onCategory, onSubcategory }) {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [retry, setRetry] = useState(0);
+  const categoryId = shopCategoryId(category);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchShopSubcategories(ShopApi, categoryId, { signal: controller.signal }).then(rows => {
+      if (!controller.signal.aborted) setItems(rows);
+    }).catch(error => { if (!controller.signal.aborted) setError(shopError(error)); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [categoryId, retry]);
+  return <div>
+    <label className={styles.categoryLabel}><Checkbox size="small" checked={filters.categorySlug === category.slug} onChange={(_, checked) => onCategory(checked ? category.slug : '')} sx={{ p: .5, color: '#ba9aa5', '&.Mui-checked': { color: '#a4002b' } }} /><span>{category.name}</span></label>
+    <div className={styles.subcategory} role="group" aria-label={`${category.name} subcategories`}>
+      {loading ? <p role="status" className={styles.filterHint}>Loading subcategories...</p> : error ? <div role="alert" className={styles.filterHint}><p>{error}</p><button type="button" onClick={() => { setLoading(true); setError(''); setRetry(value => value + 1); }}>Retry subcategories</button></div> : !items.length ? <p className={styles.filterHint}>No subcategories available.</p> : items.map(row => <label key={shopSubcategoryId(row)}><Checkbox size="small" checked={filters.categorySlug === category.slug && filters.subcategoryId === shopSubcategoryId(row)} onChange={(_, checked) => onSubcategory({ categorySlug: category.slug, subcategoryId: checked ? shopSubcategoryId(row) : '' })} sx={{ p: .5, color: '#ba9aa5', '&.Mui-checked': { color: '#a4002b' } }} /><span>{row.name}</span></label>)}
+    </div>
+  </div>;
+}
+
 export default function ShopHome({ initialFilters = {} }) {
   const [filters, setFilters] = useState(() => ({ categorySlug: '', subcategoryId: '', minPrice: '', maxPrice: '', page: 1, limit: 20, ...initialFilters }));
   const [categories, setCategories] = useState([]);
   const [categoryLoading, setCategoryLoading] = useState(true);
   const [categoryError, setCategoryError] = useState('');
-  const [subcategories, setSubcategories] = useState([]);
-  const [subLoading, setSubLoading] = useState(Boolean(initialFilters.categorySlug));
-  const [subError, setSubError] = useState('');
   const [result, setResult] = useState({ items: [], total: -1, hasNext: false });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -36,21 +54,14 @@ export default function ShopHome({ initialFilters = {} }) {
     return () => controller.abort();
   }, [optionsRetry]);
   const selectedCategory = categories.find((category) => category.slug === filters.categorySlug);
-  const categoryId = selectedCategory ? shopCategoryId(selectedCategory) : '';
-  useEffect(() => {
-    if (!categoryId) return;
-    const controller = new AbortController();
-    fetchShopSubcategories(ShopApi, categoryId, { signal: controller.signal }).then((items) => { if (!controller.signal.aborted) setSubcategories(items); }).catch((err) => { if (!controller.signal.aborted) setSubError(shopError(err)); }).finally(() => { if (!controller.signal.aborted) setSubLoading(false); });
-    return () => controller.abort();
-  }, [categoryId, optionsRetry]);
   useEffect(() => {
     const controller = new AbortController();
     fetchShopProducts(ShopApi, { ...filters, signal: controller.signal }).then((data) => { if (!controller.signal.aborted) { setResult(data); } }).catch((err) => { if (!controller.signal.aborted) setError(shopError(err)); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [filters, retry]);
   function changeFilters(changes) { setLoading(true); setError(''); setFilters((current) => ({ ...current, page: 1, ...changes })); }
-  function chooseCategory(slug) { if (slug !== filters.categorySlug) { setSubcategories([]); setSubError(''); setSubLoading(Boolean(slug)); } changeFilters({ categorySlug: slug, subcategoryId: '' }); }
-  function clearFilters() { setSearch(''); setPrices({ min: '', max: '' }); setPriceError(''); setSubcategories([]); setSubError(''); setSubLoading(false); changeFilters({ categorySlug: '', subcategoryId: '', minPrice: '', maxPrice: '' }); }
+  function chooseCategory(slug) { changeFilters({ categorySlug: slug, subcategoryId: '' }); }
+  function clearFilters() { setSearch(''); setPrices({ min: '', max: '' }); setPriceError(''); changeFilters({ categorySlug: '', subcategoryId: '', minPrice: '', maxPrice: '' }); }
   const priceCeiling = Math.max(100000, Number(prices.min) || 0, Number(prices.max) || 0, Number(initialFilters.maxPrice || 0) / 100);
   const lowerPrice = Math.max(0, Math.min(Number(prices.min) || 0, priceCeiling));
   const upperPrice = prices.max === '' ? priceCeiling : Math.max(0, Math.min(Number(prices.max) || 0, priceCeiling));
@@ -77,12 +88,7 @@ export default function ShopHome({ initialFilters = {} }) {
           </section>
           <section className={styles.filterGroup}><h3 className={styles.filterTitle}>Categories</h3>{categoryLoading ? <p role="status" className={styles.filterHint}>Loading categories...</p> : categoryError ? <div role="alert" className={styles.filterHint}><p>{categoryError}</p><button type="button" onClick={() => { setCategoryLoading(true); setCategoryError(''); setOptionsRetry((value) => value + 1); }}>Try again</button></div> : <>
             <label className={styles.categoryLabel}><Checkbox size="small" checked={!filters.categorySlug} onChange={() => chooseCategory('')} sx={{ p: .5, color: '#ba9aa5', '&.Mui-checked': { color: '#a4002b' } }} /><span>All products</span></label>
-            {categories.map((category) => <div key={shopCategoryId(category)}>
-              <label className={styles.categoryLabel}><Checkbox size="small" checked={filters.categorySlug === category.slug} onChange={(_, checked) => chooseCategory(checked ? category.slug : '')} sx={{ p: .5, color: '#ba9aa5', '&.Mui-checked': { color: '#a4002b' } }} /><span>{category.name}</span><span className={styles.categoryChevron} aria-hidden="true">{filters.categorySlug === category.slug ? '\u2304' : '\u203a'}</span></label>
-              {filters.categorySlug === category.slug && <div className={styles.subcategory} role="group" aria-label={`${category.name} subcategories`}>
-                {subLoading ? <p role="status" className={styles.filterHint}>Loading subcategories...</p> : subError ? <div role="alert" className={styles.filterHint}><p>{subError}</p><button type="button" onClick={() => { setSubLoading(true); setSubError(''); setOptionsRetry((value) => value + 1); }}>Retry subcategories</button></div> : !subcategories.length ? <p className={styles.filterHint}>No subcategories available.</p> : subcategories.map((row) => <label key={shopSubcategoryId(row)}><Checkbox size="small" checked={filters.subcategoryId === shopSubcategoryId(row)} onChange={(_, checked) => changeFilters({ subcategoryId: checked ? shopSubcategoryId(row) : '' })} sx={{ p: .5, color: '#ba9aa5', '&.Mui-checked': { color: '#a4002b' } }} /><span>{row.name}</span></label>)}
-              </div>}
-            </div>)}
+            {categories.map(category => <ShopCategoryFilter key={shopCategoryId(category)} category={category} filters={filters} onCategory={chooseCategory} onSubcategory={changeFilters} />)}
           </>}</section>
         </aside>
         <section className={styles.results} aria-label="Wedding products"><div className={styles.toolbar}><div><h2>{selectedCategory?.name || 'Shop All Products'}</h2>{!loading && !error && <p className={styles.filterHint}>{result.total >= 0 ? `${result.total} products` : 'Browse the collection'}</p>}</div><div className={styles.toolbarActions}><button className={styles.filterToggle} aria-expanded={showFilters} onClick={() => setShowFilters(!showFilters)}><ShopIcon name="filter" size={18} />Filters</button><div className={styles.viewToggle}><button aria-label="Grid view" aria-pressed={view === 'grid'} onClick={() => setView('grid')}><ShopIcon name="grid" size={20} /></button><button aria-label="List view" aria-pressed={view === 'list'} onClick={() => setView('list')}><ShopIcon name="list" size={20} /></button></div></div></div>

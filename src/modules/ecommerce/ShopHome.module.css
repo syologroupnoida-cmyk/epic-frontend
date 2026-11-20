@@ -2,9 +2,8 @@
 .imagePlaceholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: #f5f3f3; color: #aaa0a4; font-size: 11px; }
 .filterTitle { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
 .filterHint { font-size: 11px; color: #87767d; margin-top: 6px; line-height: 1.6; }
-.subcategory { margin: 2px 0 10px 14px; padding: 2px 0 2px 13px; border-left: 1px solid #e4c8d1; }
-.categoryLabel > span:nth-child(2) { flex: 1; }
-.categoryChevron { font-size: 18px; color: #92707d; }
+.subcategory { margin: 2px 0 10px; padding: 0; }
+.categoryLabel > span:nth-child(2) { flex: 1; font-weight: 700; }
 .priceSlider { padding: 0 7px; }
 .priceLabels { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: #80616d; }
 .filterGroup input[type='radio'] { accent-color: var(--wine); }

@@ -48,10 +48,12 @@ export function ecommerceProductPayload(values) {
     if (![variant.mrpAmountPaise, variant.saleAmountPaise, variant.initialStock].every(integer)) throw new Error('Prices in paise and initial stock must be non-negative whole numbers.');
     if (Number(variant.saleAmountPaise) > Number(variant.mrpAmountPaise)) throw new Error('Sale price cannot exceed MRP.');
     if (typeof variant.isDefault !== 'boolean') throw new Error('Select a default variant.');
-    return { sku, optionValues: variant.optionValues, mrpAmountPaise: Number(variant.mrpAmountPaise), saleAmountPaise: Number(variant.saleAmountPaise), initialStock: Number(variant.initialStock), isDefault: variant.isDefault };
+    const imageUrl = typeof variant.imageUrl === 'string' ? variant.imageUrl.trim() : '';
+    if (variant.imageUrl != null && variant.imageUrl !== '' && (!imageUrl || !/^https?:\/\//i.test(imageUrl))) throw new Error('Choose a valid uploaded variant image.');
+    return { sku, optionValues: variant.optionValues, ...(imageUrl ? { imageUrl } : {}), mrpAmountPaise: Number(variant.mrpAmountPaise), saleAmountPaise: Number(variant.saleAmountPaise), initialStock: Number(variant.initialStock), isDefault: variant.isDefault };
   });
   if (variants.filter((variant) => variant.isDefault).length !== 1) throw new Error('Choose exactly one default variant.');
-  return { ...details, images: values.images, variants };
+  return { ...details, images: values.images.map(ecommerceProductImagePayload), variants };
 }
 export async function createEcommerceProduct(api, values, signal) {
   const data = unwrap(await api.post(endpoint, ecommerceProductPayload(values), { signal }));

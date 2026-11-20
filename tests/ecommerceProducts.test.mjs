@@ -31,6 +31,24 @@ test('product payload preserves the supplied schema, booleans, paise and numeric
   const input = structuredClone(values); input.gstPercentage = '5'; input.variants[0].initialStock = '5'; input.variants[0].mrpAmountPaise = '1599000'; input.ignored = true;
   assert.deepEqual(ecommerceProductPayload(input), values);
 });
+
+test('creation sends uploaded gallery images and color variant image URLs in one payload', async () => {
+  const input = structuredClone(values);
+  input.optionDefinitions[0].values = ['#DC2626', '#800020'];
+  input.variants[0].optionValues.Color = '#DC2626';
+  input.variants[0].imageUrl = 'https://example.test/red.jpg';
+  input.variants.push({ ...input.variants[0], sku: 'LEH-MAROON-M', optionValues: { Color: '#800020', Size: 'M' }, imageUrl: 'https://example.test/maroon.jpg', initialStock: 4, isDefault: false });
+  input.images = [{ url: 'https://example.test/chart.jpg', publicId: 'products/chart', altText: 'Lehenga size chart', sortOrder: '1', key: 'local-key', status: 'uploaded' }];
+  const payload = ecommerceProductPayload(input);
+  assert.deepEqual(payload.images, [{ url: 'https://example.test/chart.jpg', publicId: 'products/chart', altText: 'Lehenga size chart', sortOrder: 1 }]);
+  assert.equal(payload.variants[1].imageUrl, 'https://example.test/maroon.jpg');
+  assert.equal(payload.variants[1].optionValues.Color, '#800020');
+  const calls = [];
+  await createEcommerceProduct({ post: async (path, body) => { calls.push({ path, body }); return { data: { data: { product: { id: 'created-product', ...body } } } }; } }, input);
+  assert.deepEqual(calls, [{ path: '/admin/ecommerce/products', body: payload }]);
+  for (const imageUrl of ['javascript:bad', '/local-image.jpg', 123]) assert.throws(() => ecommerceProductPayload({ ...input, variants: [{ ...input.variants[0], imageUrl }] }), /variant image/);
+  assert.throws(() => ecommerceProductPayload({ ...input, images: [{ ...input.images[0], publicId: '' }] }), /public ID/);
+});
 test('invalid prices, quantities, options, combinations and defaults cannot be submitted', () => {
   for (const quantity of ['', null, true, -1, 0.5, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
     const input = structuredClone(values); input.variants[0].initialStock = quantity; assert.throws(() => ecommerceProductPayload(input));
@@ -52,6 +70,22 @@ test('invalid IDs and stock adjustments are rejected before sending a request', 
   await assert.rejects(adjustEcommerceStock(api, 'id', { quantity: 1, type: 'invented', note: 'Stock received' }), /type/);
 });
 const baseURL = process.env.ECOMMERCE_PRODUCTS_SIMULATION_URL;
+
+test('HTTP creates gallery media and hex color photos together without separate image association', { skip: !baseURL }, async () => {
+  const api = axios.create({ baseURL, proxy: false, timeout: 3000, headers: { Authorization: 'Bearer ecommerce-product-test-token' } });
+  const image = await uploadEcommerceProductImage(api, new File(['synthetic-image'], 'color.jpg', { type: 'image/jpeg' }));
+  const input = structuredClone(values);
+  input.title = 'Hex color media contract';
+  input.images = [{ ...image, altText: 'Color image', sortOrder: 1 }];
+  input.optionDefinitions[0].values = ['#800020'];
+  input.variants[0].optionValues.Color = '#800020';
+  input.variants[0].imageUrl = image.url;
+  const created = await createEcommerceProduct(api, input);
+  const saved = await fetchEcommerceProduct(api, ecommerceProductId(created));
+  assert.deepEqual(saved.images, input.images);
+  assert.equal(saved.variants[0].imageUrl, image.url);
+  assert.equal(saved.variants[0].optionValues.Color, '#800020');
+});
 test('image and live variant payloads preserve the supplied schema and reject invalid input', async () => {
   const input = { sku: 'LEH-MAR-L', optionValues: { Color: 'Maroon', Size: 'L' }, mrpAmountPaise: '1649000', saleAmountPaise: '1349000', initialStock: '3', isDefault: true, ignored: true };
   const payload = ecommerceLiveVariantPayload(input, values.optionDefinitions, values.variants);

@@ -59,7 +59,7 @@ test('browser shop category/subcategory/product updates, empty deletion and arch
   await wait(`document.body.innerText.includes('Subcategory updated')`,'Subcategory update popup');await click(button('OK'));
   await wait(`document.querySelector('tbody')?.innerText.includes('Updated Bridal Lehenga')`,'Updated subcategory list');
   await send('Page.navigate',{url:`${app}/product-list`});await wait(`document.querySelector('tbody')?.innerText.includes('Product 1')`,'Products loaded');
-  await menu('Product 1','Edit product');await wait(`location.pathname.includes('/product-list/edit/') && document.querySelector('input')`,'Product edit page');
+  await menu('Product 1','Edit product');await wait(`location.pathname.includes('/edit-product/') && document.querySelector('input')`,'Product edit page');
   await wait(`Boolean(${button('Save product')}) && !(${button('Save product')}).disabled`,'Product form ready');await fill('Product title','Edited Bridal Product');await fill('Description','Updated product description');await click(button('Save product'));
   await wait(`document.body.innerText.includes('Product updated successfully.')`,'Product update popup');await click(button('OK'));
   await click(button('Products List'));await wait(`document.querySelector('tbody')?.innerText.includes('Edited Bridal Product')`,'Saved product list');

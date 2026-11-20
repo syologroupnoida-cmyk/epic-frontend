@@ -37,4 +37,12 @@
 .credit { color:#047857; font-weight:600; }
 .debit { color:#b61f4b; font-weight:600; }
 .empty { padding:50px 20px; text-align:center; font-size:13px; color:#64748b; }
+.transactions { margin-top:32px; border:1px solid #e2e8f0; border-radius:6px; overflow:hidden; }
+.transactionsHeader { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid #e2e8f0; }
+.transactionsHeader h2 { font-size:16px; font-weight:600; color:#172033; }
+.transactionsHeader p { margin-top:3px; font-size:12px; color:#64748b; }
+.razorpayButton { min-width:210px; min-height:46px; border:1px solid #eadce4 !important; border-radius:8px !important; background:#fff7fa !important; box-shadow:none !important; text-transform:none !important; color:#172033 !important; }
+.razorpayButton:hover { border-color:#b61f4b !important; background:#fff1f5 !important; box-shadow:none !important; }
+.razorpayButton:disabled { border-color:#e2e8f0 !important; background:#f8fafc !important; opacity:.7; }
+.razorpayLogo { display:block; width:100px; height:auto; max-height:34px; object-fit:contain; }
 @media(max-width:700px) { .headerBilling { gap:6px; margin-right:8px; } .walletBadge { height:28px; padding:0 8px; gap:6px; } .walletBadge > strong { font-size:11px; } .planChip { height:28px; max-width:120px; padding:0 8px; font-size:10px; } .body { padding:16px; } .intro h2 { font-size:20px; } }
