@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { Badge } from '@mui/material';
 import HeaderAccountMenu from '@/components/common/HeaderAccountMenu';
+import PageScrollControls from '@/components/common/PageScrollControls';
 import ShopIcon from './ShopIcon';
 import ShopCollectionsDrawer from './ShopCollectionsDrawer';
 import ShopCollectionToast from './ShopCollectionToast';
@@ -21,6 +22,7 @@ export default function ShopPublicHeader() {
       <button type="button" disabled={collections.busy} aria-label={`Open cart (${cartCount})`} aria-haspopup="dialog" aria-expanded={drawerOpen && drawer === 'cart'} onClick={() => openDrawer('cart')}><Badge badgeContent={cartCount} sx={{ '& .MuiBadge-badge': { bgcolor: '#a4002b', color: 'white', fontSize: 9 } }}><ShopIcon name="cart" size={20} /></Badge></button>
       <HeaderAccountMenu accountLinks={[{ href: '/user/orders', label: 'My orders' }, { href: '/shop/checkout', label: 'Delivery addresses' }]} guestFallback={<Link href="/user/login?next=%2Fshop" className={styles.loginButton}>Login</Link>} />
     </nav></header>
+    <PageScrollControls />
     <ShopCollectionsDrawer type={drawer} open={drawerOpen} onClose={() => setDrawerOpen(false)} collections={collections} />
     <ShopCollectionToast notice={collections.notice} onClose={collections.dismissNotice} onOpen={openDrawer} />
   </>;

@@ -7,8 +7,9 @@
 .priceSlider { padding: 0 7px; }
 .priceLabels { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: #80616d; }
 .filterGroup input[type='radio'] { accent-color: var(--wine); }
-.pagination { display: flex; justify-content: center; align-items: center; gap: 20px; padding-top: 28px; font-size: 12px; }
-.pagination button { border: 1px solid #e4d4da; border-radius: 7px; padding: 9px 16px; }
+.pagination { display: flex; justify-content: center; align-items: center; gap: 8px; padding-top: 28px; font-size: 12px; }
+.pagination button { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid #e4d4da; border-radius: 50%; }
+.pagination button[aria-current='page'] { background: var(--wine); border-color: var(--wine); color: #fff; opacity: 1; }
 .shop button, .shop a, .shop input, .shop select { -webkit-tap-highlight-color: transparent; }
 .shop button { cursor: pointer; }
 .shop button:disabled { cursor: default; opacity: .5; }

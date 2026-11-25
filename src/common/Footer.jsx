@@ -6,19 +6,12 @@ import useCities from "@/util/useCities";
 import { vendorSearchHref } from "@/util/publicCatalog.mjs";
 import useFooterCategories from "@/util/useFooterCategories";
 import { FOOTER_CATEGORY_SETTINGS_KEY, FOOTER_SETTINGS_EVENT, readFooterCategoryIds } from "@/util/footerSettings";
+import { socialLinks } from "./SocialLinks";
 
 const processSteps = [
   { label: "Search", iconClass: "footer-search-icon" },
   { label: "Select", iconClass: "footer-check-icon" },
   { label: "Book", iconClass: "footer-calendar-icon" },
-];
-
-const socialLinks = [
-  { label: "Facebook", iconClass: "footer-facebook-icon" },
-  { label: "Instagram", iconClass: "footer-instagram-icon" },
-  { label: "YouTube", iconClass: "footer-youtube-icon" },
-  { label: "X", iconClass: "footer-x-icon" },
-  { label: "LinkedIn", iconClass: "footer-linkedin-icon" },
 ];
 
 const quickLinks = [
@@ -156,7 +149,8 @@ export default function Footer() {
             {socialLinks.map((social) => (
               <a
                 key={social.label}
-                href="#"
+                href={social.href || "#"}
+                {...(social.href && social.href !== "#" ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 aria-label={social.label}
                 className="footer-social-soft"
               >

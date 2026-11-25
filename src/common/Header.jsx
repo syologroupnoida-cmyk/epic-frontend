@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import CitySearch from "@/components/common/CitySearch";
 import QuoteModal from "@/components/common/QuoteModal";
 import HeaderAccountMenu from "@/components/common/HeaderAccountMenu";
+import SocialLinks from "./SocialLinks";
+import PageScrollControls from "@/components/common/PageScrollControls";
 import {
   destinationOptions,
   stories,
@@ -397,6 +399,7 @@ export default function Header() {
             />
           </div>
           <div className="flex items-center gap-4 font-semibold">
+            <SocialLinks className="flex items-center gap-1" />
             <Link
               href="/partner"
               className="rounded-full border border-white px-3 py-1 text-white hover:bg-white hover:text-[#8f1f3f]"
@@ -581,6 +584,7 @@ export default function Header() {
         </button>
       </div>
     </header>
+    <PageScrollControls />
     <div className="mobile-header-spacer" aria-hidden="true" />
     {isDrawerOpen ? (
         <button
