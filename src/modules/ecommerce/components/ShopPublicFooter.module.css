@@ -1,0 +1,11 @@
+.footer { background: #fff9fa; border-top: 1px solid #f0e5e8; color: #76545e; padding: 36px 24px; }
+.inner { max-width: 1200px; margin: auto; display: grid; grid-template-columns: minmax(200px, 1fr) 2fr; gap: 48px; }
+.brand img { width: auto; height: 48px; }
+.brand p { margin: 14px 0; font-size: 13px; line-height: 1.6; }
+.social { display: flex; align-items: center; gap: 8px; color: #a4002b; }
+.columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.columns div { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.columns h2 { margin-bottom: 4px; color: #71051c; font-size: 14px; font-weight: 700; }
+.columns a { font-size: 13px; line-height: 1.4; }
+.columns a:hover { color: #a4002b; text-decoration: underline; }
+@media (max-width: 700px) { .inner { grid-template-columns: 1fr; gap: 28px; } .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

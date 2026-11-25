@@ -2143,6 +2143,7 @@ svg {
 .footer-social-soft {
   align-items: center;
   background: white;
+  border: 1px solid currentColor;
   border-radius: 999px;
   box-shadow: 0 8px 18px rgb(15 23 42 / 0.06);
   color: #64748b;
